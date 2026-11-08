@@ -1,3 +1,6 @@
+import { tc } from '../i18n';
+import { TITLES } from '../content/ranks';
+import { BADGES } from '../content/badges';
 import type { Mode, Question, Region } from '../types';
 
 export interface Stamp { iso3: string; at: number; mode: Mode | 'quiz' }
@@ -18,14 +21,14 @@ export interface Profile {
   settings: { sound: boolean; reducedMotion: boolean; gpsConsent: boolean; lang: string };
 }
 
-export function newProfile(name: string, avatar = '🧭', kidMode = false): Profile {
+export function newProfile(name: string, avatar = '🧭', kidMode = false, lang = 'en'): Profile {
   return {
     id: `p_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`,
     name, avatar, kidMode, createdAt: Date.now(), xp: 0,
     stats: { answered: 0, correct: 0, bestStreak: 0, mapCorrect: 0, chronoCorrect: 0, bonusCorrect: 0, perfectRounds: 0, tripsCompleted: 0 },
     modesUsed: [], stamps: {}, badges: {},
     daily: { streak: 0, best: 0, scores: {} }, tourStars: {},
-    settings: { sound: true, reducedMotion: false, gpsConsent: false, lang: 'en' },
+    settings: { sound: true, reducedMotion: false, gpsConsent: false, lang },
   };
 }
 
@@ -49,11 +52,11 @@ export function levelFromXp(xp: number) {
   return { level, into: xp - floor, need, title: titleFor(level) };
 }
 
-const TITLES: [number, string][] = [
-  [1, 'Lost Tourist'], [3, 'Map Holder'], [5, 'Backpacker'], [8, 'Globetrotter'], [12, 'Explorer'],
-  [16, 'Navigator'], [20, 'Cartographer'], [25, 'World Expert'], [32, 'Legendary Voyager'], [40, 'Supreme Guide'],
-];
-export function titleFor(level: number) { return TITLES.filter(([l]) => level >= l).pop()![1]; }
+export function titleFor(level: number) {
+  const i = TITLES.filter(([l]) => level >= l).length - 1;
+  return tc(`rank.${i}`, TITLES[i][1]);
+}
+export const RANK_TITLES = TITLES.map(([, name]) => name);
 
 // ------------------------------------------------------------- world tour
 export const TOUR: { region: Region; unlockLevel: number; emoji: string }[] = [
@@ -70,24 +73,24 @@ export interface BadgeDef { id: string; emoji: string; name: string; desc: strin
 const stampsIn = (p: Profile, regionOf: (iso: string) => string | undefined, r: string) => Object.keys(p.stamps).some((i) => regionOf(i) === r);
 
 export function badgeDefs(regionOf: (iso3: string) => string | undefined): BadgeDef[] {
-  return [
-    { id: 'first-answer', emoji: '🐣', name: 'First Steps', desc: 'Answer your first question.', test: (p) => p.stats.answered >= 1 },
-    { id: 'first-trip', emoji: '🎒', name: 'Bon Voyage', desc: 'Complete your first journey.', test: (p) => p.stats.tripsCompleted >= 1 },
-    { id: 'streak-5', emoji: '🔥', name: 'On Fire', desc: 'Get 5 correct answers in a row.', test: (p) => p.stats.bestStreak >= 5 },
-    { id: 'streak-15', emoji: '☄️', name: 'Unstoppable', desc: 'Get 15 correct answers in a row.', test: (p) => p.stats.bestStreak >= 15 },
-    { id: 'perfect', emoji: '💯', name: 'Flawless', desc: 'Finish a round of 8+ questions with no mistakes.', test: (p) => p.stats.perfectRounds >= 1 },
-    { id: 'stamps-10', emoji: '🛂', name: 'Stamp Collector', desc: 'Collect 10 passport stamps.', test: (p) => Object.keys(p.stamps).length >= 10 },
-    { id: 'stamps-30', emoji: '📕', name: 'Full Passport', desc: 'Collect 30 passport stamps.', test: (p) => Object.keys(p.stamps).length >= 30 },
-    { id: 'stamps-75', emoji: '🌐', name: 'Citizen of the World', desc: 'Collect 75 passport stamps.', test: (p) => Object.keys(p.stamps).length >= 75 },
-    { id: 'five-regions', emoji: '🗺️', name: 'Five Regions', desc: 'Get a stamp in Africa, the Americas, Asia, Europe and Oceania.',
-      test: (p) => ['Africa', 'Americas', 'Asia', 'Europe', 'Oceania'].every((r) => stampsIn(p, regionOf, r)) },
-    { id: 'all-modes', emoji: '🚀', name: 'Every Ride', desc: 'Travel by plane, train, bus, car, on foot and by boat.', test: (p) => p.modesUsed.length >= 6 },
-    { id: 'map-10', emoji: '📍', name: 'Sharp Finger', desc: 'Find 10 countries on the map.', test: (p) => p.stats.mapCorrect >= 10 },
-    { id: 'chrono-5', emoji: '⏳', name: 'Time Traveller', desc: 'Solve 5 timelines.', test: (p) => p.stats.chronoCorrect >= 5 },
-    { id: 'bonus-3', emoji: '🎁', name: 'Surprise Master', desc: 'Win 3 surprise challenges.', test: (p) => p.stats.bonusCorrect >= 3 },
-    { id: 'daily-7', emoji: '📅', name: 'Daily Habit', desc: 'Play the daily challenge 7 days in a row.', test: (p) => p.daily.best >= 7 },
-    { id: 'level-10', emoji: '👑', name: 'Royal Traveller', desc: 'Reach level 10.', test: (p) => levelFromXp(p.xp).level >= 10 },
-  ];
+  const tests: Record<string, (p: Profile) => boolean> = {
+    'first-answer': (p) => p.stats.answered >= 1,
+    'first-trip': (p) => p.stats.tripsCompleted >= 1,
+    'streak-5': (p) => p.stats.bestStreak >= 5,
+    'streak-15': (p) => p.stats.bestStreak >= 15,
+    'perfect': (p) => p.stats.perfectRounds >= 1,
+    'stamps-10': (p) => Object.keys(p.stamps).length >= 10,
+    'stamps-30': (p) => Object.keys(p.stamps).length >= 30,
+    'stamps-75': (p) => Object.keys(p.stamps).length >= 75,
+    'five-regions': (p) => ['Africa', 'Americas', 'Asia', 'Europe', 'Oceania'].every((r) => stampsIn(p, regionOf, r)),
+    'all-modes': (p) => p.modesUsed.length >= 6,
+    'map-10': (p) => p.stats.mapCorrect >= 10,
+    'chrono-5': (p) => p.stats.chronoCorrect >= 5,
+    'bonus-3': (p) => p.stats.bonusCorrect >= 3,
+    'daily-7': (p) => p.daily.best >= 7,
+    'level-10': (p) => levelFromXp(p.xp).level >= 10,
+  };
+  return BADGES.map((b) => ({ ...b, test: tests[b.id] }));
 }
 
 /** Returns ids of badges newly earned. Mutates profile. */

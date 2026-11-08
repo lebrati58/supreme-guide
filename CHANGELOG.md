@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 — 2026-11-08
+### Added
+- **10 languages**: English, French, Spanish, German, Italian, Portuguese, Russian, Hebrew, Arabic, Chinese (Simplified). Everything is translated: interface, questions, explanations, landmarks, timelines, journeys, badges, ranks and the mascot.
+- Right-to-left layout for Hebrew and Arabic; automatic language detection; 🌐 language switcher; each family profile keeps its own language.
+- Official CLDR names for countries, currencies and languages; Wikipedia cards in the player's language.
+- Translation validator + per-language unit tests + Hebrew airplane-mode e2e test, enforced in CI.
+
+### Changed
+- The hero shows the whole logo (the circular crop cut the plane); a larger gold SVG plane with a contrail orbits it.
+
+
 ## 1.0.0 — 2026-11-08
 ### Fixed
 - The site showed a generic compass emoji instead of the Supreme Guide logo (`brand.svg`). The **official logo** is now used everywhere (home hero, splash, PWA icons, favicon, mascot, social card).

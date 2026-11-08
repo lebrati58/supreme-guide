@@ -4,6 +4,8 @@ import { isRegionUnlocked, levelFromXp, TOUR } from '../game/progression';
 import { href } from '../router';
 import { todayKey } from '../game/rng';
 import { Mascot } from '../components/Mascot';
+import { fmtNum, t } from '../i18n';
+import { regionLabel } from '../i18n/content';
 
 export default function Play() {
   const { profile, profiles } = useApp();
@@ -16,52 +18,55 @@ export default function Play() {
   const share = async () => {
     const url = challengeLink();
     try {
-      if (navigator.share) await navigator.share({ title: 'Supreme Guide challenge', text: `${profile.name} challenges you to a travel quiz! Same 10 questions — beat my score.`, url });
+      if (navigator.share) await navigator.share({ title: t('play.shareTitle'), text: t('play.shareText', { name: profile.name }), url });
       else { await navigator.clipboard.writeText(url); setCopied(true); }
     } catch { /* user cancelled */ }
   };
   const board = profiles.slice().sort((a, b) => b.xp - a.xp);
+  const tile = (to: string, icon: string, title: string, sub: string) => (
+    <a className="tile" href={href(to)}><span className="ti">{icon}</span><span className="grow"><b>{title}</b><span className="small dim">{sub}</span></span></a>
+  );
   return (
     <div className="page stack">
-      <h1>🎯 Challenges</h1>
-      <Mascot mood="idle" text="Pick your poison. I mean… your challenge." />
+      <h1>{t('play.title')}</h1>
+      <Mascot mood="idle" text={t('play.mascot')} />
       <div className="grid grid-2">
-        <a className="tile card gold" style={{ color: 'var(--ink)' }} href={href('/quiz/daily')}><span className="ti">📅</span><span className="grow"><b>Daily challenge</b><span className="small dim">{profile.daily.scores[todayKey()] !== undefined ? 'Done today ✓' : 'Same 5 questions for everyone today'}</span></span></a>
-        <a className="tile" href={href('/quiz/blitz')}><span className="ti">⚡</span><span className="grow"><b>Blitz</b><span className="small dim">10 quick questions · 10 s each · time bonus</span></span></a>
-        <a className="tile" href={href('/quiz/quick')}><span className="ti">🎲</span><span className="grow"><b>Quick world quiz</b><span className="small dim">8 mixed questions from everywhere</span></span></a>
-        <a className="tile" href={href('/quiz/map')}><span className="ti">📍</span><span className="grow"><b>Map master</b><span className="small dim">Find 8 countries on the map</span></span></a>
-        <a className="tile" href={href('/quiz/timeline')}><span className="ti">⏳</span><span className="grow"><b>Time traveller</b><span className="small dim">5 timelines to put in order</span></span></a>
-        <a className="tile" href={href('/quiz/landmarks')}><span className="ti">🏛️</span><span className="grow"><b>Landmark hunter</b><span className="small dim">Recognise monuments and natural wonders</span></span></a>
+        <a className="tile card gold" style={{ color: 'var(--ink)' }} href={href('/quiz/daily')}><span className="ti">📅</span><span className="grow"><b>{t('home.daily')}</b><span className="small dim">{profile.daily.scores[todayKey()] !== undefined ? t('play.dailyDone') : t('home.dailyPitch')}</span></span></a>
+        {tile('/quiz/blitz', '⚡', t('play.blitz'), t('play.blitzSub'))}
+        {tile('/quiz/quick', '🎲', t('play.quick'), t('play.quickSub'))}
+        {tile('/quiz/map', '📍', t('play.map'), t('play.mapSub'))}
+        {tile('/quiz/timeline', '⏳', t('play.timeline'), t('play.timelineSub'))}
+        {tile('/quiz/landmarks', '🏛️', t('play.landmarks'), t('play.landmarksSub'))}
       </div>
 
-      <h2>🌍 World Tour</h2>
-      <p className="dim small" style={{ marginTop: -8 }}>Unlock new regions as you level up. You’re level {lvl}.</p>
+      <h2>🌍 {t('home.tour')}</h2>
+      <p className="dim small" style={{ marginTop: -8 }}>{t('play.tourHelp', { level: lvl })}</p>
       <div className="grid grid-2">
-        {TOUR.map((t) => {
-          const open = isRegionUnlocked(profile, t.region);
-          const stars = profile.tourStars[t.region] ?? 0;
+        {TOUR.map((x) => {
+          const open = isRegionUnlocked(profile, x.region);
+          const stars = profile.tourStars[x.region] ?? 0;
           return open ? (
-            <a key={t.region} className="tile" href={href(`/quiz/tour?region=${t.region}`)}><span className="ti">{t.emoji}</span><span className="grow"><b>{t.region}</b><span className="small dim">{'★'.repeat(stars)}{'☆'.repeat(3 - stars)} best result</span></span><span aria-hidden="true">›</span></a>
+            <a key={x.region} className="tile" href={href(`/quiz/tour?region=${x.region}`)}><span className="ti">{x.emoji}</span><span className="grow"><b>{regionLabel(x.region)}</b><span className="small dim">{'★'.repeat(stars)}{'☆'.repeat(3 - stars)} {t('play.best')}</span></span><span aria-hidden="true" className="chev">›</span></a>
           ) : (
-            <div key={t.region} className="tile locked" aria-disabled="true"><span className="ti">🔒</span><span className="grow"><b>{t.region}</b><span className="small dim">Unlocks at level {t.unlockLevel}</span></span></div>
+            <div key={x.region} className="tile locked" aria-disabled="true"><span className="ti">🔒</span><span className="grow"><b>{regionLabel(x.region)}</b><span className="small dim">{t('play.unlocksAt', { level: x.unlockLevel })}</span></span></div>
           );
         })}
       </div>
 
-      <h2>🤝 Friends & family</h2>
+      <h2>{t('play.friends')}</h2>
       <div className="card stack">
-        <p style={{ margin: 0 }}>Send a challenge link: your friend gets the <b>same 10 questions</b>. No account, no data sent anywhere — just a link.</p>
-        <button className="btn blue" onClick={share}>📨 Challenge a friend</button>
-        {copied && <p className="small">Link copied! Paste it in any chat.</p>}
+        <p style={{ margin: 0 }}>{t('play.friendsHelp')}</p>
+        <button className="btn blue" onClick={share}>{t('play.challenge')}</button>
+        {copied && <p className="small">{t('play.copied')}</p>}
       </div>
       <div className="card">
-        <h3>👨‍👩‍👧 Family leaderboard (this device)</h3>
+        <h3>{t('play.leaderboard')}</h3>
         <table className="simple">
           <tbody>
-            {board.map((p, i) => <tr key={p.id}><td>{['🥇', '🥈', '🥉'][i] ?? i + 1}</td><td>{p.avatar} {p.name}{p.kidMode ? ' 🧒' : ''}</td><td style={{ textAlign: 'right' }}><b>{p.xp}</b> XP</td></tr>)}
+            {board.map((p, i) => <tr key={p.id}><td>{['🥇', '🥈', '🥉'][i] ?? i + 1}</td><td>{p.avatar} {p.name}{p.kidMode ? ' 🧒' : ''}</td><td style={{ textAlign: 'end' }}><b>{fmtNum(p.xp)}</b> XP</td></tr>)}
           </tbody>
         </table>
-        <p className="small dim">Add family members in <a href={href('/profile')}>Profile</a>. Online leaderboards are planned as an opt-in feature.</p>
+        <p className="small dim">{t('play.leaderboardHelp')} <a href={href('/profile')}>{t('nav.profile')}</a></p>
       </div>
     </div>
   );

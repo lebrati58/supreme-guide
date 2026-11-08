@@ -8,6 +8,8 @@ import { Quiz, type QuizResult } from '../components/Quiz';
 import { Mascot } from '../components/Mascot';
 import { Confetti } from '../components/Bits';
 import { href } from '../router';
+import { fmtDate, t } from '../i18n';
+import { countryName, regionLabel } from '../i18n/content';
 
 const yesterday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return todayKey(d); };
 
@@ -24,23 +26,24 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
     // Seeded challenges must be identical on every device: drop device-dependent flag questions.
     const det = { ...game, flagsOk: false };
     switch (type) {
-      case 'daily': return { title: `📅 Daily challenge · ${day}`, qs: buildSession(det, { count: 5, rnd: mulberry32(hashString(`daily-${day}`)) }) };
-      case 'blitz': return { title: '⚡ Blitz', qs: buildSession(game, { count: 10, rnd: seedRandom, weights: BLITZ_WEIGHTS, timeLimit: 10, maxDifficulty: kid }) };
-      case 'map': return { title: '📍 Map master', qs: buildSession(game, { count: 8, rnd: seedRandom, weights: { mapfind: 1 }, maxDifficulty: kid }) };
-      case 'timeline': return { title: '⏳ Time traveller', qs: buildSession(game, { count: 5, rnd: seedRandom, weights: { chronology: 1 } }) };
-      case 'landmarks': return { title: '🏛️ Landmark hunter', qs: buildSession(game, { count: 8, rnd: seedRandom, weights: { monument: 2, landmarkCountry: 1 } }) };
+      case 'daily': return { title: t('qs.daily', { date: fmtDate(new Date(), { dateStyle: 'medium' }) }), qs: buildSession(det, { count: 5, rnd: mulberry32(hashString(`daily-${day}`)) }) };
+      case 'blitz': return { title: t('qs.blitz'), qs: buildSession(game, { count: 10, rnd: seedRandom, weights: BLITZ_WEIGHTS, timeLimit: 10, maxDifficulty: kid }) };
+      case 'map': return { title: t('qs.map'), qs: buildSession(game, { count: 8, rnd: seedRandom, weights: { mapfind: 1 }, maxDifficulty: kid }) };
+      case 'timeline': return { title: t('qs.timeline'), qs: buildSession(game, { count: 5, rnd: seedRandom, weights: { chronology: 1 } }) };
+      case 'landmarks': return { title: t('qs.landmarks'), qs: buildSession(game, { count: 8, rnd: seedRandom, weights: { monument: 2, landmarkCountry: 1 } }) };
       case 'friend': {
         const seed = query.get('seed') ?? 'x';
-        return { title: `🤝 Challenge from ${query.get('from') ?? 'a friend'}`, qs: buildSession(det, { count: 10, rnd: mulberry32(hashString(`friend-${seed}`)) }) };
+        return { title: t('qs.friend', { name: query.get('from') ?? t('qs.aFriend') }), qs: buildSession(det, { count: 10, rnd: mulberry32(hashString(`friend-${seed}`)) }) };
       }
       case 'tour': return region && isRegionUnlocked(profile, region)
-        ? { title: `🌍 World Tour · ${region}`, qs: buildSession(game, { count: 8, rnd: seedRandom, region, surpriseRate: 0.15, maxDifficulty: kid }) }
-        : { title: 'Locked', qs: [] };
+        ? { title: t('qs.tour', { region: regionLabel(region) }), qs: buildSession(game, { count: 8, rnd: seedRandom, region, surpriseRate: 0.15, maxDifficulty: kid }) }
+        : { title: '', qs: [] };
       case 'country': {
         const iso = query.get('iso') ?? '';
-        return { title: `${game.byIso3.get(iso)?.flag ?? ''} ${game.byIso3.get(iso)?.name ?? ''} quiz`, qs: buildSession(game, { count: 6, rnd: seedRandom, focus: [iso], maxDifficulty: kid }) };
+        const c = game.byIso3.get(iso);
+        return { title: t('qs.country', { flag: c?.flag ?? '', country: c ? countryName(c) : '' }), qs: buildSession(game, { count: 6, rnd: seedRandom, focus: [iso], maxDifficulty: kid }) };
       }
-      default: return { title: '🎲 Quick world quiz', qs: buildSession(game, { count: 8, rnd: seedRandom, surpriseRate: 0.12, maxDifficulty: kid }) };
+      default: return { title: t('qs.quick'), qs: buildSession(game, { count: 8, rnd: seedRandom, surpriseRate: 0.12, maxDifficulty: kid }) };
     }
   }, [type, round, game, region, day, query]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -60,11 +63,11 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
 
   if (alreadyDaily) return (
     <div className="page stack">
-      <Mascot mood="idle" text={`You already played today (${profile.daily.scores[day]}/5). Come back tomorrow to keep your ${profile.daily.streak}-day streak!`} />
-      <a className="btn" href={href('/play')}>More challenges</a>
+      <Mascot mood="idle" text={t('qs.alreadyPlayed', { score: profile.daily.scores[day], streak: profile.daily.streak })} />
+      <a className="btn" href={href('/play')}>{t('qs.more')}</a>
     </div>
   );
-  if (!setup.qs.length) return <div className="page"><h1>🔒 Locked</h1><p>Level up to unlock this region.</p><a className="btn" href={href('/play')}>Back</a></div>;
+  if (!setup.qs.length) return <div className="page"><h1>{t('qs.locked')}</h1><p>{t('qs.lockedHelp')}</p><a className="btn" href={href('/play')}>{t('common.back')}</a></div>;
 
   if (result) {
     const pct = result.correct / result.total;
@@ -74,12 +77,12 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
         <div className="card result-hero">
           <div className="big-score">{result.correct}/{result.total}</div>
           <p className="display" style={{ fontSize: 24 }}>+{result.xp} XP</p>
-          {type === 'friend' && <p>Send your score back to {query.get('from') ?? 'your friend'}: <b>{result.correct}/{result.total}</b> 🏆</p>}
+          {type === 'friend' && <p>{t('qs.sendBack', { name: query.get('from') ?? t('qs.yourFriend') })} <b>{result.correct}/{result.total}</b> 🏆</p>}
         </div>
-        <Mascot mood={pct === 1 ? 'perfect' : pct >= 0.6 ? 'correct' : 'wrong'} text={pct === 1 ? undefined : pct >= 0.6 ? 'Well travelled! A few more trips and you’ll be after my job.' : 'Every expert was once a lost tourist. Again?'} />
+        <Mascot mood={pct === 1 ? 'perfect' : pct >= 0.6 ? 'correct' : 'wrong'} text={pct === 1 ? undefined : pct >= 0.6 ? t('qs.good') : t('qs.tryAgain')} />
         <div className="row">
-          {type !== 'daily' && type !== 'friend' && <button className="btn" onClick={() => { setResult(null); setRound((r) => r + 1); }}>🔁 Play again</button>}
-          <a className="btn ghost" href={href('/play')}>More challenges</a>
+          {type !== 'daily' && type !== 'friend' && <button className="btn" onClick={() => { setResult(null); setRound((r) => r + 1); }}>{t('qs.playAgain')}</button>}
+          <a className="btn ghost" href={href('/play')}>{t('qs.more')}</a>
         </div>
       </div>
     );

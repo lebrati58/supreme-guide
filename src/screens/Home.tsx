@@ -4,7 +4,7 @@ import { Logo } from '../components/Brand';
 import { Mascot } from '../components/Mascot';
 import { XPBar } from '../components/Bits';
 import { MODES, type Trip } from '../types';
-import { MODE_META } from '../transport/trips';
+import { MODE_META, modeLabel } from '../transport/trips';
 import { go, href } from '../router';
 import { store } from '../storage/db';
 import { todayKey } from '../game/rng';
@@ -30,7 +30,7 @@ export default function Home() {
         <div className="clouds" aria-hidden="true"><i style={{ top: '8%', animationDuration: '60s' }}>☁️</i><i style={{ top: '55%', animationDuration: '85s', animationDelay: '-30s' }}>☁️</i></div>
         <Logo />
         <p className="tagline">{t('app.tagline')}</p>
-        <p className="dim" style={{ margin: '0 0 14px' }}>Flights, trains, buses, road trips, walks and cruises — every journey becomes a quiz adventure. Works offline.</p>
+        <p className="dim" style={{ margin: '0 0 14px' }}>{t('home.pitch')}</p>
         <button className="btn big" onClick={() => go(active ? `/trip/${active.id}` : '/trips')}>
           {active ? `▶ ${t('home.continue')}` : `🚀 ${t('home.start')}`}
         </button>
@@ -41,9 +41,9 @@ export default function Home() {
       <section className="card">
         <XPBar xp={profile.xp} />
         <div className="stat-row" style={{ marginTop: 12 }}>
-          <a className="stat" href={href('/passport')} style={{ color: 'inherit', textDecoration: 'none' }}><b>{Object.keys(profile.stamps).length}</b><span className="small">stamps</span></a>
-          <div className="stat"><b>{Object.keys(profile.badges).length}</b><span className="small">badges</span></div>
-          <div className="stat"><b>{profile.daily.streak}🔥</b><span className="small">day streak</span></div>
+          <a className="stat" href={href('/passport')} style={{ color: 'inherit', textDecoration: 'none' }}><b>{Object.keys(profile.stamps).length}</b><span className="small">{t('home.stamps')}</span></a>
+          <div className="stat"><b>{Object.keys(profile.badges).length}</b><span className="small">{t('home.badges')}</span></div>
+          <div className="stat"><b>{profile.daily.streak}🔥</b><span className="small">{t('home.streak')}</span></div>
         </div>
       </section>
 
@@ -52,7 +52,7 @@ export default function Home() {
         <div className="modes">
           {MODES.map((m) => (
             <a key={m} className="mode-card" href={href(`/plan/${m}`)} style={{ '--mc': MODE_META[m].color } as React.CSSProperties}>
-              <span className="emo" aria-hidden="true">{MODE_META[m].emoji}</span>{MODE_META[m].label}
+              <span className="emo" aria-hidden="true">{MODE_META[m].emoji}</span>{modeLabel(m)}
             </a>
           ))}
         </div>
@@ -61,21 +61,21 @@ export default function Home() {
       <section className="grid grid-2">
         <a className="tile card gold" href={href('/quiz/daily')} style={{ color: 'var(--ink)' }}>
           <span className="ti">📅</span>
-          <span className="grow"><b>{t('home.daily')}</b><span className="small dim">{playedToday ? `Done today: ${profile.daily.scores[todayKey()]} pts. Come back tomorrow!` : '5 questions · same for everyone today'}</span></span>
-          <span className="pill gold">{playedToday ? '✓' : 'GO'}</span>
+          <span className="grow"><b>{t('home.daily')}</b><span className="small dim">{playedToday ? t('home.dailyDone', { score: profile.daily.scores[todayKey()] }) : t('home.dailyPitch')}</span></span>
+          <span className="pill gold">{playedToday ? '✓' : t('home.go')}</span>
         </a>
         <a className="tile" href={href('/play')}>
           <span className="ti">🌍</span>
-          <span className="grow"><b>World Tour</b><span className="small dim">{TOUR.filter((x) => isRegionUnlocked(profile, x.region)).length} / {TOUR.length} regions unlocked</span></span>
-          <span aria-hidden="true">›</span>
+          <span className="grow"><b>{t('home.tour')}</b><span className="small dim">{t('home.tourUnlocked', { n: TOUR.filter((x) => isRegionUnlocked(profile, x.region)).length, total: TOUR.length })}</span></span>
+          <span aria-hidden="true" className="chev">›</span>
         </a>
       </section>
 
       <section className="stack">
-        <div className="row spread"><h2 style={{ margin: 0 }}>Your world</h2><span className="small dim">🟨 visited · 🟩 unlocked · ⬜ locked</span></div>
+        <div className="row spread"><h2 style={{ margin: 0 }}>{t('home.yourWorld')}</h2><span className="small dim">{t('home.legend')}</span></div>
         {world && (
           <Suspense fallback={<div className="map-wrap"><div className="map" /></div>}>
-            <WorldMap world={world} visited={visited} locked={locked} label="Your world map: visited and unlocked regions" onCountryClick={(iso) => iso && go(`/country/${iso}`)} />
+            <WorldMap world={world} visited={visited} locked={locked} label={t('home.mapLabel')} onCountryClick={(iso) => iso && go(`/country/${iso}`)} />
           </Suspense>
         )}
       </section>

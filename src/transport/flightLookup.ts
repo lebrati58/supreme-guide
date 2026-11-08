@@ -1,4 +1,5 @@
 import { normaliseFlightNumber } from './flight';
+import { t } from '../i18n';
 
 /**
  * Flight-number lookup through a server-side proxy that holds the provider key
@@ -19,19 +20,19 @@ export const lookupConfigured = () => !!ENDPOINT;
 
 export async function lookupFlight(number: string, date: string): Promise<LookupResult> {
   const n = normaliseFlightNumber(number);
-  if (!n) return { status: 'error', message: 'That does not look like a flight number (e.g. AF1234).' };
-  if (!ENDPOINT) return { status: 'unavailable', message: 'Live flight lookup is not connected yet. Enter airports and times from your boarding pass.' };
-  if (!navigator.onLine) return { status: 'unavailable', message: 'You are offline. Enter airports and times manually.' };
+  if (!n) return { status: 'error', message: t('lookup.badNumber') };
+  if (!ENDPOINT) return { status: 'unavailable', message: t('lookup.notConnected') };
+  if (!navigator.onLine) return { status: 'unavailable', message: t('lookup.offline') };
   try {
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 10000);
+    const timer = setTimeout(() => ctrl.abort(), 10000);
     const r = await fetch(`${ENDPOINT}?number=${encodeURIComponent(n)}&date=${encodeURIComponent(date)}`, { signal: ctrl.signal });
-    clearTimeout(t);
-    if (r.status === 404) return { status: 'not-found', message: `No schedule found for ${n} on ${date}.` };
-    if (!r.ok) return { status: 'error', message: `Lookup failed (${r.status}).` };
+    clearTimeout(timer);
+    if (r.status === 404) return { status: 'not-found', message: t('lookup.notFound', { flight: n, date }) };
+    if (!r.ok) return { status: 'error', message: t('lookup.failedStatus', { status: String(r.status) }) };
     const j = (await r.json()) as LookupResult;
     return { ...j, status: 'found' };
   } catch {
-    return { status: 'error', message: 'Lookup failed. Enter the details manually.' };
+    return { status: 'error', message: t('lookup.failed') };
   }
 }
