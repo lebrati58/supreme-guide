@@ -8,7 +8,7 @@ import { SvgWorldMap } from './SvgWorldMap';
 import { shuffle } from '../game/rng';
 import type { Mood } from '../game/mascot';
 import { wikiSummary } from '../transport/wiki';
-import { t } from '../i18n';
+import { fwd, t } from '../i18n';
 import { capitalName, countryName, formatYearL, subregionLabel } from '../i18n/content';
 
 export interface QuizResult { correct: number; total: number; xp: number; answers: { id: string; correct: boolean }[] }
@@ -93,7 +93,7 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
           <p style={{ margin: '4px 0 8px' }}>{q.explanation}</p>
           {q.source && <a className="small" href={q.source.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--sky-2)' }}>{t('quiz.source')}: {q.source.label} ↗</a>}
           <div style={{ marginTop: 12 }}>
-            <button className="btn block" onClick={next} autoFocus>{i + 1 >= questions.length ? (finishLabel ?? t('common.finish')) : `${t('common.next')} →`}</button>
+            <button className="btn block" onClick={next} autoFocus>{i + 1 >= questions.length ? (finishLabel ?? t('common.finish')) : `${t('common.next')} ${fwd()}`}</button>
           </div>
         </div>
       )}

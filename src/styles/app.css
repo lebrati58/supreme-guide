@@ -415,3 +415,11 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 :lang(he), :lang(ar) { --font-display: 'Rubik', 'Assistant', 'Noto Sans Hebrew', 'Noto Sans Arabic', 'Segoe UI', system-ui, sans-serif; --font-body: system-ui, -apple-system, 'Segoe UI', 'Noto Sans Hebrew', 'Noto Sans Arabic', sans-serif; }
 :lang(zh-Hans) { --font-display: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif; --font-body: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif; }
 :lang(ar) .question, :lang(he) .question { line-height: 1.35; }
+
+/* Top bar must stay on one line with the 🌐 button (long words, narrow phones). */
+.topbar { gap: 8px; }
+.wordmark { white-space: nowrap; font-size: clamp(14px, 4.2vw, 20px); }
+.brand-mini { min-width: 0; flex-shrink: 1; }
+.topbar .pill { padding: 6px 9px; }
+/* Bottom-nav labels: long translations (e.g. Arabic “الملف الشخصي”) shrink instead of overflowing. */
+.bottom-nav a .lbl { display: block; max-width: 100%; padding: 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(10px, 2.9vw, 12px); }

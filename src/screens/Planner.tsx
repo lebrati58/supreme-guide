@@ -13,7 +13,7 @@ import { go, href } from '../router';
 import { haversineKm } from '../geo/geo';
 import { formatDuration, formatLocal } from '../transport/time';
 import { Mascot } from '../components/Mascot';
-import { t, type Key } from '../i18n';
+import { fwd, t, type Key } from '../i18n';
 import { journeyBlurb, journeyStop, journeyTitle } from '../i18n/content';
 
 export default function Planner({ mode }: { mode: Mode }) {
@@ -60,7 +60,7 @@ function CuratedTile({ j }: { j: CuratedJourney }) {
     <div className="card">
       <h3>{MODE_META[j.mode].emoji} {journeyTitle(j)}</h3>
       <p className="dim small">{journeyBlurb(j)}</p>
-      <p className="small">{j.stops.map((s, i) => (s.note ? null : journeyStop(j.id, i, s))).filter(Boolean).join(' → ')}</p>
+      <p className="small">{j.stops.map((s, i) => (s.note ? null : journeyStop(j.id, i, s))).filter(Boolean).join(` ${fwd()} `)}</p>
       {j.mode === 'car' && <RolePicker role={role} setRole={setRole} />}
       <button className="btn small blue" disabled={busy || (j.mode === 'car' && !role)} onClick={() => create({ mode: j.mode, title: j.title, stops: j.stops, label: j.label, curatedId: j.id, role: role ?? undefined })}>
         {busy ? t('plan.preparing') : useRouteLabel(j.mode)}
@@ -197,7 +197,7 @@ function GroundForm({ mode }: { mode: Ground }) {
     const st = stops as Stop[];
     const depUtc = when ? new Date(when).getTime() : undefined;
     const arrUtc = depUtc && Number(hours) > 0 ? depUtc + Number(hours) * 3600000 : undefined;
-    const title = `${st[0].name} → ${st[st.length - 1].name}`;
+    const title = `${st[0].name} ${fwd()} ${st[st.length - 1].name}`;
     void create({ mode, title, stops: st, label: [label, mode === 'bus' ? t(busType) : ''].filter(Boolean).join(' · ') || undefined, role: role ?? undefined, depUtc, arrUtc });
   };
   return (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { levelFromXp } from '../game/progression';
 import { useApp } from '../state';
 import { href, useRoute } from '../router';
@@ -54,7 +55,7 @@ export function BottomNav() {
     <nav className="bottom-nav" aria-label={t('nav.aria')}>
       {NAV.map(([p, ico, key]) => (
         <a key={p} href={href(p)} className={active(p) ? 'active' : ''} aria-current={active(p) ? 'page' : undefined}>
-          <span className="ico" aria-hidden="true">{ico}</span>{t(key)}
+          <span className="ico" aria-hidden="true">{ico}</span><span className="lbl">{t(key)}</span>
         </a>
       ))}
     </nav>
@@ -67,9 +68,12 @@ export function Modal({ children, onClose, label }: { children: React.ReactNode;
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
   }, [onClose]);
-  return (
+  // Portal to <body>: an ancestor with backdrop-filter/transform (e.g. the sticky top bar) would
+  // otherwise become the containing block of this position:fixed overlay and clip it.
+  return createPortal(
     <div className="modal-back" onClick={onClose}>
       <div className="modal card paper" role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.stopPropagation()}>{children}</div>
-    </div>
+    </div>,
+    document.body,
   );
 }

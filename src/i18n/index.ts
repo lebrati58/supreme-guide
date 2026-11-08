@@ -110,6 +110,9 @@ export const fmtNum = (n: number, opts?: Intl.NumberFormatOptions) => n.toLocale
 export const fmtDate = (d: number | Date, opts?: Intl.DateTimeFormatOptions) => new Date(d).toLocaleString(current === 'zh' ? 'zh-Hans' : current, opts);
 export const intlLocale = () => (current === 'zh' ? 'zh-Hans' : current);
 
+/** Forward arrow in reading direction (→ in LTR, ← in Hebrew/Arabic). */
+export const fwd = () => (localeInfo().dir === 'rtl' ? '←' : '→');
+
 /** "A, B and C" in the current language (CLDR list patterns). */
 export function listJoin(items: string[]): string {
   try { return new Intl.ListFormat(intlLocale(), { style: 'long', type: 'conjunction' }).format(items); } catch { return items.join(', '); }
