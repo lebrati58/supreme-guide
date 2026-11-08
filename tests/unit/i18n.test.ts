@@ -47,10 +47,11 @@ describe.each(available.map((l) => [l.code, l.dir] as const))('locale %s', (code
   });
 
   it('names countries from CLDR and translates capitals', () => {
-    const jp = data.byIso3.get('JPN')!;
-    expect(countryName(jp)).toBeTruthy();
-    if (code !== 'en') expect(countryName(jp)).not.toBe('Japan');
-    expect(capitalName(jp)).toBeTruthy();
+    // "Germany" is spelled differently in all 10 languages (Deutschland, Allemagne, Германия…).
+    const de = data.byIso3.get('DEU')!;
+    expect(countryName(de)).toBeTruthy();
+    if (code !== 'en') expect(countryName(de)).not.toBe('Germany');
+    expect(capitalName(de)).toBeTruthy();
   });
 
   it('generates valid, fully-interpolated questions', () => {
