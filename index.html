@@ -27,6 +27,12 @@
     </style>
   </head>
   <body>
+    <script>
+      // Safety net: Vite replaces %MODE% at build time. If this file is served UNBUILT
+      // (GitHub Pages still set to "Deploy from a branch"), fall back to the previous prototype
+      // instead of a blank page. Fix: Settings → Pages → Source: GitHub Actions.
+      if ('%MODE%'.charAt(0) === '%') location.replace('./public/legacy/');
+    </script>
     <div id="boot" aria-hidden="true"><div><img src="brand/logo-640.webp" alt="" width="340" height="340" /><p>Packing your suitcase…</p></div></div>
     <div id="root"></div>
     <noscript><p style="color:#fff;font-family:system-ui;padding:24px">Supreme Guide needs JavaScript to run.</p></noscript>
