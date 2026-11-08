@@ -95,9 +95,29 @@ async function run(name, ctxOpts) {
   await page.waitForSelector('.stamp');
   ok('passport stamps shown');
   await page.goto(`${BASE}#/plan/flight`);
-  await page.fill('input[placeholder^="City, airport or IATA code (e.g. CDG)"]', 'TLV');
+  await page.fill('#ap-from', 'TLV');
   await page.waitForSelector('.suggest button');
   ok('airport search works offline');
+
+  // Languages, still in airplane mode: switch to Hebrew (right-to-left) and play a quiz.
+  if (name === 'mobile') {
+    await page.goto(`${BASE}#/`);
+    await page.click('.lang-btn');
+    await page.click('.lang-chip[lang="he"]');
+    await page.waitForFunction(() => document.documentElement.dir === 'rtl' && document.documentElement.lang === 'he', null, { timeout: 10000 })
+      .then(() => ok('switched to Hebrew offline (dir=rtl)'), () => fail('language switch failed'));
+    await page.goto(`${BASE}#/quiz/quick`);
+    await page.waitForSelector('.question-card');
+    const qText = await page.textContent('.question');
+    /[\u0590-\u05FF]/.test(qText ?? '') ? ok('quiz question shown in Hebrew') : fail(`question not in Hebrew: ${qText}`);
+    const rtlOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    rtlOverflow <= 0 ? ok('no horizontal scroll in RTL') : fail(`RTL overflow ${rtlOverflow}px`);
+    await shot('hebrew-quiz');
+    await page.goto(`${BASE}#/`);
+    await page.click('.lang-btn');
+    await page.click('.lang-chip[lang="en"]');
+    await page.waitForFunction(() => document.documentElement.dir === 'ltr');
+  }
 
   await ctx.setOffline(false);
   errors.length ? fail(`JS errors: ${errors.join(' | ')}`) : ok('no JavaScript errors');

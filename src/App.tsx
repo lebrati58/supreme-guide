@@ -7,6 +7,8 @@ import { BrandMini } from './components/Brand';
 import { levelFromXp } from './game/progression';
 import Home from './screens/Home';
 import { MODES, type Mode } from './types';
+import { t, useLocale } from './i18n';
+import { LanguageButton } from './components/LanguagePicker';
 
 const Trips = lazy(() => import('./screens/Trips'));
 const Planner = lazy(() => import('./screens/Planner'));
@@ -20,6 +22,7 @@ const CountryPage = lazy(() => import('./screens/Country'));
 interface BIPEvent extends Event { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
 
 export default function App() {
+  const lang = useLocale(); // re-render the whole tree when the language changes
   const { profile, online } = useApp();
   const route = useRoute();
   const [bip, setBip] = useState<BIPEvent | null>(null);
@@ -52,30 +55,32 @@ export default function App() {
     case 'plan': screen = <Planner key={b} mode={(MODES.includes(b as Mode) ? b : 'flight') as Mode} />; break;
     case 'trip': screen = <TripView key={b} id={b} />; break;
     case 'play': screen = <Play />; break;
-    case 'quiz': screen = <QuizScreen key={route.path + route.query.toString()} type={b ?? 'quick'} query={route.query} />; break;
+    case 'quiz': screen = <QuizScreen key={route.path + route.query.toString() + lang} type={b ?? 'quick'} query={route.query} />; break;
     case 'passport': screen = <Passport />; break;
     case 'country': screen = <CountryPage key={b} iso3={b} />; break;
     case 'profile': screen = <Profile install={{ canInstall: !!bip, installed, prompt: () => { void bip?.prompt(); setBip(null); } }} />; break;
     default: screen = <Home />;
   }
 
+  const lvl = levelFromXp(profile.xp).level;
   return (
     <div className={`app ${needRefresh || offlineReady ? 'with-bar' : ''}`}>
       <header className="topbar">
         <BrandMini />
         <span className="grow" />
-        <span className={`pill ${online ? 'on' : 'off'}`} title={online ? 'Online' : 'Offline — the game still works'}>{online ? '●' : '✈︎ Offline'}</span>
-        <a className="pill gold" href="#/passport" style={{ textDecoration: 'none' }} aria-label={`Level ${levelFromXp(profile.xp).level}, ${profile.xp} XP`}>⭐ {levelFromXp(profile.xp).level}</a>
+        <LanguageButton />
+        <span className={`pill ${online ? 'on' : 'off'}`} title={online ? t('app.online') : t('app.offlineTitle')}>{online ? '●' : `✈︎ ${t('app.offline')}`}</span>
+        <a className="pill gold" href="#/passport" style={{ textDecoration: 'none' }} aria-label={t('app.levelAria', { level: lvl, xp: profile.xp })}>⭐ {lvl}</a>
       </header>
       <main id="main">
-        <Suspense fallback={<div className="page"><p className="splash-tip">Unfolding the map…</p></div>}>{screen}</Suspense>
+        <Suspense fallback={<div className="page"><p className="splash-tip">{t('app.loading')}</p></div>}>{screen}</Suspense>
       </main>
       <Toasts />
       {(needRefresh || offlineReady) && (
         <div className="update-bar" role="status">
-          <span>{needRefresh ? '✨ A new version of Supreme Guide is ready.' : '✅ Ready to work offline!'}</span>
-          {needRefresh ? <button className="btn small" onClick={() => updateServiceWorker(true)}>Update</button>
-            : <button className="btn small ghost" style={{ color: 'var(--ink)' }} onClick={() => { setOfflineReady(false); setNeedRefresh(false); }}>OK</button>}
+          <span>{needRefresh ? t('app.updateReady') : t('app.offlineReady')}</span>
+          {needRefresh ? <button className="btn small" onClick={() => updateServiceWorker(true)}>{t('app.update')}</button>
+            : <button className="btn small ghost" style={{ color: 'var(--ink)' }} onClick={() => { setOfflineReady(false); setNeedRefresh(false); }}>{t('common.ok')}</button>}
         </div>
       )}
       <BottomNav />

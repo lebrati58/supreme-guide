@@ -14,7 +14,7 @@ export interface Country {
   lat: number; lng: number; area: number;
   borders: string[]; landlocked: boolean; flag: string;
   independent: boolean; un: boolean;
-  currencies: string[]; languages: string[]; demonym: string;
+  currencies: string[]; currencyCodes: string[]; languages: string[]; languageCodes: string[]; demonym: string;
 }
 
 export interface Airport {

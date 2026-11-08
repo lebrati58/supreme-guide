@@ -40,7 +40,9 @@ for c in raw:
         "landlocked": bool(c.get("landlocked")), "flag": c.get("flag", ""),
         "independent": bool(c.get("independent")), "un": bool(c.get("unMember")),
         "currencies": [v.get("name", "") for v in (c.get("currencies") or {}).values()],
+        "currencyCodes": list((c.get("currencies") or {}).keys()),
         "languages": list((c.get("languages") or {}).values()),
+        "languageCodes": list((c.get("languages") or {}).keys()),
         "demonym": ((c.get("demonyms") or {}).get("eng") or {}).get("m", ""),
     })
 countries.sort(key=lambda x: x["name"])

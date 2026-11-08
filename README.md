@@ -7,7 +7,12 @@ anywhere in the world, **online or in airplane mode**. Hosted by the Supreme Gui
 
 **Play:** https://lebrati58.github.io/supreme-guide/ (installable PWA)
 
-## Features (v1.0)
+## Languages
+🇬🇧 English · 🇫🇷 Français · 🇪🇸 Español · 🇩🇪 Deutsch · 🇮🇹 Italiano · 🇧🇷 Português · 🇷🇺 Русский · 🇮🇱 עברית · 🇸🇦 العربية · 🇨🇳 中文（简体）
+
+Everything is translated — menus, questions, explanations, landmarks, timelines, journeys, badges and the mascot's jokes — and works offline. Hebrew and Arabic use a full right-to-left layout. Country, language and currency names come from Unicode CLDR via the browser. The language is detected automatically and can be changed anytime with the 🌐 button.
+
+## Features
 - **Official brand identity**: original logo, animated mascot, PWA icons, favicon, splash screen, social card.
 - **Interactive world map** (MapLibre GL): offline country map (Natural Earth), optional detailed online map (OpenFreeMap / OSM), routes, progress, landmarks, visited & unlocked regions.
 - **6 transport modes**
@@ -28,6 +33,8 @@ npm run build        # production build → dist/
 npm run preview &    # serve dist on :4173
 npm run test:e2e     # Playwright smoke + airplane-mode test
 npm run data         # rebuild public/data from npm data packages
+npm run i18n         # regenerate the English reference catalog (src/i18n/locales/en.json)
+npm run i18n:check   # catalog up to date + every language complete and valid
 ```
 
 ## Deploy

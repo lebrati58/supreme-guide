@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { LngLat, Question, Trip, WikiCard } from '../types';
 import { useApp } from '../state';
 import { store, requestPersistence } from '../storage/db';
-import { GEOMETRY_NOTE, MODE_META, stopFractions } from '../transport/trips';
+import { geometryNote, MODE_META, stopFractions } from '../transport/trips';
 import { flightStatus } from '../transport/flight';
 import { formatDuration, formatLocal } from '../transport/time';
 import { loadAirports } from '../data/loaders';
@@ -17,6 +17,8 @@ import { Confetti, Modal } from '../components/Bits';
 import { go, href } from '../router';
 import type { MapMarker } from '../map/WorldMap';
 import type { Mood } from '../game/mascot';
+import { fmtDate, fmtNum, t } from '../i18n';
+import { countryName, journeyStop, journeyTitle, lmFact, lmName, stopNote } from '../i18n/content';
 
 const WorldMap = lazy(() => import('../map/WorldMap'));
 
@@ -29,7 +31,7 @@ function useGeo(enabled: boolean) {
     if (!enabled || !('geolocation' in navigator)) return;
     const id = navigator.geolocation.watchPosition(
       (p) => { setError(null); setGeo({ pos: [p.coords.longitude, p.coords.latitude], accuracy: p.coords.accuracy, speed: p.coords.speed, at: p.timestamp }); },
-      (e) => setError(e.code === 1 ? 'Location permission denied.' : 'No GPS signal (normal inside a plane or tunnel).'),
+      (e) => setError(e.code === 1 ? t('trip.gpsDenied') : t('trip.gpsNoSignal')),
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 },
     );
     return () => navigator.geolocation.clearWatch(id);
@@ -139,7 +141,7 @@ export default function TripView({ id }: { id: string }) {
         discovered.current.add(c.key);
         const cached = trip.wiki?.find((w) => w.title === c.title || w.title === decodeURIComponent(c.title).replace(/_/g, ' '));
         if (cached) setCard(cached); else void wikiSummary(c.title).then((s) => s && setCard(s));
-        toast({ icon: '📍', title: 'You discovered a place!', body: 'Open its card and take the quiz.' });
+        toast({ icon: '📍', title: t('trip.discovered'), body: t('trip.discoveredBody') });
         break;
       }
     }
@@ -150,25 +152,27 @@ export default function TripView({ id }: { id: string }) {
     if (!trip || !explore || !online || (trip.wiki && trip.wiki.length)) return;
     void (async () => {
       const near = await wikiNearby(trip.geometry[0], 3000, 15);
-      const cards = (await Promise.all(near.slice(0, 12).map((n) => wikiSummary(n.title)))).filter((x): x is WikiCard => !!x)
+      const cards = (await Promise.all(near.slice(0, 12).map((n) => wikiSummary(n.title, n.lang)))).filter((x): x is WikiCard => !!x)
         .map((c) => { const n = near.find((x) => x.title === c.title); return { ...c, lat: c.lat ?? n?.lat, lng: c.lng ?? n?.lng }; });
       if (cards.length) save((t) => { t.wiki = cards; });
     })();
   }, [trip?.id, explore, online]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (trip === undefined) return <div className="page"><p>Loading your trip…</p></div>;
-  if (trip === null) return <div className="page"><h1>Trip not found</h1><a className="btn" href={href('/trips')}>Back to trips</a></div>;
+  if (trip === undefined) return <div className="page"><p>{t('trip.loading')}</p></div>;
+  if (trip === null) return <div className="page"><h1>{t('trip.notFound')}</h1><a className="btn" href={href('/trips')}>{t('trip.back')}</a></div>;
 
   const meta = MODE_META[trip.mode];
+  const title = trip.curatedId ? journeyTitle({ id: trip.curatedId, title: trip.title }) : trip.title;
+  const stopLabel = (s: Trip['stops'][number], i: number) => (trip.curatedId ? journeyStop(trip.curatedId, i, s) : s.name);
   const st = 'status' in progress ? progress.status : undefined;
   const nearCard = trip.wiki ? nearestCard(trip.wiki, progress.position) : null;
 
   const markers: MapMarker[] = [
-    ...(explore ? [] : trip.stops.filter((s) => !s.note).map((s, i, arr) => ({ id: `s${i}`, lngLat: [s.lng, s.lat] as LngLat, kind: (i === arr.length - 1 || i === 0 ? 'end' : 'stop') as MapMarker['kind'], label: s.name }))),
-    ...pois.map((l) => ({ id: l.id, lngLat: [l.lng, l.lat] as LngLat, kind: 'poi' as const, emoji: l.emoji, label: `${l.name} — ${l.fact}` })),
+    ...(explore ? [] : trip.stops.map((s, i) => ({ s, i })).filter(({ s }) => !s.note).map(({ s, i }, k, arr) => ({ id: `s${i}`, lngLat: [s.lng, s.lat] as LngLat, kind: (k === arr.length - 1 || k === 0 ? 'end' : 'stop') as MapMarker['kind'], label: stopLabel(s, i) }))),
+    ...pois.map((l) => ({ id: l.id, lngLat: [l.lng, l.lat] as LngLat, kind: 'poi' as const, emoji: l.emoji, label: `${lmName(l)} — ${lmFact(l)}` })),
     ...(trip.wiki ?? []).filter((w) => w.lat !== undefined && explore).map((w) => ({ id: w.title, lngLat: [w.lng!, w.lat!] as LngLat, kind: 'poi' as const, emoji: '📖', label: w.title, onClick: () => setCard(w) })),
-    ...(!explore && progress.fraction > 0 && progress.fraction < 1 && progress.source !== 'gps' ? [{ id: 'veh', lngLat: progress.position, kind: 'vehicle' as const, emoji: meta.emoji, estimated: true, label: 'Estimated position (from schedule) — not a live position' }] : []),
-    ...(geo ? [{ id: 'gps', lngLat: geo.pos, kind: 'gps' as const, label: `Your GPS position (±${Math.round(geo.accuracy)} m)` }] : []),
+    ...(!explore && progress.fraction > 0 && progress.fraction < 1 && progress.source !== 'gps' ? [{ id: 'veh', lngLat: progress.position, kind: 'vehicle' as const, emoji: meta.emoji, estimated: true, label: t('trip.estPos') }] : []),
+    ...(geo ? [{ id: 'gps', lngLat: geo.pos, kind: 'gps' as const, label: t('trip.gpsPos', { m: Math.round(geo.accuracy) }) }] : []),
   ];
 
   const startQuiz = () => {
@@ -186,7 +190,7 @@ export default function TripView({ id }: { id: string }) {
     save((t) => { t.answeredIds = [...(t.answeredIds ?? []), ...r.answers.map((a) => a.id)]; });
     const reached = trip.countries.filter((_c, i) => i <= Math.max(0, currentIdx)).map((c) => c.iso3);
     const added = stamp(reached, trip.mode);
-    added.forEach((iso) => toast({ icon: byIso3.get(iso)?.flag || '🛂', title: `Passport stamp: ${byIso3.get(iso)?.name ?? iso}`, body: 'Added to your passport.' }));
+    added.forEach((iso) => toast({ icon: byIso3.get(iso)?.flag || '🛂', title: t('trip.stamp', { country: (() => { const c = byIso3.get(iso); return c ? countryName(c) : iso; })() }), body: t('trip.stampBody') }));
     setMood(r.correct === r.total ? 'perfect' : 'idle');
   };
 
@@ -198,14 +202,14 @@ export default function TripView({ id }: { id: string }) {
   };
 
   const download = async () => {
-    setPacking('Preparing…');
+    setPacking(t('plan.preparing'));
     await requestPersistence();
     try {
       const titles = pois.map((l) => decodeURIComponent(l.wiki).replace(/_/g, ' '));
-      const cards = online ? await buildWikiPack(trip.geometry, titles, (d, n) => setPacking(`Downloading places ${d}/${n}…`)) : [];
+      const cards = online ? await buildWikiPack(trip.geometry, titles, (d, n) => setPacking(t('trip.downloading', { d, n }))) : [];
       // Warm landmark photos & question images too.
       save((t) => { t.wiki = cards.length ? cards : t.wiki; t.packAt = Date.now(); });
-      toast({ icon: '📦', title: 'Trip ready offline', body: `${cards.length} place cards saved. Quizzes, map outline and progress work without connection.` });
+      toast({ icon: '📦', title: t('trip.readyOffline'), body: t('trip.readyOfflineBody', { n: cards.length }) });
     } finally { setPacking(null); }
   };
 
@@ -214,14 +218,14 @@ export default function TripView({ id }: { id: string }) {
       {celebrate > 0 && <Confetti key={celebrate} />}
       {locked && <DriverLock moving={moving} gps={gpsOn} onEnableGps={() => setGpsOn(true)} onParked={() => setParkedAt(Date.now())} />}
       <div className="row spread">
-        <a className="link-btn" href={href('/trips')}>← Trips</a>
+        <a className="link-btn" href={href('/trips')}>{t('trip.backShort')}</a>
         <div className="row">
-          {trip.packAt ? <span className="pill on">📦 Ready offline</span> : <span className="pill">Not downloaded</span>}
+          {trip.packAt ? <span className="pill on">📦 {t('trip.downloaded')}</span> : <span className="pill">{t('trip.notDownloaded')}</span>}
         </div>
       </div>
-      <h1>{meta.emoji} {trip.title}</h1>
+      <h1>{meta.emoji} {title}</h1>
       <p className="dim small" style={{ marginTop: -6 }}>
-        {trip.label && <>{trip.label} · </>}{trip.distanceKm.toLocaleString('en-US')} km · {GEOMETRY_NOTE[trip.geometrySource]}
+        {trip.label && <>{trip.label} · </>}{fmtNum(trip.distanceKm)} km · {geometryNote(trip.geometrySource)}
       </p>
 
       <Mascot mood={trip.completedAt ? 'landing' : driver ? 'driver' : online ? mood : 'offline'} nonce={done ? 1 : 0} />
@@ -230,16 +234,16 @@ export default function TripView({ id }: { id: string }) {
         <div style={{ position: 'relative' }}>
           <Suspense fallback={<div className="map-wrap"><div className="map tall" /></div>}>
             <WorldMap world={world} route={explore ? undefined : trip.geometry} progress={progress.fraction} markers={markers} fit="route" tall detailed={detailed && online}
-              highlight={new Set(trip.countries.map((c) => c.iso3))} visited={new Set(Object.keys(profile.stamps))} label={`Map of ${trip.title}`} />
+              highlight={new Set(trip.countries.map((c) => c.iso3))} visited={new Set(Object.keys(profile.stamps))} label={t('trip.mapLabel', { title })} />
           </Suspense>
           <div className="map-overlay tl">
-            {progress.source === 'gps' ? <span className="map-badge gps">🛰️ GPS position</span>
-              : progress.source === 'schedule' ? <span className="map-badge est">⏱ Estimated from schedule</span>
-              : !explore ? <span className="map-badge">✋ Manual progress</span> : null}
+            {progress.source === 'gps' ? <span className="map-badge gps">{t('trip.badgeGps')}</span>
+              : progress.source === 'schedule' ? <span className="map-badge est">{t('trip.badgeEst')}</span>
+              : !explore ? <span className="map-badge">{t('trip.badgeManual')}</span> : null}
           </div>
           <div className="map-overlay tr">
-            <button className="chip" style={{ background: 'rgba(11,31,77,.85)' }} disabled={!online} onClick={() => setDetailed((d) => !d)} title={online ? '' : 'Detailed map needs a connection'}>
-              {detailed && online ? '🗺️ Simple' : '🛣️ Detailed'}
+            <button className="chip" style={{ background: 'rgba(11,31,77,.85)' }} disabled={!online} onClick={() => setDetailed((d) => !d)} title={online ? '' : t('trip.detailedOffline')}>
+              {detailed && online ? t('trip.simple') : t('trip.detailed')}
             </button>
           </div>
         </div>
@@ -250,42 +254,42 @@ export default function TripView({ id }: { id: string }) {
         {trip.flight && st && (
           <>
             <div className="row spread">
-              <b className="display" style={{ fontSize: 22 }}>{st.phase === 'before' ? '🛫 Before departure' : st.phase === 'enroute' ? '✈️ In flight (estimated)' : '🛬 Arrived (scheduled)'}</b>
+              <b className="display" style={{ fontSize: 22 }}>{st.phase === 'before' ? t('flight.before') : st.phase === 'enroute' ? t('flight.enroute') : t('flight.arrived')}</b>
               <span className="pill">{Math.round(progress.fraction * 100)}%</span>
             </div>
             <div className="xp-bar"><i style={{ width: `${progress.fraction * 100}%` }} /></div>
             <div className="small">
               {trip.flight.from} {tz.from ? formatLocal(trip.flight.depUtc + trip.flight.delayMin * 60000, tz.from, true) : trip.flight.depLocal} → {trip.flight.to} {tz.to ? formatLocal(trip.flight.arrUtc + trip.flight.delayMin * 60000, tz.to, true) : trip.flight.arrLocal}
-              {trip.flight.delayMin ? ` · delay +${trip.flight.delayMin} min` : ''}
-              {st.phase === 'before' && ` · departs in ${formatDuration(trip.flight.depUtc + trip.flight.delayMin * 60000 - now)}`}
-              {st.phase === 'enroute' && ` · about ${formatDuration(st.remainingMs)} to go`}
+              {trip.flight.delayMin ? ` · ${t('flight.delayInfo', { min: trip.flight.delayMin })}` : ''}
+              {st.phase === 'before' && ` · ${t('flight.departsIn', { d: formatDuration(trip.flight.depUtc + trip.flight.delayMin * 60000 - now) })}`}
+              {st.phase === 'enroute' && ` · ${t('flight.toGo', { d: formatDuration(st.remainingMs) })}`}
             </div>
-            {trip.flight.scheduleSource === 'estimated' && <p className="notice small">Arrival time is estimated from distance (~830 km/h + 30 min). Edit delays below if needed.</p>}
-            <p className="small dim" style={{ margin: 0 }}>Position = schedule-based estimate along the shortest path. It is not live tracking. Real routes and timings vary.</p>
+            {trip.flight.scheduleSource === 'estimated' && <p className="notice small">{t('flight.estimatedNotice')}</p>}
+            <p className="small dim" style={{ margin: 0 }}>{t('flight.disclaimer')}</p>
             <div className="chips">
-              {[15, 30, 60].map((m) => <button key={m} className="chip" onClick={() => save((t) => { t.flight!.delayMin += m; })}>+{m} min delay</button>)}
-              {trip.flight.delayMin !== 0 && <button className="chip" onClick={() => save((t) => { t.flight!.delayMin = 0; })}>Reset delay</button>}
+              {[15, 30, 60].map((m) => <button key={m} className="chip" onClick={() => save((t) => { t.flight!.delayMin += m; })}>{t('flight.addDelay', { m })}</button>)}
+              {trip.flight.delayMin !== 0 && <button className="chip" onClick={() => save((t) => { t.flight!.delayMin = 0; })}>{t('flight.resetDelay')}</button>}
             </div>
           </>
         )}
         {!trip.flight && !explore && (
           <>
-            <div className="row spread"><b className="display" style={{ fontSize: 22 }}>{trip.completedAt ? '🏁 Journey complete' : `${meta.emoji} On the way`}</b><span className="pill">{Math.round(progress.fraction * 100)}%</span></div>
+            <div className="row spread"><b className="display" style={{ fontSize: 22 }}>{trip.completedAt ? t('trip.complete') : `${meta.emoji} ${t('trip.onTheWay')}`}</b><span className="pill">{Math.round(progress.fraction * 100)}%</span></div>
             <div className="xp-bar"><i style={{ width: `${progress.fraction * 100}%` }} /></div>
             {progress.source === 'manual' && (
               <div className="field">
-                <label htmlFor="at">Where are you now?</label>
+                <label htmlFor="at">{t('trip.whereNow')}</label>
                 <select id="at" className="input" value={nearestStopIndex(fractions, progress.fraction)} onChange={(e) => save((t) => { t.progress = fractions[Number(e.target.value)]; })}>
-                  {trip.stops.map((s, i) => <option key={i} value={i}>{s.name}{s.note ? ` (${s.note})` : ''}</option>)}
+                  {trip.stops.map((s, i) => <option key={i} value={i}>{stopLabel(s, i)}{s.note ? ` (${stopNote(s.note)})` : ''}</option>)}
                 </select>
               </div>
             )}
           </>
         )}
-        {explore && <p className="small">🚶 Walk around: landmarks and Wikipedia places near you appear on the map. Get within ~150 m with GPS on to discover them.</p>}
+        {explore && <p className="small">{t('trip.exploreHelp')}</p>}
         <div className="row">
           <button className={`btn small ${gpsOn ? 'green' : 'ghost'}`} onClick={() => { setGpsOn((g) => !g); if (!gpsOn) update((p) => { p.settings.gpsConsent = true; }); }}>
-            🛰️ {gpsOn ? 'GPS on' : 'Use GPS (optional)'}
+            🛰️ {gpsOn ? t('trip.gpsOn') : t('trip.useGps')}
           </button>
           {gpsOn && geo && <span className="small dim">±{Math.round(geo.accuracy)} m{geo.speed !== null ? ` · ${Math.round((geo.speed ?? 0) * 3.6)} km/h` : ''}</span>}
           {gpsOn && geoErr && <span className="small dim">{geoErr}</span>}
@@ -295,14 +299,14 @@ export default function TripView({ id }: { id: string }) {
       {/* ------------- play */}
       <section id="stage" className="card gold stack" style={{ color: 'var(--ink)', scrollMarginTop: 70 }}>
         {quiz ? (
-          <Quiz questions={quiz} title={current ? `${current.flag} Stage quiz · ${current.name}` : 'Stage quiz'} onFinish={finishQuiz} finishLabel="Collect stamps 🛂" />
+          <Quiz questions={quiz} title={current ? t('trip.stageQuizOf', { flag: current.flag, country: countryName(current) }) : t('trip.stageQuiz')} onFinish={finishQuiz} finishLabel={t('trip.collectStamps')} />
         ) : (
           <>
-            <h2 style={{ margin: 0 }}>{current ? <>{current.flag} {progress.source === 'schedule' && trip.flight ? 'Probably over' : 'Now in'} {current.name}</> : '🌊 Over water'}</h2>
-            {done && <p style={{ margin: 0 }}><b>{done.correct}/{done.total}</b> correct · +{done.xp} XP</p>}
-            <button className="btn big blue" disabled={locked} onClick={startQuiz}>🎯 {done ? 'Next stage quiz' : 'Play stage quiz'}</button>
-            {!trip.completedAt && progress.fraction > 0.9 && <button className="btn green" onClick={complete}>🏁 I’ve arrived!</button>}
-            {!trip.completedAt && progress.fraction <= 0.9 && <button className="link-btn" style={{ color: 'var(--ink)' }} onClick={complete}>Mark journey as complete</button>}
+            <h2 style={{ margin: 0 }}>{current ? <>{current.flag} {progress.source === 'schedule' && trip.flight ? t('trip.probablyOver', { country: countryName(current) }) : t('trip.nowIn', { country: countryName(current) })}</> : t('trip.overWater')}</h2>
+            {done && <p style={{ margin: 0 }}><b>{done.correct}/{done.total}</b> {t('trip.correctXp', { xp: done.xp })}</p>}
+            <button className="btn big blue" disabled={locked} onClick={startQuiz}>🎯 {done ? t('trip.nextStage') : t('trip.playStage')}</button>
+            {!trip.completedAt && progress.fraction > 0.9 && <button className="btn green" onClick={complete}>{t('trip.arrived')}</button>}
+            {!trip.completedAt && progress.fraction <= 0.9 && <button className="link-btn" style={{ color: 'var(--ink)' }} onClick={complete}>{t('trip.markComplete')}</button>}
           </>
         )}
       </section>
@@ -310,41 +314,40 @@ export default function TripView({ id }: { id: string }) {
       {/* ------------- countries timeline */}
       {trip.countries.length > 0 && !explore && (
         <section className="card stack">
-          <h3>Countries along the way ({trip.countries.length})</h3>
+          <h3>{t('trip.countriesAlong', { n: trip.countries.length })}</h3>
           <div className="timeline">
             {trip.countries.map((c, i) => {
               const k = byIso3.get(c.iso3);
               const cls = i < currentIdx ? 'done' : i === currentIdx ? 'now' : '';
-              return <a key={c.iso3} href={href(`/country/${c.iso3}`)} className={`tl ${cls}`} style={{ color: 'inherit', textDecoration: 'none' }}><span className="dot" />{k?.flag} {k?.name ?? c.iso3} <span className="dim small">· {Math.round(c.at * 100)}%</span></a>;
+              return <a key={c.iso3} href={href(`/country/${c.iso3}`)} className={`tl ${cls}`} style={{ color: 'inherit', textDecoration: 'none' }}><span className="dot" />{k?.flag} {k ? countryName(k) : c.iso3} <span className="dim small">· {Math.round(c.at * 100)}%</span></a>;
             })}
           </div>
-          <p className="small dim" style={{ margin: 0 }}>Computed offline from Natural Earth borders along the drawn path; tiny territories may be missed.</p>
+          <p className="small dim" style={{ margin: 0 }}>{t('trip.countriesNote')}</p>
         </section>
       )}
 
       {/* ------------- did you know */}
       {(nearCard || (trip.wiki && trip.wiki.length > 0)) && (
         <section className="stack">
-          <h3>📖 Did you know?</h3>
+          <h3>{t('trip.didYouKnow')}</h3>
           {(explore ? trip.wiki!.slice(0, 6) : nearCard ? [nearCard] : []).map((w) => <WikiTile key={w.title} w={w} onOpen={() => setCard(w)} />)}
         </section>
       )}
 
       {/* ------------- offline */}
       <section className="card stack">
-        <h3>📦 Offline pack</h3>
+        <h3>{t('trip.offlinePack')}</h3>
         <p className="small dim" style={{ margin: 0 }}>
-          Always offline: the game, quizzes, the world outline map, your route and countries, the estimated progress.
-          Download adds Wikipedia place cards and photos along the route. Detailed street maps are only cached for areas you already viewed online.
+          {t('trip.offlineExplain')}
         </p>
-        {trip.packAt && <p className="small">Downloaded {new Date(trip.packAt).toLocaleString()} · {trip.wiki?.length ?? 0} place cards.</p>}
-        <button className="btn blue" disabled={!!packing || !online} onClick={download}>{packing ?? (trip.packAt ? '🔄 Refresh offline pack' : '⬇️ Download for offline')}</button>
-        {!online && <p className="small dim">Connect to the internet to download.</p>}
+        {trip.packAt && <p className="small">{t('trip.downloadedAt', { date: fmtDate(trip.packAt), n: trip.wiki?.length ?? 0 })}</p>}
+        <button className="btn blue" disabled={!!packing || !online} onClick={download}>{packing ?? (trip.packAt ? t('trip.refreshPack') : `⬇️ ${t('trip.download')}`)}</button>
+        {!online && <p className="small dim">{t('trip.connectToDownload')}</p>}
       </section>
 
       <div className="row spread">
-        <button className="link-btn" onClick={async () => { if (confirm('Delete this trip from this device?')) { await store.deleteTrip(trip.id); go('/trips'); } }}>Delete trip</button>
-        <span className="small dim">Created {new Date(trip.createdAt).toLocaleDateString()}</span>
+        <button className="link-btn" onClick={async () => { if (confirm(t('trip.deleteConfirm'))) { await store.deleteTrip(trip.id); go('/trips'); } }}>{t('trip.delete')}</button>
+        <span className="small dim">{t('trip.created', { date: fmtDate(trip.createdAt, { dateStyle: 'medium' }) })}</span>
       </div>
 
       {card && (
@@ -354,8 +357,8 @@ export default function TripView({ id }: { id: string }) {
           <p>{card.extract}</p>
           <p className="small"><a href={card.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--sky-2)' }}>Wikipedia (CC BY-SA) ↗</a></p>
           <div className="row">
-            <button className="btn" onClick={() => { setCard(null); startQuiz(); }}>🎯 Quiz me here</button>
-            <button className="btn ghost small" style={{ color: 'var(--ink)' }} onClick={() => setCard(null)}>Close</button>
+            <button className="btn" onClick={() => { setCard(null); startQuiz(); }}>{t('trip.quizHere')}</button>
+            <button className="btn ghost small" style={{ color: 'var(--ink)' }} onClick={() => setCard(null)}>{t('common.close')}</button>
           </div>
         </Modal>
       )}
@@ -380,14 +383,14 @@ function WikiTile({ w, onOpen }: { w: WikiCard; onOpen: () => void }) {
 
 function DriverLock({ moving, gps, onEnableGps, onParked }: { moving: boolean; gps: boolean; onEnableGps: () => void; onParked: () => void }) {
   return (
-    <div className="lock-screen" role="alertdialog" aria-label="Driver safety lock">
+    <div className="lock-screen" role="alertdialog" aria-label={t('lock.aria')}>
       <div className="stack" style={{ maxWidth: 420 }}>
         <div className="big">🛑</div>
-        <h1>Eyes on the road!</h1>
-        <p>{moving ? 'The vehicle is moving. The game is locked for the driver until you stop.' : gps ? 'Waiting for a GPS fix… I unlock automatically once I can see you are stopped.' : 'You told me you are the driver. Turn on GPS so I can unlock automatically when you are stopped — or confirm you are safely parked.'}</p>
-        {!gps && <button className="btn green" onClick={onEnableGps}>🛰️ Turn on GPS safety lock</button>}
-        {!moving && <button className="btn ghost" onClick={onParked}>🅿️ I’m safely parked (10 min)</button>}
-        <p className="small dim">Tip: hand the phone to a passenger — they can play the whole trip.</p>
+        <h1>{t('lock.title')}</h1>
+        <p>{moving ? t('lock.moving') : gps ? t('lock.waitingGps') : t('lock.intro')}</p>
+        {!gps && <button className="btn green" onClick={onEnableGps}>{t('lock.enableGps')}</button>}
+        {!moving && <button className="btn ghost" onClick={onParked}>{t('lock.parked')}</button>}
+        <p className="small dim">{t('lock.tip')}</p>
       </div>
     </div>
   );

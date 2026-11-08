@@ -7,7 +7,7 @@ Audit · real logo & identity · React/TS PWA · offline world map · 6 transpor
 ## Next
 1. **Publish**: merge to `main`, set Pages source to GitHub Actions, verify the public site on real phones (iOS Safari, Android Chrome).
 2. **Flight lookup**: deploy `server/flight-lookup` (owner’s provider account & key) and set `VITE_FLIGHT_LOOKUP_URL`.
-3. **Languages**: French, Spanish, Hebrew (RTL), German — UI dictionaries + translated question packs (human-reviewed).
+3. **Languages**: ✅ 10 languages shipped. Next: native-speaker review of each catalog, localized city search (GeoNames alternate names), more languages (Japanese, Turkish, Hindi…).
 4. **Content**: 300+ curated questions, regional packs (Israel, France, Japan, USA…), more landmarks with photos cached at build time.
 5. **Offline map regions**: downloadable vector-tile extracts (PMTiles) per region, respecting provider licences.
 6. **Train data**: GTFS-based station search & timetables for major networks.

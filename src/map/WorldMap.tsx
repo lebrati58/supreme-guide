@@ -7,6 +7,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import type { LngLat } from '../types';
 import type { WorldFC } from '../data/loaders';
 import { bbox, slicePath, unwrap } from '../geo/geo';
+import { t } from '../i18n';
 
 /**
  * Interactive world map (MapLibre GL JS, BSD-3).
@@ -34,7 +35,7 @@ export interface WorldMapProps {
 maplibregl.setWorkerUrl(workerUrl);
 
 const OFM_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
-const ATTR_NE = 'Countries: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>';
+const ATTR_NE = '<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>';
 
 function baseStyle(world: WorldFC): StyleSpecification {
   return {
@@ -162,7 +163,7 @@ export default function WorldMap(props: WorldMapProps) {
     });
   }, [loaded, props.markers, props.route]);
 
-  if (failed) return <div className="map-wrap"><div className={`map ${props.tall ? 'tall' : ''}`} style={{ display: 'grid', placeItems: 'center', padding: 20, textAlign: 'center' }}><p>This device cannot display the interactive map (WebGL unavailable). Quizzes and trips still work.</p></div></div>;
+  if (failed) return <div className="map-wrap"><div className={`map ${props.tall ? 'tall' : ''}`} style={{ display: 'grid', placeItems: 'center', padding: 20, textAlign: 'center' }}><p>{t('map.noWebgl')}</p></div></div>;
   return (
     <div className="map-wrap">
       <div ref={el} className={`map ${props.tall ? 'tall' : ''}`} role="region" aria-label={props.label} />

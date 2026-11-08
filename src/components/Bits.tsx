@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { levelFromXp } from '../game/progression';
 import { useApp } from '../state';
 import { href, useRoute } from '../router';
-import { t } from '../i18n';
+import { fmtNum, t, type Key } from '../i18n';
 
 export function XPBar({ xp }: { xp: number }) {
   const l = levelFromXp(xp);
   return (
-    <div className="xp" aria-label={`Level ${l.level}, ${l.into} of ${l.need} XP`}>
+    <div className="xp" aria-label={t('xp.aria', { level: l.level, into: l.into, need: l.need })}>
       <div className="xp-level">{l.level}</div>
       <div style={{ flex: 1 }}>
-        <div className="row spread small"><b>{l.title}</b><span className="dim">{l.into} / {l.need} XP</span></div>
+        <div className="row spread small"><b>{l.title}</b><span className="dim">{fmtNum(l.into)} / {fmtNum(l.need)} XP</span></div>
         <div className="xp-bar"><i style={{ width: `${(100 * l.into) / l.need}%` }} /></div>
       </div>
     </div>
@@ -31,7 +32,7 @@ export function Confetti({ n = 80 }: { n?: number }) {
 
 export function XPFloat({ xp, nonce }: { xp: number; nonce: number }) {
   const [show, setShow] = useState(true);
-  useEffect(() => { setShow(true); const t = setTimeout(() => setShow(false), 1200); return () => clearTimeout(t); }, [nonce]);
+  useEffect(() => { setShow(true); const id = setTimeout(() => setShow(false), 1200); return () => clearTimeout(id); }, [nonce]);
   return show && xp > 0 ? <div className="xp-float" key={nonce} aria-hidden="true">+{xp} XP</div> : null;
 }
 
@@ -44,17 +45,17 @@ export function Toasts() {
   );
 }
 
-const NAV: [string, string, Parameters<typeof t>[0]][] = [
+const NAV: [string, string, Key][] = [
   ['/', '🏠', 'nav.home'], ['/trips', '🧳', 'nav.trips'], ['/play', '🎯', 'nav.challenges'], ['/passport', '🛂', 'nav.passport'], ['/profile', '😎', 'nav.profile'],
 ];
 export function BottomNav() {
   const { path } = useRoute();
   const active = (p: string) => (p === '/' ? path === '/' : path.startsWith(p) || (p === '/trips' && (path.startsWith('/plan') || path.startsWith('/trip'))));
   return (
-    <nav className="bottom-nav" aria-label="Main">
+    <nav className="bottom-nav" aria-label={t('nav.aria')}>
       {NAV.map(([p, ico, key]) => (
         <a key={p} href={href(p)} className={active(p) ? 'active' : ''} aria-current={active(p) ? 'page' : undefined}>
-          <span className="ico" aria-hidden="true">{ico}</span>{t(key)}
+          <span className="ico" aria-hidden="true">{ico}</span><span className="lbl">{t(key)}</span>
         </a>
       ))}
     </nav>
@@ -67,9 +68,12 @@ export function Modal({ children, onClose, label }: { children: React.ReactNode;
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
   }, [onClose]);
-  return (
+  // Portal to <body>: an ancestor with backdrop-filter/transform (e.g. the sticky top bar) would
+  // otherwise become the containing block of this position:fixed overlay and clip it.
+  return createPortal(
     <div className="modal-back" onClick={onClose}>
       <div className="modal card paper" role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.stopPropagation()}>{children}</div>
-    </div>
+    </div>,
+    document.body,
   );
 }

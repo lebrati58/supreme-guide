@@ -1,3 +1,4 @@
+import { t, type Key } from '../i18n';
 import type { FlightInfo, GeometrySource, LngLat, Mode, Stop, Trip } from '../types';
 import { densify, pathLengthKm } from '../geo/geo';
 import type { CountryIndex } from '../geo/countryIndex';
@@ -13,6 +14,12 @@ export const MODE_META: Record<Mode, { emoji: string; label: string; verb: strin
   cruise: { emoji: '🚢', label: 'Cruise', verb: 'Sail', color: '#9b5de5' },
 };
 
+export const modeLabel = (m: Mode) => t(`mode.${m}` as Key);
+/** “Fly this route →”, “Ride this route →”… */
+export const useRouteLabel = (m: Mode) => t(`plan.useRoute.${m}` as Key);
+export const geometryNote = (g: GeometrySource) => t(`geom.${g}` as Key);
+
+/** English source of the geometry notes (catalog keys geom.*). */
 export const GEOMETRY_NOTE: Record<GeometrySource, string> = {
   'great-circle': 'Shortest great-circle path — the real flight track will differ (winds, airways).',
   'stop-to-stop': 'Stop-to-stop lines — not the exact track, road or sailing route.',

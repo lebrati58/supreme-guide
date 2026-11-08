@@ -6,7 +6,7 @@ import { supportsFlagEmoji } from './data/flags';
 import { store } from './storage/db';
 import { addStamp, awardBadges, badgeDefs, levelFromXp, newProfile, xpForAnswer, type BadgeDef, type Profile } from './game/progression';
 import { CountryIndex } from './geo/countryIndex';
-import { setLocale } from './i18n';
+import { detectLocale, setLocale, t, tc } from './i18n';
 
 export interface Toast { id: number; icon: string; title: string; body?: string }
 export interface AnswerResult { xp: number; levelUp: number | null; badges: BadgeDef[] }
@@ -50,6 +50,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [localeReady, setLocaleReady] = useState<string | null>(null);
   const indexRef = useRef<Promise<CountryIndex> | null>(null);
   const profilesRef = useRef<Profile[]>([]);
   profilesRef.current = profiles;
@@ -71,7 +72,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setWorld110(w);
         let list = ps;
         if (!list.length) {
-          const p = newProfile('Traveller');
+          const p = newProfile(t('profile.defaultName'), '🧭', false, detectLocale());
           await store.putProfile(p);
           list = [p];
         }
@@ -91,7 +92,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const badges = useMemo(() => badgeDefs((iso) => byIso3.get(iso)?.region), [byIso3]);
   const profile = profiles.find((p) => p.id === activeId) ?? profiles[0];
 
-  useEffect(() => { if (profile) setLocale(profile.settings.lang); }, [profile]);
+  const lang = profile?.settings.lang;
+  useEffect(() => { if (lang) void setLocale(lang).then(() => setLocaleReady(lang)); }, [lang]);
 
   const persist = useCallback((p: Profile) => {
     window.clearTimeout(saveTimer.current);
@@ -111,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const next = structuredClone(cur);
     fn(next);
     const earned = awardBadges(next, badges);
-    earned.forEach((b) => toast({ icon: b.emoji, title: `Badge unlocked: ${b.name}`, body: b.desc }));
+    earned.forEach((b) => toast({ icon: b.emoji, title: t('toast.badge', { name: tc(`badge.${b.id}.name`, b.name) }), body: tc(`badge.${b.id}.desc`, b.desc) }));
     profilesRef.current = list.map((p) => (p.id === next.id ? next : p));
     setProfiles(profilesRef.current);
     persist(next);
@@ -138,7 +140,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
     void store.enqueue('answer', { q: q.id, correct, xp, at: Date.now() });
     const levelUp = after > before ? after : null;
-    if (levelUp) toast({ icon: '⭐', title: `Level ${levelUp}!`, body: `You are now a ${levelFromXp(next.xp).title}.` });
+    if (levelUp) toast({ icon: '⭐', title: t('toast.level', { level: levelUp }), body: t('toast.levelBody', { title: levelFromXp(next.xp).title }) });
     return { xp, levelUp, badges: earned };
   }, [mutate, toast]);
 
@@ -150,9 +152,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const useMode = useCallback((m: Mode) => mutate((p) => { if (!p.modesUsed.includes(m)) p.modesUsed.push(m); }), [mutate]);
 
+  const activeProfileLang = () => (profilesRef.current.find((p) => p.id === activeRef.current) ?? profilesRef.current[0])?.settings.lang;
   const switchProfile = useCallback((id: string) => { setActiveId(id); void store.set('activeProfile', id); }, []);
   const createProfile = useCallback(async (name: string, avatar: string, kid: boolean) => {
-    const p = newProfile(name, avatar, kid);
+    const p = newProfile(name, avatar, kid, activeProfileLang());
     await store.putProfile(p);
     setProfiles((ps) => [...ps, p]);
     switchProfile(p.id);
@@ -171,12 +174,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value: Ctx | null = profile ? {
-    ready: countries.length > 0 && !!profile, error, countries, byIso3, game, world110, getIndex, getWorld50: loadWorld50,
+    ready: countries.length > 0 && !!profile && localeReady !== null, error, countries, byIso3, game, world110, getIndex, getWorld50: loadWorld50,
     profile, profiles, switchProfile, createProfile, removeProfile, update, recordAnswer, stamp, useMode,
     online, toasts, toast, badges,
   } : null;
 
-  if (error) return <div className="fatal"><img src={`${import.meta.env.BASE_URL}brand/mascot-round-256.webp`} alt="" width={120} height={120} /><h1>Oops — the map fell out of my backpack.</h1><p>{error}</p><button className="btn" onClick={() => location.reload()}>Try again</button></div>;
+  if (error) return <div className="fatal"><img src={`${import.meta.env.BASE_URL}brand/mascot-round-256.webp`} alt="" width={120} height={120} /><h1>{t('fatal.title')}</h1><p>{error}</p><button className="btn" onClick={() => location.reload()}>{t('fatal.retry')}</button></div>;
   if (!value || !value.ready) return null; // the boot splash stays visible
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
 }

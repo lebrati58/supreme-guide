@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { say, type Mood } from '../game/mascot';
 import { mascotSrc } from './Brand';
+import { t } from '../i18n';
 
 /** The animated Supreme Guide mascot with a contextual speech bubble. */
 export function Mascot({ mood = 'idle', text, nonce = 0, size = 76 }: { mood?: Mood; text?: string; nonce?: number; size?: number }) {
@@ -9,7 +10,7 @@ export function Mascot({ mood = 'idle', text, nonce = 0, size = 76 }: { mood?: M
   return (
     <div className={`mascot ${mood}`} key={`${mood}-${nonce}`}>
       <div className="mascot-face" style={{ width: size, height: size }}>
-        <img src={mascotSrc} alt="Supreme Guide mascot" width={size} height={size} />
+        <img src={mascotSrc} alt={t('mascot.alt')} width={size} height={size} />
       </div>
       <div className="bubble" role="status" aria-live="polite">{line}</div>
     </div>

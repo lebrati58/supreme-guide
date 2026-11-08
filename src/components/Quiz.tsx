@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Question } from '../types';
 import { useApp } from '../state';
-import { KIND_LABEL } from '../game/engine';
+import { kindLabel } from '../game/engine';
 import { Mascot } from './Mascot';
 import { Confetti, XPFloat } from './Bits';
 import { SvgWorldMap } from './SvgWorldMap';
 import { shuffle } from '../game/rng';
 import type { Mood } from '../game/mascot';
 import { wikiSummary } from '../transport/wiki';
-import { formatYear } from '../content/events';
-import { t } from '../i18n';
+import { fwd, t } from '../i18n';
+import { capitalName, countryName, formatYearL, subregionLabel } from '../i18n/content';
 
 export interface QuizResult { correct: number; total: number; xp: number; answers: { id: string; correct: boolean }[] }
 
@@ -70,14 +70,14 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
       {celebrate > 0 && <Confetti key={celebrate} n={60} />}
       <XPFloat xp={xpGain} nonce={nonce} />
       <div className="quiz-head">
-        <b>{title ?? 'Quiz'}</b>
+        <b>{title ?? t('quiz.title')}</b>
         <span className="pill">{i + 1} / {questions.length}{streak >= 2 ? ` · 🔥${streak}` : ''}</span>
       </div>
       <div className="quiz-progress" aria-hidden="true"><i style={{ width: `${(100 * (i + (done ? 1 : 0))) / questions.length}%` }} /></div>
       <Mascot mood={mood} nonce={nonce} size={64} />
 
       <div className={`question-card ${q.bonus ? 'bonus' : ''}`} key={q.id + i}>
-        <div className="kind-tag">{q.bonus ? '🎁 Surprise challenge · double XP' : `${kindIcon(q)} ${KIND_LABEL[q.kind]}`} · {'★'.repeat(q.difficulty)}</div>
+        <div className="kind-tag">{q.bonus ? t('quiz.bonusTag') : `${kindIcon(q)} ${kindLabel(q.kind)}`} · {'★'.repeat(q.difficulty)}</div>
         <h2 className="question">{q.prompt}</h2>
         {q.timeLimit && <Timer key={`t${i}`} seconds={q.timeLimit} running={!done} onTimeout={() => settle(false, 0)} onTick={() => {}} />}
         <div style={{ marginTop: 14 }}>
@@ -93,7 +93,7 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
           <p style={{ margin: '4px 0 8px' }}>{q.explanation}</p>
           {q.source && <a className="small" href={q.source.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--sky-2)' }}>{t('quiz.source')}: {q.source.label} ↗</a>}
           <div style={{ marginTop: 12 }}>
-            <button className="btn block" onClick={next} autoFocus>{i + 1 >= questions.length ? (finishLabel ?? t('common.finish')) : `${t('common.next')} →`}</button>
+            <button className="btn block" onClick={next} autoFocus>{i + 1 >= questions.length ? (finishLabel ?? t('common.finish')) : `${t('common.next')} ${fwd()}`}</button>
           </div>
         </div>
       )}
@@ -133,14 +133,14 @@ function MonumentVisual({ q }: { q: Question }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let alive = true;
-    if (q.imageTitle) wikiSummary(q.imageTitle).then((s) => { if (alive && s?.thumb) setImg(s.thumb); });
+    if (q.imageTitle) wikiSummary(q.imageTitle, 'en', false).then((s) => { if (alive && s?.thumb) setImg(s.thumb); });
     return () => { alive = false; };
   }, [q.imageTitle]);
   return (
     <div style={{ marginBottom: 12 }}>
-      {img && !failed && <img className="monument-photo" src={img} alt="Photo of the landmark to recognise" onError={() => setFailed(true)} />}
+      {img && !failed && <img className="monument-photo" src={img} alt={t('quiz.photoAlt')} onError={() => setFailed(true)} />}
       <p className="clue" style={{ marginTop: img && !failed ? 8 : 0 }}>🔎 {q.clue}</p>
-      {img && !failed && <p className="small" style={{ color: 'var(--ink-2)', margin: 0 }}>Photo: Wikimedia Commons / Wikipedia</p>}
+      {img && !failed && <p className="small" style={{ color: 'var(--ink-2)', margin: 0 }}>{t('quiz.photoCredit')}</p>}
     </div>
   );
 }
@@ -161,9 +161,9 @@ function Timer({ seconds, running, onTimeout }: { seconds: number; running: bool
     return () => clearInterval(id);
   }, [running]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <div style={{ marginTop: 10 }} aria-label={`${Math.ceil(left)} seconds left`}>
+    <div style={{ marginTop: 10 }} aria-label={t('quiz.secondsLeft', { n: Math.ceil(left) })}>
       <div className="timer"><i style={{ width: `${(100 * left) / seconds}%` }} /></div>
-      <div className="small" style={{ color: 'var(--ink-2)', textAlign: 'right' }}>⏱ {Math.ceil(left)} s</div>
+      <div className="small" style={{ color: 'var(--ink-2)', textAlign: 'right' }}>⏱ {t('quiz.seconds', { n: Math.ceil(left) })}</div>
     </div>
   );
 }
@@ -180,7 +180,7 @@ function Chronology({ q, done, onSubmit }: { q: Question; done: boolean; onSubmi
   const isOk = seq.length === items.length && seq.every((k, pos) => items[k].label === correctOrder[pos].label);
   return (
     <div>
-      <p className="small" style={{ color: 'var(--ink-2)', marginTop: 0 }}>Tap the events from oldest to newest. Tap again to undo.</p>
+      <p className="small" style={{ color: 'var(--ink-2)', marginTop: 0 }}>{t('chrono.help')}</p>
       <div className="chrono-list">
         {items.map((it, k) => {
           const pos = seq.indexOf(k);
@@ -189,7 +189,7 @@ function Chronology({ q, done, onSubmit }: { q: Question; done: boolean; onSubmi
             <button key={it.label} className={`chrono-item ${cls}`} onClick={() => toggle(k)} disabled={done}>
               <span className="n">{pos >= 0 ? pos + 1 : '·'}</span>
               <span style={{ flex: 1 }}>{it.label}</span>
-              {done && <b>{formatYear(it.year)}</b>}
+              {done && <b>{formatYearL(it.year)}</b>}
             </button>
           );
         })}
@@ -218,14 +218,14 @@ function MapFind({ q, done, onAnswer }: { q: Question; done: boolean; onAnswer: 
     const near = countries.filter((c) => c.un && c.iso3 !== target.iso3 && c.subregion === target.subregion).slice(0, 3);
     return shuffle([target, ...near], Math.random);
   }, [target, countries]);
-  if (!world110 || !target) return <p>Map unavailable.</p>;
+  if (!world110 || !target) return <p>{t('map.unavailable')}</p>;
   const choose = (num: string) => { if (done) return; setPick(num); onAnswer(num === q.targetNum); };
   if (listMode) {
     return (
       <div className="answers">
         {options.map((c, k) => (
           <button key={c.iso3} className={`answer ${done ? (c.num === q.targetNum ? 'right' : c.num === pick ? 'wrong' : '') : ''}`} disabled={done} onClick={() => choose(c.num)}>
-            <span className="letter">{LETTERS[k]}</span>{c.name} — {c.capital ? `capital ${c.capital}` : c.subregion}
+            <span className="letter">{LETTERS[k]}</span>{countryName(c)} — {c.capital ? t('map.capitalOf', { city: capitalName(c) }) : subregionLabel(c.subregion)}
           </button>
         ))}
       </div>
@@ -233,13 +233,13 @@ function MapFind({ q, done, onAnswer }: { q: Question; done: boolean; onAnswer: 
   }
   return (
     <div>
-      <SvgWorldMap world={world110} view={view} label={`World map: find ${q.targetName}`} onPick={(num) => choose(num)}
+      <SvgWorldMap world={world110} view={view} label={t('map.findLabel', { country: q.targetName ?? '' })} onPick={(num) => choose(num)}
         classOf={(num) => (done && num === q.targetNum ? 'target' : num === pick ? (num === q.targetNum ? 'hit' : 'miss') : undefined)} />
       <div className="row spread" style={{ marginTop: 8 }}>
-        <button className="link-btn" style={{ color: 'var(--sky-2)' }} onClick={() => setWorld((w) => !w)}>{world ? '🔍 Zoom to region' : '🌍 Whole world'}</button>
-        {!done && <button className="link-btn" style={{ color: 'var(--sky-2)' }} onClick={() => setListMode(true)}>Can’t tap the map? Choose from a list</button>}
+        <button className="link-btn" style={{ color: 'var(--sky-2)' }} onClick={() => setWorld((w) => !w)}>{world ? t('map.zoomRegion') : t('map.wholeWorld')}</button>
+        {!done && <button className="link-btn" style={{ color: 'var(--sky-2)' }} onClick={() => setListMode(true)}>{t('map.listMode')}</button>}
       </div>
-      {done && pick && pick !== q.targetNum && <p className="small" style={{ color: 'var(--ink-2)' }}>You tapped {countries.find((c) => c.num === pick)?.name ?? 'another country'}. {q.targetName} is highlighted in gold.</p>}
+      {done && pick && pick !== q.targetNum && <p className="small" style={{ color: 'var(--ink-2)' }}>{t('map.youTapped', { tapped: (() => { const c = countries.find((x) => x.num === pick); return c ? countryName(c) : t('map.another'); })(), target: q.targetName ?? '' })}</p>}
     </div>
   );
 }

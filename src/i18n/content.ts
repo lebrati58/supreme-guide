@@ -1,0 +1,60 @@
+import type { Country, Question, Stop } from '../types';
+import type { Landmark } from '../content/landmarks';
+import type { HistoricEvent } from '../content/events';
+import type { CuratedJourney } from '../content/journeys';
+import { CURATED } from '../content/questions';
+import { currencyName, languageName, locale, regionName, tc } from './index';
+
+/**
+ * Localised accessors for game content. English lives in the TypeScript content files (source of
+ * truth); translations live in the locale catalogs under stable keys. Anything missing falls back
+ * to English, so a partially translated catalog never breaks the game.
+ */
+import { slug } from './slug';
+export { slug };
+
+// ---------------------------------------------------------------- countries (CLDR + catalog)
+export const countryName = (c: Pick<Country, 'iso2' | 'name'>) => regionName(c.iso2, c.name);
+export const capitalName = (c: Country, i = 0) => tc(`cap.${c.iso3}.${i}`, c.capitals[i] ?? c.capital);
+export const capitalsList = (c: Country) => c.capitals.map((_, i) => capitalName(c, i));
+export const regionLabel = (r: string) => tc(`region.${slug(r)}`, r);
+export const subregionLabel = (s: string) => tc(`subregion.${slug(s)}`, s);
+export const currencyLabel = (c: Country, i = 0) => currencyName(c.currencyCodes?.[i], c.currencies[i] ?? '');
+export const languagesLabel = (c: Country) => c.languages.map((n, i) => languageName(c.languageCodes?.[i], n));
+
+// ---------------------------------------------------------------- landmarks & events
+export const lmName = (l: Landmark) => tc(`lm.${l.id}.name`, l.name);
+export const lmCity = (l: Landmark) => tc(`lm.${l.id}.city`, l.city);
+export const lmFact = (l: Landmark) => tc(`lm.${l.id}.fact`, l.fact);
+export const lmClue = (l: Landmark) => tc(`lm.${l.id}.clue`, l.clue);
+export const eventKey = (e: HistoricEvent) => `ev.${slug(e.wiki)}`;
+export const eventLabel = (e: HistoricEvent) => tc(eventKey(e), e.label);
+
+/** Year label (negative = BC) in the current language. */
+export function formatYearL(y: number): string {
+  return y < 0 ? tc('year.bc', '{year} BC', { year: String(-y) }) : String(y);
+}
+
+// ---------------------------------------------------------------- journeys
+export const journeyTitle = (j: Pick<CuratedJourney, 'id' | 'title'>) => tc(`jr.${j.id}.title`, j.title);
+export const journeyBlurb = (j: CuratedJourney) => tc(`jr.${j.id}.blurb`, j.blurb);
+export const journeyStop = (journeyId: string, i: number, s: Stop) => tc(`jr.${journeyId}.s${i}`, s.name);
+export const stopNote = (note: string) => tc(`stopnote.${slug(note)}`, note);
+
+// ---------------------------------------------------------------- curated questions
+const cache = new Map<string, Question[]>();
+/** Curated question bank in the current language (memoised per locale). */
+export function curatedQuestions(): Question[] {
+  const lang = locale();
+  let list = cache.get(lang);
+  if (!list) {
+    list = CURATED.map((q) => ({
+      ...q,
+      prompt: tc(`q.${q.id}.q`, q.prompt),
+      options: q.options?.map((o, i) => tc(`q.${q.id}.o${i}`, o)),
+      explanation: tc(`q.${q.id}.e`, q.explanation),
+    }));
+    cache.set(lang, list);
+  }
+  return list;
+}
