@@ -27,8 +27,14 @@ async function run(name, ctxOpts) {
   await page.waitForSelector('.hero-logo img');
   const logoOk = await page.$eval('.hero-logo img', (i) => i.complete && i.naturalWidth > 0);
   logoOk ? ok('official logo renders') : fail('logo image missing');
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  overflow <= 0 ? ok('no horizontal scroll') : fail(`horizontal overflow ${overflow}px`);
+  const overflow = await page.evaluate(() => {
+    const W = document.documentElement.clientWidth;
+    const culprits = [...document.querySelectorAll('body *')]
+      .filter((e) => !e.closest('.hero-orbit, .maplibregl-map') && e.getBoundingClientRect().right > W + 0.5)
+      .slice(0, 3).map((e) => `${e.tagName}.${String(e.className).slice(0, 30)}`);
+    return { px: document.documentElement.scrollWidth - W, culprits };
+  });
+  overflow.px <= 0 ? ok('no horizontal scroll') : fail(`horizontal overflow ${overflow.px}px (${overflow.culprits.join(', ')})`);
   await page.waitForFunction(() => navigator.serviceWorker?.controller !== null || false, null, { timeout: 20000 }).catch(() => {});
   // Ensure SW controls the page (first load installs it; reload to be controlled).
   await page.reload({ waitUntil: 'networkidle' });
