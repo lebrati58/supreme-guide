@@ -151,19 +151,49 @@ p { line-height: 1.5; }
 
 /* ------------------------------------------------------------ hero */
 .hero { position: relative; text-align: center; padding: 8px 0 4px; }
+/*
+ * The logo is shown WHOLE (rounded square): a circular crop cut off the plane, the Statue of
+ * Liberty's torch and the top of the Eiffel Tower. Orbit geometry is derived from the logo size
+ * so the plane never leaves the screen: R + P/2 < 50vw at every width (checked 320–1440px).
+ */
 .hero-logo {
-  position: relative; width: min(84vw, 420px); aspect-ratio: 1; margin: 0 auto; display: block;
+  --L: min(78vw, 400px);          /* logo size */
+  --R: calc(var(--L) * 0.54);     /* orbit radius: outside the edges, inside the corners */
+  --P: clamp(44px, 13vw, 60px);   /* plane size */
+  position: relative; width: var(--L); aspect-ratio: 1; margin: 0 auto; display: block;
   animation: float 6s ease-in-out infinite;
 }
-.hero-logo img { width: 100%; height: 100%; border-radius: 50%; display: block; filter: drop-shadow(0 18px 40px rgba(0, 0, 0, .5)); }
+.hero-logo picture { display: block; }
+.hero-logo img {
+  width: 100%; height: 100%; display: block; border-radius: 14%;
+  box-shadow: 0 0 0 3px var(--gold-2), 0 0 0 7px rgba(255, 211, 107, .25), 0 22px 48px rgba(0, 0, 0, .55);
+}
 .hero-logo::after { /* shine sweep */
-  content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  content: ''; position: absolute; inset: 0; border-radius: 14%; pointer-events: none;
   background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%);
   background-size: 250% 100%; animation: shine 4.5s ease-in-out infinite; mix-blend-mode: soft-light;
 }
+/* Contrail: a thin ring whose bright end follows the plane (animated conic gradient). */
+@property --a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.hero-trail {
+  position: absolute; left: 50%; top: 50%; width: calc(var(--R) * 2); height: calc(var(--R) * 2);
+  transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 1;
+  background: conic-gradient(from calc(var(--a) - 140deg), transparent 0deg, rgba(255, 211, 107, .12) 60deg, rgba(255, 236, 170, .95) 139deg, transparent 140deg);
+  -webkit-mask: radial-gradient(circle, transparent calc(70.7% - 6px), #000 calc(70.7% - 5px), #000 calc(70.7% - 0px), transparent calc(70.7% + 1px));
+          mask: radial-gradient(circle, transparent calc(70.7% - 6px), #000 calc(70.7% - 5px), #000 calc(70.7% - 0px), transparent calc(70.7% + 1px));
+  animation: trail 14s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(255, 211, 107, .9));
+}
+@keyframes trail { to { --a: 360deg; } }
 /* Zero-size pivot: rotating a large box grows its bounding box by up to √2 and overflows narrow screens. */
-.hero-orbit { position: absolute; left: 50%; top: 50%; width: 0; height: 0; animation: spin 14s linear infinite; pointer-events: none; }
-.hero-orbit span { position: absolute; left: 0; top: 0; font-size: 30px; line-height: 1; transform: translate(-50%, calc(-50% - min(40vw, 200px))) rotate(90deg); filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
+.hero-orbit { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 2; animation: spin 14s linear infinite; pointer-events: none; }
+.hero-plane {
+  position: absolute; left: 0; top: 0; width: var(--P); height: var(--P);
+  transform: translate(-50%, calc(-50% - var(--R))) rotate(90deg);
+  filter: drop-shadow(0 0 8px rgba(255, 211, 107, .95)) drop-shadow(0 6px 8px rgba(0, 0, 0, .6));
+}
+/* Gold with a navy outline: readable on the bright logo sky AND on the dark page background. */
+.hero-plane path { fill: var(--gold-1); stroke: var(--sky-0); stroke-width: 1.4; stroke-linejoin: round; paint-order: stroke; }
 @keyframes float { 50% { transform: translateY(-10px) rotate(-1deg); } }
 @keyframes shine { 0%, 60% { background-position: 150% 0; } 100% { background-position: -50% 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
