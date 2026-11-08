@@ -161,8 +161,9 @@ p { line-height: 1.5; }
   background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%);
   background-size: 250% 100%; animation: shine 4.5s ease-in-out infinite; mix-blend-mode: soft-light;
 }
-.hero-orbit { position: absolute; inset: -6%; border-radius: 50%; animation: spin 14s linear infinite; pointer-events: none; }
-.hero-orbit span { position: absolute; top: -4px; left: 50%; font-size: 30px; transform: translateX(-50%) rotate(90deg); filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
+/* Zero-size pivot: rotating a large box grows its bounding box by up to √2 and overflows narrow screens. */
+.hero-orbit { position: absolute; left: 50%; top: 50%; width: 0; height: 0; animation: spin 14s linear infinite; pointer-events: none; }
+.hero-orbit span { position: absolute; left: 0; top: 0; font-size: 30px; line-height: 1; transform: translate(-50%, calc(-50% - min(40vw, 200px))) rotate(90deg); filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
 @keyframes float { 50% { transform: translateY(-10px) rotate(-1deg); } }
 @keyframes shine { 0%, 60% { background-position: 150% 0; } 100% { background-position: -50% 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }

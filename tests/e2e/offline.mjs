@@ -27,10 +27,11 @@ async function run(name, ctxOpts) {
   await page.waitForSelector('.hero-logo img');
   const logoOk = await page.$eval('.hero-logo img', (i) => i.complete && i.naturalWidth > 0);
   logoOk ? ok('official logo renders') : fail('logo image missing');
+  await page.waitForTimeout(1500); // let animations move (the logo orbit rotates)
   const overflow = await page.evaluate(() => {
     const W = document.documentElement.clientWidth;
     const culprits = [...document.querySelectorAll('body *')]
-      .filter((e) => !e.closest('.hero-orbit, .maplibregl-map') && e.getBoundingClientRect().right > W + 0.5)
+      .filter((e) => !e.closest('.maplibregl-map') && e.getBoundingClientRect().right > W + 0.5)
       .slice(0, 3).map((e) => `${e.tagName}.${String(e.className).slice(0, 30)}`);
     return { px: document.documentElement.scrollWidth - W, culprits };
   });
@@ -72,7 +73,15 @@ async function run(name, ctxOpts) {
   await page.waitForSelector('.map[data-loaded="1"]', { timeout: 20000 }).then(() => ok('interactive map loaded OFFLINE with route'), () => fail('map did not load offline'));
   await page.click('text=Play stage quiz');
   await page.waitForSelector('.question-card');
-  ok('stage quiz offline');
+  // Finish the stage quiz: countries reached on the trip are stamped whatever the score.
+  while (await page.$('.question-card')) {
+    if (await page.$('.chrono-item')) { for (const it of await page.$$('.chrono-item')) await it.click(); await page.click('text=Check order'); }
+    else if (await page.$('.svgmap')) { await page.click('text=Can’t tap the map? Choose from a list'); await page.click('.answer >> nth=0'); }
+    else await page.click('.answer >> nth=0');
+    await page.waitForSelector('.feedback');
+    await page.click('.feedback .btn');
+  }
+  ok('stage quiz played offline');
   await shot('trip');
 
   // Persisted progress survives reload offline
