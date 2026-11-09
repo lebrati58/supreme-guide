@@ -12,6 +12,8 @@ import { buildGuide } from '../game/guide';
 import { GuidePanel } from '../components/GuidePanel';
 import { aiConfigured, fetchAiQuestions } from '../transport/aiGuide';
 import { PhrasesCard } from '../components/Phrases';
+import { InterestPicker } from '../components/Interests';
+import type { Domain } from '../content/knowledge';
 import { legendFor } from '../content/legendary';
 import { haversineKm, locateOnPath, pointAlong } from '../geo/geo';
 import { buildSession } from '../game/engine';
@@ -60,6 +62,7 @@ export default function TripView({ id }: { id: string }) {
   const [world, setWorld] = useState<Awaited<ReturnType<typeof getWorld50>> | null>(null);
   const [tz, setTz] = useState<{ from?: string; to?: string }>({});
   const [gpsOn, setGpsOn] = useState(false);
+  const [askInterests, setAskInterests] = useState(false);
   const [quiz, setQuiz] = useState<Question[] | null>(null);
   const [done, setDone] = useState<QuizResult | null>(null);
   const [mood, setMood] = useState<Mood>('takeoff');
@@ -193,14 +196,17 @@ export default function TripView({ id }: { id: string }) {
     ...(geo ? [{ id: 'gps', lngLat: geo.pos, kind: 'gps' as const, label: t('trip.gpsPos', { m: Math.round(geo.accuracy) }) }] : []),
   ];
 
-  const startQuiz = () => {
+  const startQuiz = (domainsArg?: Domain[]) => {
+    const domains = domainsArg ?? profile.settings.interests;
     const focus = trip.countries.slice(Math.max(0, currentIdx), currentIdx + 3).map((c) => c.iso3);
     // Questions come from the route itself (its places, landmarks and countries) — never from elsewhere.
     const qs = buildSession(game, {
       count: 6, rnd: mulberry32(hashString(trip.id + (trip.answeredIds?.length ?? 0) + Date.now())), focus: focus.length ? focus : undefined,
       route: route ? { ...route, progress: progress.fraction } : undefined,
-      exclude: new Set(trip.answeredIds), surpriseRate: 0.12, focusRate: 1, maxDifficulty: profile.kidMode ? 2 : undefined,
+      exclude: new Set(trip.answeredIds), surpriseRate: 0.12, focusRate: 1, maxDifficulty: profile.kidMode ? 2 : undefined, domains,
     });
+    // The route is running dry: ask once which domains the player enjoys for the extra questions.
+    if (!domains && qs.some((q) => q.general)) { setAskInterests(true); return; }
     setDone(null); setQuiz(qs);
     setTimeout(() => document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
@@ -245,6 +251,13 @@ export default function TripView({ id }: { id: string }) {
   return (
     <div className="page stack">
       {celebrate > 0 && <Confetti key={celebrate} />}
+      {askInterests && (
+        <Modal label={t('interests.title')} onClose={() => { setAskInterests(false); startQuiz([]); }}>
+          <h2 style={{ marginTop: 0 }}>{t('interests.title')}</h2>
+          <p>{t('interests.routeDry')}</p>
+          <InterestPicker saveLabel={t('interests.play')} onSave={(d) => { update((p) => { p.settings.interests = d; }); setAskInterests(false); startQuiz(d); }} />
+        </Modal>
+      )}
       {locked && <DriverLock moving={moving} gps={gpsOn} audioGuide={view === 'guide'} onEnableGps={() => setGpsOn(true)} onParked={() => setParkedAt(Date.now())} />}
       <div className="row spread">
         <a className="link-btn" href={href('/trips')}>{t('trip.backShort')}</a>
@@ -339,7 +352,7 @@ export default function TripView({ id }: { id: string }) {
           <>
             <h2 style={{ margin: 0 }}>{current ? <>{current.flag} {progress.source === 'schedule' && trip.flight ? t('trip.probablyOver', { country: countryName(current) }) : t('trip.nowIn', { country: countryName(current) })}</> : t('trip.overWater')}</h2>
             {done && <p style={{ margin: 0 }}><b>{done.correct}/{done.total}</b> {t('trip.correctXp', { xp: done.xp })}</p>}
-            <button className="btn big blue" disabled={locked} onClick={startQuiz}>🎯 {done ? t('trip.nextStage') : t('trip.playStage')}</button>
+            <button className="btn big blue" disabled={locked} onClick={() => startQuiz()}>🎯 {done ? t('trip.nextStage') : t('trip.playStage')}</button>
             {!trip.completedAt && progress.fraction > 0.9 && <button className="btn green" onClick={complete}>{t('trip.arrived')}</button>}
             {!trip.completedAt && progress.fraction <= 0.9 && <button className="link-btn" style={{ color: 'var(--ink)' }} onClick={complete}>{t('trip.markComplete')}</button>}
           </>

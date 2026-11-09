@@ -57,7 +57,7 @@ export const LEGENDS: LegendPack[] = [
       { id: 'bixby', q: 'Which Big Sur bridge, opened in 1932, is one of California’s most photographed?', o: ['Bixby Creek Bridge', 'Bay Bridge', 'Gerald Desmond Bridge', 'Colorado Street Bridge'], a: 0, e: 'Bixby Creek Bridge opened in 1932.' },
       { id: 'hearst', q: 'Hearst Castle was built for which newspaper publisher?', o: ['Joseph Pulitzer', 'William Randolph Hearst', 'Adolph Ochs', 'Harrison Gray Otis'], a: 1, e: 'William Randolph Hearst; it was built between 1919 and 1947.' },
       { id: 'route', q: 'Which road follows much of California’s Pacific coast?', o: ['State Route 1', 'Interstate 5', 'Route 66', 'Interstate 80'], a: 0, e: 'California State Route 1.' },
-      { id: 'aquarium', q: 'The Monterey Bay Aquarium opened in a former…', o: ['sardine cannery', 'car factory', 'train station', 'army fort'], a: 0, e: 'A sardine cannery on Cannery Row, in 1984.' },
+      { id: 'aquarium', q: 'In 1984 the Monterey Bay Aquarium opened in a former building of which kind?', o: ['A sardine cannery', 'A car factory', 'A train station', 'An army fort'], a: 0, e: 'A sardine cannery on Cannery Row, in 1984.' },
       { id: 'mission', q: 'Which mission is nicknamed the “Queen of the Missions”?', o: ['Santa Barbara', 'San Diego', 'Carmel', 'San Juan Capistrano'], a: 0, e: 'Mission Santa Barbara, founded in 1786.' },
     ],
   },

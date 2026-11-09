@@ -1,3 +1,4 @@
+import type { Domain } from '../content/knowledge';
 import { tc } from '../i18n';
 import { TITLES } from '../content/ranks';
 import { BADGES } from '../content/badges';
@@ -19,7 +20,7 @@ export interface Profile {
   daily: { last?: string; streak: number; best: number; scores: Record<string, number> };
   tourStars: Partial<Record<Region, number>>;
   /** `haptics` is optional: profiles created before v1.2 don't have it (treated as on). */
-  settings: { sound: boolean; haptics?: boolean; reducedMotion: boolean; gpsConsent: boolean; lang: string };
+  settings: { sound: boolean; haptics?: boolean; reducedMotion: boolean; gpsConsent: boolean; lang: string; interests?: Domain[] };
 }
 
 export function newProfile(name: string, avatar = '🧭', kidMode = false, lang = 'en'): Profile {

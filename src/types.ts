@@ -24,7 +24,7 @@ export interface Airport {
 
 export interface City { name: string; cc: string; lat: number; lng: number; pop: number; capital: boolean }
 
-export type Category = 'geography' | 'capitals' | 'history' | 'culture' | 'landmarks' | 'transport' | 'nature' | 'flags';
+export type Category = 'geography' | 'capitals' | 'history' | 'culture' | 'landmarks' | 'transport' | 'nature' | 'flags' | 'science' | 'biology' | 'math' | 'philosophy';
 export type QuestionKind =
   | 'mcq' | 'truefalse' | 'mapfind' | 'monument' | 'chronology'
   | 'capital' | 'blitz' | 'history' | 'observation' | 'surprise';

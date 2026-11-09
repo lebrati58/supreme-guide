@@ -4,6 +4,7 @@ import type { HistoricEvent } from '../content/events';
 import type { CuratedJourney } from '../content/journeys';
 import type { LegendPack, LegendQuestion } from '../content/legendary';
 import { CURATED } from '../content/questions';
+import { KNOWLEDGE } from '../content/knowledge';
 import { currencyName, languageName, locale, regionName, tc } from './index';
 
 /**
@@ -46,17 +47,18 @@ export const stopNote = (note: string) => tc(`stopnote.${slug(note)}`, note);
 // ---------------------------------------------------------------- curated questions
 const cache = new Map<string, Question[]>();
 /** Curated question bank in the current language (memoised per locale). */
-export function curatedQuestions(): Question[] {
+export function curatedQuestions(bank: 'curated' | 'knowledge' = 'curated'): Question[] {
   const lang = locale();
-  let list = cache.get(lang);
+  const ck = `${bank}:${lang}`;
+  let list = cache.get(ck);
   if (!list) {
-    list = CURATED.map((q) => ({
+    list = (bank === 'curated' ? CURATED : KNOWLEDGE).map((q) => ({
       ...q,
       prompt: tc(`q.${q.id}.q`, q.prompt),
       options: q.options?.map((o, i) => tc(`q.${q.id}.o${i}`, o)),
       explanation: tc(`q.${q.id}.e`, q.explanation),
     }));
-    cache.set(lang, list);
+    cache.set(ck, list);
   }
   return list;
 }

@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import type { Region } from '../types';
 import { useApp } from '../state';
-import { BLITZ_WEIGHTS, buildSession } from '../game/engine';
+import { BLITZ_WEIGHTS, buildGeneral, buildSession } from '../game/engine';
 import { hashString, mulberry32, todayKey } from '../game/rng';
 import { isRegionUnlocked, recordDaily } from '../game/progression';
 import { Quiz, type QuizResult } from '../components/Quiz';
 import { Mascot } from '../components/Mascot';
 import { Confetti } from '../components/Bits';
+import { InterestPicker } from '../components/Interests';
 import { href } from '../router';
 import { fmtDate, t } from '../i18n';
 import { countryName, regionLabel } from '../i18n/content';
@@ -30,6 +31,7 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
       case 'blitz': return { title: t('qs.blitz'), qs: buildSession(game, { count: 10, rnd: seedRandom, weights: BLITZ_WEIGHTS, timeLimit: 10, maxDifficulty: kid }) };
       case 'map': return { title: t('qs.map'), qs: buildSession(game, { count: 8, rnd: seedRandom, weights: { mapfind: 1 }, maxDifficulty: kid }) };
       case 'timeline': return { title: t('qs.timeline'), qs: buildSession(game, { count: 5, rnd: seedRandom, weights: { chronology: 1 } }) };
+      case 'topics': return { title: t('play.topics'), qs: buildGeneral(game, { count: 8, rnd: seedRandom, domains: profile.settings.interests, maxDifficulty: kid }) };
       case 'landmarks': return { title: t('qs.landmarks'), qs: buildSession(game, { count: 8, rnd: seedRandom, weights: { monument: 2, landmarkCountry: 1 } }) };
       case 'friend': {
         const seed = query.get('seed') ?? 'x';
@@ -45,7 +47,7 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
       }
       default: return { title: t('qs.quick'), qs: buildSession(game, { count: 8, rnd: seedRandom, surpriseRate: 0.12, maxDifficulty: kid }) };
     }
-  }, [type, round, game, region, day, query]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [type, round, game, region, day, query, profile.settings.interests]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const alreadyDaily = type === 'daily' && profile.daily.scores[day] !== undefined && !result;
 
@@ -61,6 +63,16 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
     if (iso.length) stamp([...new Set(iso)], 'quiz');
   };
 
+  if (type === 'topics' && !profile.settings.interests?.length) return (
+    <div className="page stack">
+      <h1>🧠 {t('play.topics')}</h1>
+      <section className="card stack">
+        <h2 style={{ margin: 0 }}>{t('interests.title')}</h2>
+        <p className="small dim" style={{ margin: 0 }}>{t('interests.help')}</p>
+        <InterestPicker saveLabel={t('interests.play')} onSave={(d) => update((p) => { p.settings.interests = d; })} />
+      </section>
+    </div>
+  );
   if (alreadyDaily) return (
     <div className="page stack">
       <Mascot mood="idle" text={t('qs.alreadyPlayed', { score: profile.daily.scores[day], streak: profile.daily.streak })} />

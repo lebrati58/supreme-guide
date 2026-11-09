@@ -7,6 +7,7 @@ import { haversineKm } from '../geo/geo';
 import { journeyStop, capitalName, capitalsList, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, lmCity, lmClue, lmFact, lmName, regionLabel, subregionLabel } from '../i18n/content';
 import { type Rng, pick, shuffle, weightedPick } from './rng';
 import { legendFor } from '../content/legendary';
+import { DOMAIN_CATEGORIES, type Domain } from '../content/knowledge';
 import { legendQuestion } from '../i18n/content';
 
 /**
@@ -63,7 +64,7 @@ const eligible = (c: Country) => c.un;
 // ------------------------------------------------------------------ generators
 // Every visible string goes through the catalog (gen.* keys) and CLDR names, so generated
 // questions come out in the player's language. Answers still come from structured data only.
-export type Gen = (data: GameData, rnd: Rng, focus?: Country, route?: RouteCtx) => Question | null;
+export type Gen = (data: GameData, rnd: Rng, focus?: Country, route?: RouteCtx, domains?: Domain[]) => Question | null;
 const cn = countryName;
 
 const genCapital: Gen = (data, rnd, focus) => {
@@ -445,8 +446,52 @@ const rAi: Gen = (_d, rnd, _f, route) => {
     source: { label: tc('gen.r.ai.src', 'AI (Claude) from Wikipedia'), url: q.source }, countries: routeIsos(route) };
 };
 
+/** General knowledge by domain (hand-checked banks + curated questions of the same categories). */
+const genKnowledge: Gen = (_d, rnd, _f, _r, domains) => {
+  const cats = new Set((domains?.length ? domains : (Object.keys(DOMAIN_CATEGORIES) as Domain[])).flatMap((d) => DOMAIN_CATEGORIES[d]));
+  const pool = [...curatedQuestions('knowledge'), ...curatedQuestions()].filter((q) => cats.has(q.category) && q.kind !== 'truefalse');
+  return pool.length ? { ...pick(pool, rnd) } : null;
+};
+
+/** Mental maths, travel flavoured. Every answer is computed, every wrong option is distinct. */
+const genMath: Gen = (_d, rnd) => {
+  const int = (a: number, b: number) => a + Math.floor(rnd() * (b - a + 1));
+  const kind = int(0, 3);
+  let prompt: string, answer: number, unit = '', explanation: string;
+  if (kind === 0) {
+    const v = pick([40, 50, 60, 80, 90, 100, 120, 250, 300], rnd), h = int(2, 9);
+    answer = h; unit = ' h';
+    prompt = tc('gen.math.time.q', 'A trip of {km} km at an average {v} km/h: how many hours does it take?', { km: fmtNum(v * h), v });
+    explanation = tc('gen.math.time.e', 'Time = distance ÷ speed: {km} ÷ {v} = {h} h.', { km: fmtNum(v * h), v, h });
+  } else if (kind === 1) {
+    const v = pick([50, 60, 80, 90, 100, 110, 120], rnd), h = int(2, 6);
+    answer = v; unit = ' km/h';
+    prompt = tc('gen.math.speed.q', 'You cover {km} km in {h} hours. What is your average speed?', { km: fmtNum(v * h), h });
+    explanation = tc('gen.math.speed.e', 'Speed = distance ÷ time: {km} ÷ {h} = {v} km/h.', { km: fmtNum(v * h), h, v });
+  } else if (kind === 2) {
+    const p = pick([10, 20, 25, 50, 75], rnd), n = pick([40, 60, 80, 120, 200, 240, 400], rnd);
+    answer = (p * n) / 100;
+    prompt = tc('gen.math.pct.q', 'What is {p}% of {n}?', { p, n });
+    explanation = tc('gen.math.pct.e', '{p}% of {n} = {n} × {p} ÷ 100 = {r}.', { p, n, r: fmtNum(answer) });
+  } else {
+    const a = int(6, 19), b = int(3, 12);
+    answer = a * b;
+    prompt = tc('gen.math.mul.q', 'How much is {a} × {b}?', { a, b });
+    explanation = tc('gen.math.mul.e', '{a} × {b} = {r}.', { a, b, r: fmtNum(answer) });
+  }
+  const wrong = new Set<number>();
+  for (const d of shuffle([-3, -2, -1, 1, 2, 3, 10, -10].map((x) => (kind === 2 || kind === 3 ? x * Math.max(1, Math.round(answer / 20)) : x * (kind === 1 ? 10 : 1))), rnd)) {
+    const w = answer + d;
+    if (w > 0 && w !== answer) wrong.add(w);
+    if (wrong.size === 3) break;
+  }
+  const opts = shuffle([answer, ...wrong], rnd);
+  return { id: `math-${prompt}`, kind: 'mcq', category: 'math', difficulty: 1, prompt, options: opts.map((x) => `${fmtNum(x)}${unit}`),
+    answer: opts.indexOf(answer), explanation };
+};
+
 export const GENERATORS: Record<string, Gen> = {
-  rAi, rLegend, rWiki, rOrder, rOnRoute, rLargest, rDistance, rDirection, rCountryOf, rNextCountry, rLandmarkNear,
+  knowledge: genKnowledge, math: genMath, rAi, rLegend, rWiki, rOrder, rOnRoute, rLargest, rDistance, rDirection, rCountryOf, rNextCountry, rLandmarkNear,
   curated: genCurated, capital: genCapital, capitalReverse: genCapitalReverse, flag: genFlag, border: genBorderTF,
   landlocked: genLandlocked, area: genArea, region: genRegion, mapfind: genMapFind, currency: genCurrency,
   landmarkCountry: genLandmarkCountry, monument: genMonument, chronology: genChronology,
@@ -480,6 +525,8 @@ export interface SessionOptions {
   focusRate?: number;
   /** Trip context: questions are then strictly about the route and its countries. */
   route?: RouteCtx;
+  /** Domains the player likes (general-knowledge filler and themed quizzes). */
+  domains?: Domain[];
 }
 
 export function buildSession(data: GameData, o: SessionOptions): Question[] {
@@ -500,7 +547,7 @@ export function buildSession(data: GameData, o: SessionOptions): Question[] {
     const gen = GENERATORS[genName];
     const useFocus = focusCountries.length > 0 && o.rnd() < (o.region || o.route ? 1 : o.focusRate ?? 0.75);
     const focus = useFocus ? pick(focusCountries, o.rnd) : undefined;
-    const q = gen(data, o.rnd, focus, o.route);
+    const q = gen(data, o.rnd, focus, o.route, o.domains);
     if (!q || seen.has(q.id)) continue;
     // On a trip, never keep a question unrelated to the route's countries.
     if (routeSet && !(q.countries ?? []).some((iso) => routeSet.has(iso))) continue;
@@ -515,17 +562,28 @@ export function buildSession(data: GameData, o: SessionOptions): Question[] {
   // Thin route (short walk, empty stretch, everything already answered): complete the session with
   // general-knowledge questions from the whole world, clearly labelled as such.
   if (o.route && out.length < o.count) {
-    const filler = buildSession(data, { ...o, route: undefined, focus: undefined, weights: GENERAL_WEIGHTS, count: o.count - out.length,
-      exclude: new Set([...seen]), surpriseRate: 0 });
+    const filler = buildGeneral(data, { ...o, count: o.count - out.length, exclude: new Set([...seen]) });
     for (const q of filler) out.push({ ...q, general: true });
   }
   return out;
 }
 
-/** General culture filler: curated questions first, then classic world geography and history. */
-const GENERAL_WEIGHTS: Partial<Record<keyof typeof GENERATORS, number>> = {
-  curated: 3, capital: 1.2, flag: 1, monument: 1, chronology: 0.6, area: 0.6, landmarkCountry: 0.6,
+/** Generators that feed each domain, on top of the hand-checked knowledge banks. */
+const DOMAIN_WEIGHTS: Record<Domain, Partial<Record<keyof typeof GENERATORS, number>>> = {
+  history: { knowledge: 1, chronology: 0.8 },
+  geography: { knowledge: 1, capital: 1, flag: 0.8, area: 0.5, mapfind: 0.4 },
+  biology: { knowledge: 1 }, science: { knowledge: 1 }, philosophy: { knowledge: 1 },
+  math: { math: 1.2, knowledge: 0.3 },
+  culture: { knowledge: 1, monument: 0.8, landmarkCountry: 0.5 },
 };
+
+/** General knowledge in the player's chosen domains (all domains when none chosen). */
+export function buildGeneral(data: GameData, o: SessionOptions): Question[] {
+  const domains = o.domains?.length ? o.domains : (Object.keys(DOMAIN_WEIGHTS) as Domain[]);
+  const weights: Record<string, number> = {};
+  for (const d of domains) for (const [g, w] of Object.entries(DOMAIN_WEIGHTS[d])) weights[g] = (weights[g] ?? 0) + (w ?? 0);
+  return buildSession(data, { ...o, route: undefined, focus: undefined, region: undefined, weights, domains, surpriseRate: 0 });
+}
 
 /** Validate a question's internal consistency (used by tests over thousands of samples). */
 export function validateQuestion(q: Question): string[] {

@@ -10,6 +10,7 @@ import { resolve } from 'node:path';
 import { UI } from '../src/i18n/ui';
 import { slug } from '../src/i18n/slug';
 import { CURATED } from '../src/content/questions';
+import { KNOWLEDGE } from '../src/content/knowledge';
 import { LANDMARKS } from '../src/content/landmarks';
 import { EVENTS } from '../src/content/events';
 import { JOURNEYS } from '../src/content/journeys';
@@ -25,7 +26,7 @@ const add = (k: string, v: string) => {
   out[k] = v;
 };
 
-for (const q of CURATED) {
+for (const q of [...CURATED, ...KNOWLEDGE]) {
   add(`q.${q.id}.q`, q.prompt);
   q.options?.forEach((o, i) => add(`q.${q.id}.o${i}`, o));
   add(`q.${q.id}.e`, q.explanation);
