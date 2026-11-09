@@ -2,6 +2,7 @@ import type { Country, Question, Stop } from '../types';
 import type { Landmark } from '../content/landmarks';
 import type { HistoricEvent } from '../content/events';
 import type { CuratedJourney } from '../content/journeys';
+import type { LegendPack, LegendQuestion } from '../content/legendary';
 import { CURATED } from '../content/questions';
 import { currencyName, languageName, locale, regionName, tc } from './index';
 
@@ -59,3 +60,11 @@ export function curatedQuestions(): Question[] {
   }
   return list;
 }
+
+// ---------------------------------------------------------------- legendary journeys
+export const legendFact = (l: LegendPack, i: number) => tc(`legend.${l.journey}.f${i}`, l.facts[i].text);
+export const legendQuestion = (l: LegendPack, q: LegendQuestion) => ({
+  prompt: tc(`legend.${l.journey}.${q.id}.q`, q.q),
+  options: q.o.map((o, i) => tc(`legend.${l.journey}.${q.id}.o${i}`, o)),
+  explanation: tc(`legend.${l.journey}.${q.id}.e`, q.e),
+});

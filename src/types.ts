@@ -89,6 +89,9 @@ export interface Trip {
   depUtc?: number; arrUtc?: number;
   role?: 'passenger' | 'driver';
   packAt?: number; // when the offline pack was downloaded
+  packLang?: string; // language of the downloaded place cards
+  /** Optional AI questions (grounded on `wiki`, same language), only when the AI guide is configured. */
+  ai?: { prompt: string; options: string[]; answer: number; explanation: string; source: string }[];
   wiki?: WikiCard[];
   progress?: number; // last known 0..1
   answeredIds?: string[];

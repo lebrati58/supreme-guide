@@ -9,7 +9,8 @@ import { buildSchedule, estimateBlockMinutes, normaliseFlightNumber } from '../t
 import { lookupConfigured, lookupFlight } from '../transport/flightLookup';
 import { loadAirports } from '../data/loaders';
 import { store } from '../storage/db';
-import { go, href } from '../router';
+import { go, href, useRoute } from '../router';
+import { legendFor } from '../content/legendary';
 import { haversineKm } from '../geo/geo';
 import { formatDuration, formatLocal } from '../transport/time';
 import { Mascot } from '../components/Mascot';
@@ -20,6 +21,12 @@ import { play } from '../game/sfx';
 export default function Planner({ mode }: { mode: Mode }) {
   const meta = MODE_META[mode];
   const curated = JOURNEYS.filter((j) => j.mode === mode);
+  const focus = useRoute().query.get('j') ?? undefined;
+  useEffect(() => {
+    if (!focus) return;
+    const el = document.getElementById(`jr-${focus}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [focus]);
   return (
     <div className="page stack">
       <div className="chips" role="tablist" aria-label={t('plan.modesAria')}>
@@ -30,14 +37,14 @@ export default function Planner({ mode }: { mode: Mode }) {
       {curated.length > 0 && (
         <section className="stack">
           <h2>{t('plan.realJourneys')}</h2>
-          <div className="grid grid-2">{curated.map((j) => <CuratedTile key={j.id} j={j} />)}</div>
+          <div className="grid grid-2">{curated.map((j) => <CuratedTile key={j.id} j={j} highlight={j.id === focus} />)}</div>
         </section>
       )}
     </div>
   );
 }
 
-function useCreate() {
+export function useCreate() {
   const { getIndex, useMode, toast } = useApp();
   const [busy, setBusy] = useState(false);
   const create = async (args: Omit<Parameters<typeof createTrip>[0], 'index'>) => {
@@ -55,11 +62,13 @@ function useCreate() {
   return { create, busy };
 }
 
-function CuratedTile({ j }: { j: CuratedJourney }) {
+function CuratedTile({ j, highlight }: { j: CuratedJourney; highlight?: boolean }) {
   const { create, busy } = useCreate();
   const [role, setRole] = useState<Trip['role'] | null>(null);
+  const legend = legendFor(j.id);
   return (
-    <div className="card">
+    <div className={`card ${highlight ? 'highlight' : ''}`} id={`jr-${j.id}`}>
+      {legend && <span className="pill gold small">{t('legend.badge')}</span>}
       <h3>{MODE_META[j.mode].emoji} {journeyTitle(j)}</h3>
       <p className="dim small">{journeyBlurb(j)}</p>
       <p className="small">{j.stops.map((s, i) => (s.note ? null : journeyStop(j.id, i, s))).filter(Boolean).join(` ${fwd()} `)}</p>
@@ -71,7 +80,7 @@ function CuratedTile({ j }: { j: CuratedJourney }) {
   );
 }
 
-function RolePicker({ role, setRole }: { role: Trip['role'] | null; setRole: (r: Trip['role']) => void }) {
+export function RolePicker({ role, setRole }: { role: Trip['role'] | null; setRole: (r: Trip['role']) => void }) {
   return (
     <div className="field" role="radiogroup" aria-label={t('role.label')}>
       <label>{t('role.label')}</label>
@@ -205,6 +214,7 @@ function GroundForm({ mode }: { mode: Ground }) {
   return (
     <div className="card paper stack">
       {mode === 'car' && <Mascot mood="driver" text={t('ground.carMascot')} />}
+      {mode === 'car' && <p className="notice small">{t('plan.wazeTip')}</p>}
       {mode === 'cruise' && <Mascot mood="idle" text={t('ground.cruiseMascot')} />}
       {stops.map((s, i) => (
         <div key={i} className="row" style={{ alignItems: 'flex-end' }}>

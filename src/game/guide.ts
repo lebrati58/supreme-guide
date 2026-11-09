@@ -5,6 +5,9 @@ import { EVENTS } from '../content/events';
 import { fmtNum, listJoin, t, type Key } from '../i18n';
 import { capitalName, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, journeyStop, languagesLabel, lmFact, lmName } from '../i18n/content';
 import { haversineKm } from '../geo/geo';
+import { legendFor } from '../content/legendary';
+import { JOURNEYS } from '../content/journeys';
+import { legendFact } from '../i18n/content';
 
 /**
  * Guide mode: statements instead of questions. Every fact comes from verified data (dataset,
@@ -78,6 +81,18 @@ export function buildGuide(route: RouteCtx, data: GameData, wiki: WikiCard[] = [
       text: bits.join(' ') || t('guide.place.stop', { place: name }), source: { label: 'GeoNames', url: 'https://www.geonames.org/' } });
   }
 
+  // Legendary journeys: verified stories told at the right stop
+  const legend = legendFor(route.curatedId);
+  legend?.facts.forEach((f, i) => {
+    const p = route.places.find((x) => x.stop && x.name === f.stop);
+    const s = JOURNEYS.find((j) => j.id === legend.journey)?.stops.find((x) => x.name === f.stop);
+    if (!p && !s) return;
+    const at = p ? p.at : nearestOnPath(route.path, [s!.lng, s!.lat]).at;
+    const title = route.curatedId ? journeyStop(route.curatedId, 0, { name: f.stop }) : f.stop;
+    facts.push({ id: `legend-${i}`, at: Math.min(1, at + 0.0005 * (i + 1)), icon: legend.emoji, title, text: legendFact(legend, i),
+      source: { label: 'Wikipedia', url: `https://en.wikipedia.org/wiki/${legend.wiki}` } });
+  });
+
   // Landmarks near the route
   for (const { l, at, offKm } of route.landmarks) {
     facts.push({ id: `lm-${l.id}`, at, icon: l.emoji, title: lmName(l),
@@ -98,7 +113,7 @@ export function buildGuide(route: RouteCtx, data: GameData, wiki: WikiCard[] = [
 
   // De-duplicate by id, order along the route (explore: by distance)
   // Same position: departure, then country, facts, towns, landmarks, Wikipedia, arrival.
-  const rank = (f: GuideFact) => ['start', 'country', 'fact', 'ev', 'place', 'lm', 'wiki', 'end'].indexOf(f.id.split('-')[0]);
+  const rank = (f: GuideFact) => ['start', 'country', 'fact', 'ev', 'place', 'legend', 'lm', 'wiki', 'end'].indexOf(f.id.split('-')[0]);
   const seen = new Set<string>();
   return facts.filter((f) => (seen.has(f.id) ? false : (seen.add(f.id), true)))
     .sort((a, b) => a.at - b.at || rank(a) - rank(b));

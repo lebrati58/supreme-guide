@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.0 — 2026-11-09
+### Added
+- **On-demand route content**: opening a trip online prepares its Wikipedia place cards in your language automatically (kept for offline); new quiz “which place on your route is described here?”.
+- **🌟 10 legendary journeys**: Route 66, California coast, Glacier Express, Trans-Siberian, Eurostar, Tōkaidō Shinkansen, Great Ocean Road, Norwegian fjords, Amalfi Coast, Western Mediterranean. Each has verified stories told at the right stop in guide mode, 5 special questions, and useful phrases in the local language with pronunciation, read aloud by a local voice. New home-page section. New journeys: Route 66 and the Amalfi Coast.
+- **Share from Waze / Google Maps / Apple Maps**: on an installed app (Android), “Share” a destination to Supreme Guide to create the road trip and its quiz.
+- **Optional AI questions** (Claude), grounded only on the route's Wikipedia texts and labelled 🤖 AI. Server template in `server/ai-guide/`; off by default (needs your own API key, paid per use).
+- Translated in all 10 languages.
+
+
 ## 1.3.0 — 2026-11-09
 ### Fixed
 - **Trip quizzes now follow the route.** Questions were country-generic and could drift to other countries (e.g. Congo on the Shinkansen). On a trip, every question is now about the route or its countries, mostly about the route itself: which place comes first, which town is on your route, the biggest town you pass, crow-flies distance, direction of travel, next country, landmark near the route. Built from the trip's own stops, GeoNames towns in a corridor around the path and nearby landmarks.

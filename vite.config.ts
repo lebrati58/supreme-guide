@@ -33,6 +33,8 @@ export default defineConfig({
         background_color: '#0b1f4d',
         theme_color: '#0b1f4d',
         categories: ['games', 'education', 'travel'],
+        // Android: “Share” a destination from Waze / Google Maps to Supreme Guide (installed PWA).
+        share_target: { action: `${base}share/`, method: 'GET', params: { title: 'title', text: 'text', url: 'url' } },
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

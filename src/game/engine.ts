@@ -6,6 +6,8 @@ import { compassKey, type RouteCtx, type RoutePlace } from './route';
 import { haversineKm } from '../geo/geo';
 import { journeyStop, capitalName, capitalsList, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, lmCity, lmClue, lmFact, lmName, regionLabel, subregionLabel } from '../i18n/content';
 import { type Rng, pick, shuffle, weightedPick } from './rng';
+import { legendFor } from '../content/legendary';
+import { legendQuestion } from '../i18n/content';
 
 /**
  * Generated questions use structured data (mledoze/countries, ODbL) — never free text —
@@ -385,8 +387,66 @@ const rLandmarkNear: Gen = (_d, rnd, _f, route) => {
     source: W(decodeURIComponent(l.wiki)), countries: [l.iso3], imageTitle: l.wiki };
 };
 
+/**
+ * Hide a place's name in a Wikipedia extract so it can be a riddle. Returns null when the name
+ * (or a word of it) would still give the answer away.
+ */
+export function redactName(extract: string, title: string): string | null {
+  const base = title.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+  const words = base.split(/[\s,'’\-–]+/u).filter((w) => w.length >= 3);
+  const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  let text = extract.split(/(?<=[.!?。！？])\s*/u).slice(0, 2).join(' ');
+  for (const w of [base, ...words].sort((x, y) => y.length - x.length)) text = text.replace(new RegExp(esc(w), 'giu'), '…');
+  text = text.replace(/(…[\s,]*)+/gu, '… ').trim();
+  // CJK scripts pack far more meaning per character.
+  if (text.length < (/[\u3040-\u9fff]/u.test(text) ? 20 : 60)) return null;
+  const lower = text.toLowerCase();
+  if (words.some((w) => lower.includes(w.toLowerCase())) || lower.includes(base.toLowerCase())) return null;
+  return text;
+}
+
+const rWiki: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.wiki.length < 4) return null;
+  const cards = route.wiki.filter((c) => c.extract.length > 100);
+  if (cards.length < 4) return null;
+  const card = pick(cards, rnd);
+  const clue = redactName(card.extract, card.title);
+  if (!clue) return null;
+  const others = shuffle(cards.filter((c) => c.title !== card.title), rnd).slice(0, 3).map((c) => c.title);
+  if (others.length < 3) return null;
+  const options = shuffle([card.title, ...others], rnd);
+  return { id: `r-wiki-${card.title}`, kind: 'monument', category: 'landmarks', difficulty: 2,
+    prompt: tc('gen.r.wiki.q', 'Which place on your route is described here?'), clue, options, answer: options.indexOf(card.title),
+    explanation: tc('gen.r.wiki.e', 'It is {place}. {extract}', { place: card.title, extract: card.extract.split(/(?<=[.!?。！？])\s*/u)[0] }),
+    source: { label: 'Wikipedia (CC BY-SA)', url: card.url }, countries: routeIsos(route) };
+};
+
+/** Legendary journeys: hand-verified questions about this very route. */
+const rLegend: Gen = (_d, rnd, _f, route) => {
+  const l = legendFor(route?.curatedId);
+  if (!route || !l) return null;
+  const q = pick(l.questions, rnd);
+  const loc = legendQuestion(l, q);
+  // Shuffle options, keep track of the right one.
+  const order = shuffle(loc.options.map((_, i) => i), rnd);
+  const options = order.map((i) => loc.options[i]);
+  return { id: `legend-${l.journey}-${q.id}`, kind: 'mcq', category: 'history', difficulty: 2, prompt: loc.prompt, options,
+    answer: order.indexOf(q.a), explanation: loc.explanation,
+    source: { label: 'Wikipedia', url: `https://en.wikipedia.org/wiki/${l.wiki}` }, countries: routeIsos(route) };
+};
+
+/** Optional AI questions (rewritten from the route's Wikipedia cards), labelled as such. */
+const rAi: Gen = (_d, rnd, _f, route) => {
+  if (!route?.ai.length) return null;
+  const q = pick(route.ai, rnd);
+  const order = shuffle([0, 1, 2, 3], rnd);
+  return { id: `ai-${q.prompt.slice(0, 40)}`, kind: 'mcq', category: 'landmarks', difficulty: 2, prompt: `🤖 ${q.prompt}`,
+    options: order.map((i) => q.options[i]), answer: order.indexOf(q.answer), explanation: q.explanation,
+    source: { label: tc('gen.r.ai.src', 'AI (Claude) from Wikipedia'), url: q.source }, countries: routeIsos(route) };
+};
+
 export const GENERATORS: Record<string, Gen> = {
-  rOrder, rOnRoute, rLargest, rDistance, rDirection, rCountryOf, rNextCountry, rLandmarkNear,
+  rAi, rLegend, rWiki, rOrder, rOnRoute, rLargest, rDistance, rDirection, rCountryOf, rNextCountry, rLandmarkNear,
   curated: genCurated, capital: genCapital, capitalReverse: genCapitalReverse, flag: genFlag, border: genBorderTF,
   landlocked: genLandlocked, area: genArea, region: genRegion, mapfind: genMapFind, currency: genCurrency,
   landmarkCountry: genLandmarkCountry, monument: genMonument, chronology: genChronology,
@@ -394,7 +454,7 @@ export const GENERATORS: Record<string, Gen> = {
 
 /** On a trip: mostly questions about the route itself, then about the route's countries. */
 export const ROUTE_WEIGHTS: Partial<Record<keyof typeof GENERATORS, number>> = {
-  rOrder: 2, rOnRoute: 2, rLargest: 1.2, rDistance: 0.8, rDirection: 0.7, rCountryOf: 1, rNextCountry: 1, rLandmarkNear: 1.6,
+  rLegend: 6, rAi: 1.5, rWiki: 1.8, rOrder: 2, rOnRoute: 2, rLargest: 1.2, rDistance: 0.8, rDirection: 0.7, rCountryOf: 1, rNextCountry: 1, rLandmarkNear: 1.6,
   monument: 1.4, landmarkCountry: 0.6, curated: 1.4, capital: 0.6, currency: 0.4, flag: 0.4, mapfind: 0.5, border: 0.3, chronology: 0.4,
 };
 
@@ -433,10 +493,10 @@ export function buildSession(data: GameData, o: SessionOptions): Question[] {
   let guard = 0;
   // Variety: in short sessions each question type appears once (relaxed if the pool runs dry).
   const perGen = new Map<string, number>();
-  const cap = () => (guard > o.count * 20 ? Infinity : o.count <= 8 ? 1 : 2);
+  const cap = (g: string) => (guard > o.count * 20 ? Infinity : g === 'rLegend' ? 3 : o.count <= 8 ? 1 : 2);
   while (out.length < o.count && guard++ < o.count * 40) {
     const genName = weightedPick(weights, o.rnd);
-    if ((perGen.get(genName) ?? 0) >= cap()) continue;
+    if ((perGen.get(genName) ?? 0) >= cap(genName)) continue;
     const gen = GENERATORS[genName];
     const useFocus = focusCountries.length > 0 && o.rnd() < (o.region || o.route ? 1 : o.focusRate ?? 0.75);
     const focus = useFocus ? pick(focusCountries, o.rnd) : undefined;
