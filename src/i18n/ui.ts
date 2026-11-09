@@ -257,6 +257,7 @@ export const UI: Record<string, string> = {
   // quiz
   'quiz.title': 'Quiz',
   'quiz.bonusTag': '🎁 Surprise challenge · double XP',
+  'quiz.generalTag': '🌍 General knowledge',
   'quiz.correct': 'Correct!',
   'quiz.wrong': 'Not quite',
   'quiz.timeup': 'Time’s up!',

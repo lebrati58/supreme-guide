@@ -126,3 +126,18 @@ describe('on-demand Wikipedia riddles', () => {
     expect(n).toBeGreaterThan(20);
   });
 });
+
+describe('thin routes', () => {
+  it('completes the session with labelled general-knowledge questions', () => {
+    const base = ctxs.get('paris-marseille')!;
+    const empty: RouteCtx = { ...base, places: [], landmarks: [], countries: [], offRoute: [], wiki: [], ai: [], curatedId: undefined };
+    const qs = buildSession(data, { count: 6, rnd: mulberry32(7), route: empty });
+    expect(qs).toHaveLength(6);
+    expect(qs.every((q) => q.general)).toBe(true);
+    for (const q of qs) expect(validateQuestion(q)).toEqual([]);
+  });
+  it('keeps route questions first and does not label them', () => {
+    const qs = buildSession(data, { count: 6, rnd: mulberry32(3), route: ctxs.get('tokaido')! });
+    expect(qs.filter((q) => !q.general).length).toBeGreaterThan(0);
+  });
+});

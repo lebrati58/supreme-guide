@@ -55,6 +55,8 @@ export interface Question {
   clue?: string;
   timeLimit?: number;
   bonus?: boolean;
+  /** General-knowledge filler on a trip whose route offers too little material. */
+  general?: boolean;
 }
 
 export interface Stop { name: string; lat: number; lng: number; cc?: string; note?: string }

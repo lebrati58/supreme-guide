@@ -512,8 +512,20 @@ export function buildSession(data: GameData, o: SessionOptions): Question[] {
     if (o.surpriseRate && out.length > 1 && o.rnd() < o.surpriseRate) q.bonus = true;
     out.push(q);
   }
+  // Thin route (short walk, empty stretch, everything already answered): complete the session with
+  // general-knowledge questions from the whole world, clearly labelled as such.
+  if (o.route && out.length < o.count) {
+    const filler = buildSession(data, { ...o, route: undefined, focus: undefined, weights: GENERAL_WEIGHTS, count: o.count - out.length,
+      exclude: new Set([...seen]), surpriseRate: 0 });
+    for (const q of filler) out.push({ ...q, general: true });
+  }
   return out;
 }
+
+/** General culture filler: curated questions first, then classic world geography and history. */
+const GENERAL_WEIGHTS: Partial<Record<keyof typeof GENERATORS, number>> = {
+  curated: 3, capital: 1.2, flag: 1, monument: 1, chronology: 0.6, area: 0.6, landmarkCountry: 0.6,
+};
 
 /** Validate a question's internal consistency (used by tests over thousands of samples). */
 export function validateQuestion(q: Question): string[] {
