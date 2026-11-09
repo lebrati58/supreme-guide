@@ -7,6 +7,7 @@ import { store } from './storage/db';
 import { addStamp, awardBadges, badgeDefs, levelFromXp, newProfile, xpForAnswer, type BadgeDef, type Profile } from './game/progression';
 import { CountryIndex } from './geo/countryIndex';
 import { detectLocale, setLocale, t, tc } from './i18n';
+import { play } from './game/sfx';
 
 export interface Toast { id: number; icon: string; title: string; body?: string }
 export interface AnswerResult { xp: number; levelUp: number | null; badges: BadgeDef[] }
@@ -113,6 +114,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const next = structuredClone(cur);
     fn(next);
     const earned = awardBadges(next, badges);
+    if (earned.length) setTimeout(() => play('badge'), 450); // after the answer sound
     earned.forEach((b) => toast({ icon: b.emoji, title: t('toast.badge', { name: tc(`badge.${b.id}.name`, b.name) }), body: tc(`badge.${b.id}.desc`, b.desc) }));
     profilesRef.current = list.map((p) => (p.id === next.id ? next : p));
     setProfiles(profilesRef.current);
@@ -147,6 +149,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const stamp = useCallback((iso3s: string[], mode: Profile['stamps'][string]['mode']) => {
     const added: string[] = [];
     mutate((p) => { for (const i of iso3s) if (addStamp(p, i, mode)) added.push(i); });
+    if (added.length) play('stamp');
     return added;
   }, [mutate]);
 

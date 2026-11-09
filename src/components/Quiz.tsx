@@ -10,6 +10,7 @@ import type { Mood } from '../game/mascot';
 import { wikiSummary } from '../transport/wiki';
 import { fwd, t } from '../i18n';
 import { capitalName, countryName, formatYearL, subregionLabel } from '../i18n/content';
+import { play } from '../game/sfx';
 
 export interface QuizResult { correct: number; total: number; xp: number; answers: { id: string; correct: boolean }[] }
 
@@ -47,7 +48,9 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
     tally.current.answers.push({ id: q.id, correct });
     if (correct) tally.current.correct++;
     setXpGain(r.xp);
-    setMood(r.levelUp ? 'levelup' : correct ? (s >= 3 && s % 3 === 0 ? 'streak' : 'correct') : timeRatio === 0 ? 'timeout' : 'wrong');
+    const isStreak = correct && s >= 3 && s % 3 === 0;
+    play(r.levelUp ? 'levelup' : correct ? (isStreak ? 'streak' : 'correct') : timeRatio === 0 ? 'timeout' : 'wrong');
+    setMood(r.levelUp ? 'levelup' : correct ? (isStreak ? 'streak' : 'correct') : timeRatio === 0 ? 'timeout' : 'wrong');
     setNonce((n) => n + 1);
     if (correct && (s >= 3 || q.bonus || r.levelUp)) setCelebrate((c) => c + 1);
     onAnswered?.(q, correct);
@@ -153,9 +156,14 @@ function Timer({ seconds, running, onTimeout }: { seconds: number; running: bool
   useEffect(() => {
     if (!running) return;
     const end = Date.now() + left * 1000;
+    let lastTick = Math.ceil(left);
     const id = setInterval(() => {
       const l = Math.max(0, (end - Date.now()) / 1000);
       setLeft(l);
+      // Tick on each of the last 3 seconds.
+      const sec = Math.ceil(l);
+      if (sec < lastTick && sec <= 3 && sec > 0) play('tick');
+      lastTick = sec;
       if (l <= 0) { clearInterval(id); cb.current(); }
     }, 100);
     return () => clearInterval(id);

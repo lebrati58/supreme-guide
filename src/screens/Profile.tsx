@@ -4,6 +4,7 @@ import { fmtDate, fmtNum, t, tn } from '../i18n';
 import { storageEstimate, store } from '../storage/db';
 import { XPBar, Modal } from '../components/Bits';
 import { LanguageList } from '../components/LanguagePicker';
+import { play, setSfxOptions } from '../game/sfx';
 
 const AVATARS = ['🧭', '🧳', '🦊', '🐼', '🐯', '🦁', '🐨', '🐧', '🦄', '🚀', '⚽', '🎨'];
 
@@ -58,6 +59,8 @@ export default function Profile({ install }: { install: { canInstall: boolean; p
         <div className="field"><label htmlFor="nm">{t('profile.name')}</label><input id="nm" className="input" value={profile.name} maxLength={24} onChange={(e) => update((p) => { p.name = e.target.value || t('profile.defaultName'); })} /></div>
         <div className="field"><label>{t('profile.avatar')}</label><div className="chips">{AVATARS.map((a) => <button key={a} className={`chip ${profile.avatar === a ? 'on' : ''}`} onClick={() => update((p) => { p.avatar = a; })} aria-label={t('profile.avatarAria', { avatar: a })}>{a}</button>)}</div></div>
         <label className="row"><input type="checkbox" checked={profile.kidMode} onChange={(e) => update((p) => { p.kidMode = e.target.checked; })} /> {t('profile.kidMode')}</label>
+        <label className="row"><input type="checkbox" checked={profile.settings.sound !== false} onChange={(e) => { const on = e.target.checked; update((p) => { p.settings.sound = on; }); if (on) { setSfxOptions({ sound: true, haptics: profile.settings.haptics !== false }); play('correct'); } }} /> {t('profile.sound')}</label>
+        <label className="row"><input type="checkbox" checked={profile.settings.haptics !== false} onChange={(e) => { const on = e.target.checked; update((p) => { p.settings.haptics = on; }); if (on) { setSfxOptions({ sound: profile.settings.sound !== false, haptics: true }); play('stamp'); } }} /> {t('profile.haptics')}</label>
         <label className="row"><input type="checkbox" checked={profile.settings.reducedMotion} onChange={(e) => { update((p) => { p.settings.reducedMotion = e.target.checked; }); document.documentElement.classList.toggle('reduce-motion', e.target.checked); }} /> {t('profile.reduceMotion')}</label>
       </section>
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 — 2026-11-09
+### Added
+- **Sound effects & vibrations**: correct / wrong answers, streaks, level-ups, badges, passport stamps, take-off and landing, and the last seconds of the Blitz timer. Synthesised with Web Audio (no audio files: offline, no download, no licence). Vibrations via the Vibration API (Android; iPhone has none).
+- Profile switches for sound and vibrations (on by default), translated in all 10 languages.
+
+
 ## 1.1.0 — 2026-11-08
 ### Added
 - **10 languages**: English, French, Spanish, German, Italian, Portuguese, Russian, Hebrew, Arabic, Chinese (Simplified). Everything is translated: interface, questions, explanations, landmarks, timelines, journeys, badges, ranks and the mascot.
