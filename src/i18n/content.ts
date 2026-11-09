@@ -38,7 +38,8 @@ export function formatYearL(y: number): string {
 // ---------------------------------------------------------------- journeys
 export const journeyTitle = (j: Pick<CuratedJourney, 'id' | 'title'>) => tc(`jr.${j.id}.title`, j.title);
 export const journeyBlurb = (j: CuratedJourney) => tc(`jr.${j.id}.blurb`, j.blurb);
-export const journeyStop = (journeyId: string, i: number, s: Stop) => tc(`jr.${journeyId}.s${i}`, s.name);
+/** Stop names are keyed by their English slug (stable when stops are added or reordered). */
+export const journeyStop = (journeyId: string, _i: number, s: Pick<Stop, 'name'>) => tc(`jr.${journeyId}.${slug(s.name)}`, s.name);
 export const stopNote = (note: string) => tc(`stopnote.${slug(note)}`, note);
 
 // ---------------------------------------------------------------- curated questions

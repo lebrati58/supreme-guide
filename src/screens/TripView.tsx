@@ -5,7 +5,11 @@ import { store, requestPersistence } from '../storage/db';
 import { geometryNote, MODE_META, stopFractions } from '../transport/trips';
 import { flightStatus } from '../transport/flight';
 import { formatDuration, formatLocal } from '../transport/time';
-import { loadAirports } from '../data/loaders';
+import { loadAirports, loadCities } from '../data/loaders';
+import type { City } from '../types';
+import { buildRouteCtx } from '../game/route';
+import { buildGuide } from '../game/guide';
+import { GuidePanel } from '../components/GuidePanel';
 import { haversineKm, locateOnPath, pointAlong } from '../geo/geo';
 import { buildSession } from '../game/engine';
 import { mulberry32, hashString } from '../game/rng';
@@ -17,7 +21,7 @@ import { Confetti, Modal } from '../components/Bits';
 import { go, href } from '../router';
 import type { MapMarker } from '../map/WorldMap';
 import type { Mood } from '../game/mascot';
-import { fmtDate, fmtNum, t } from '../i18n';
+import { fmtDate, fmtNum, locale, t } from '../i18n';
 import { countryName, journeyStop, journeyTitle, lmFact, lmName, stopNote } from '../i18n/content';
 import { play } from '../game/sfx';
 
@@ -66,6 +70,10 @@ export default function TripView({ id }: { id: string }) {
   const discovered = useRef(new Set<string>());
 
   useEffect(() => { store.getTrip(id).then((t) => setTrip(t ?? null)); getWorld50().then(setWorld).catch(() => {}); }, [id, getWorld50]);
+  const [cities, setCities] = useState<City[]>([]);
+  useEffect(() => { loadCities().then(setCities).catch(() => {}); }, []);
+  const [view, setView] = useState<'quiz' | 'guide'>(() => { try { return localStorage.getItem('sg.tripView') === 'guide' ? 'guide' : 'quiz'; } catch { return 'quiz'; } });
+  const chooseView = (v: 'quiz' | 'guide') => { setView(v); try { localStorage.setItem('sg.tripView', v); } catch { /* private mode */ } };
   useEffect(() => {
     if (trip?.flight) loadAirports().then((a) => setTz({ from: a.find((x) => x.iata === trip.flight!.from)?.tz, to: a.find((x) => x.iata === trip.flight!.to)?.tz }));
   }, [trip?.flight]);
@@ -82,6 +90,10 @@ export default function TripView({ id }: { id: string }) {
 
   const explore = !!trip && trip.distanceKm < 0.2; // walking “explore around” mode
   const fractions = useMemo(() => (trip ? stopFractions(trip) : []), [trip]);
+  const ccMap = useMemo(() => new Map([...byIso3.values()].map((c) => [c.iso3, c.iso2])), [byIso3]);
+  const route = useMemo(() => (trip && cities.length ? buildRouteCtx(trip, cities, ccMap) : null), [trip?.id, trip?.geometry, cities, ccMap]); // eslint-disable-line react-hooks/exhaustive-deps
+  const lang = locale();
+  const guide = useMemo(() => (route && trip ? buildGuide(route, game, trip.wiki ?? [], MODE_META[trip.mode].emoji) : []), [route, game, trip?.wiki, lang]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ------------------------------------------------ progress (GPS > schedule > manual)
   const progress = useMemo(() => {
@@ -178,9 +190,11 @@ export default function TripView({ id }: { id: string }) {
 
   const startQuiz = () => {
     const focus = trip.countries.slice(Math.max(0, currentIdx), currentIdx + 3).map((c) => c.iso3);
+    // Questions come from the route itself (its places, landmarks and countries) — never from elsewhere.
     const qs = buildSession(game, {
       count: 6, rnd: mulberry32(hashString(trip.id + (trip.answeredIds?.length ?? 0) + Date.now())), focus: focus.length ? focus : undefined,
-      exclude: new Set(trip.answeredIds), surpriseRate: 0.12, focusRate: 0.9, maxDifficulty: profile.kidMode ? 2 : undefined,
+      route: route ? { ...route, progress: progress.fraction } : undefined,
+      exclude: new Set(trip.answeredIds), surpriseRate: 0.12, focusRate: 1, maxDifficulty: profile.kidMode ? 2 : undefined,
     });
     setDone(null); setQuiz(qs);
     setTimeout(() => document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
@@ -218,7 +232,7 @@ export default function TripView({ id }: { id: string }) {
   return (
     <div className="page stack">
       {celebrate > 0 && <Confetti key={celebrate} />}
-      {locked && <DriverLock moving={moving} gps={gpsOn} onEnableGps={() => setGpsOn(true)} onParked={() => setParkedAt(Date.now())} />}
+      {locked && <DriverLock moving={moving} gps={gpsOn} audioGuide={view === 'guide'} onEnableGps={() => setGpsOn(true)} onParked={() => setParkedAt(Date.now())} />}
       <div className="row spread">
         <a className="link-btn" href={href('/trips')}>{t('trip.backShort')}</a>
         <div className="row">
@@ -298,9 +312,15 @@ export default function TripView({ id }: { id: string }) {
         </div>
       </section>
 
-      {/* ------------- play */}
+      {/* ------------- play: quiz or guide */}
+      <div className="seg" role="tablist" aria-label={t('guide.modeAria')}>
+        <button role="tab" aria-selected={view === 'quiz'} className={view === 'quiz' ? 'on' : ''} onClick={() => chooseView('quiz')}>{t('guide.tabQuiz')}</button>
+        <button role="tab" aria-selected={view === 'guide'} className={view === 'guide' ? 'on' : ''} onClick={() => chooseView('guide')}>{t('guide.tabGuide')}</button>
+      </div>
       <section id="stage" className="card gold stack" style={{ color: 'var(--ink)', scrollMarginTop: 70 }}>
-        {quiz ? (
+        {view === 'guide' ? (
+          route ? <GuidePanel facts={guide} progress={progress.fraction} pathKm={route.pathKm} explore={route.explore} /> : <p>{t('trip.loading')}</p>
+        ) : quiz ? (
           <Quiz questions={quiz} title={current ? t('trip.stageQuizOf', { flag: current.flag, country: countryName(current) }) : t('trip.stageQuiz')} onFinish={finishQuiz} finishLabel={t('trip.collectStamps')} />
         ) : (
           <>
@@ -383,7 +403,7 @@ function WikiTile({ w, onOpen }: { w: WikiCard; onOpen: () => void }) {
   );
 }
 
-function DriverLock({ moving, gps, onEnableGps, onParked }: { moving: boolean; gps: boolean; onEnableGps: () => void; onParked: () => void }) {
+function DriverLock({ moving, gps, audioGuide, onEnableGps, onParked }: { moving: boolean; gps: boolean; audioGuide: boolean; onEnableGps: () => void; onParked: () => void }) {
   return (
     <div className="lock-screen" role="alertdialog" aria-label={t('lock.aria')}>
       <div className="stack" style={{ maxWidth: 420 }}>
@@ -392,6 +412,7 @@ function DriverLock({ moving, gps, onEnableGps, onParked }: { moving: boolean; g
         <p>{moving ? t('lock.moving') : gps ? t('lock.waitingGps') : t('lock.intro')}</p>
         {!gps && <button className="btn green" onClick={onEnableGps}>{t('lock.enableGps')}</button>}
         {!moving && <button className="btn ghost" onClick={onParked}>{t('lock.parked')}</button>}
+        {audioGuide && <p className="notice small">{t('lock.audio')}</p>}
         <p className="small dim">{t('lock.tip')}</p>
       </div>
     </div>

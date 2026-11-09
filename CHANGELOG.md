@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0 — 2026-11-09
+### Fixed
+- **Trip quizzes now follow the route.** Questions were country-generic and could drift to other countries (e.g. Congo on the Shinkansen). On a trip, every question is now about the route or its countries, mostly about the route itself: which place comes first, which town is on your route, the biggest town you pass, crow-flies distance, direction of travel, next country, landmark near the route. Built from the trip's own stops, GeoNames towns in a corridor around the path and nearby landmarks.
+- Trans-Siberian line no longer cuts through China/Mongolia (added real intermediate stations as waypoints).
+
+### Added
+- **Guide mode** (🧭): statements instead of questions — the Supreme Guide tells you about the countries, towns, landmarks, facts and history along your route, in order, with “coming up next”. Optional read-aloud in the player's language (device voices, works offline); the audio guide keeps talking on the driver safety screen.
+- Translated in all 10 languages.
+
+
 ## 1.2.0 — 2026-11-09
 ### Added
 - **Sound effects & vibrations**: correct / wrong answers, streaks, level-ups, badges, passport stamps, take-off and landing, and the last seconds of the Blitz timer. Synthesised with Web Audio (no audio files: offline, no download, no licence). Vibrations via the Vibration API (Android; iPhone has none).

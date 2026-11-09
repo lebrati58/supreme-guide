@@ -82,6 +82,10 @@ async function run(name, ctxOpts) {
     await page.click('.feedback .btn');
   }
   ok('stage quiz played offline');
+  // Guide mode (statements instead of questions), still offline.
+  await page.click('.seg button >> nth=1');
+  await page.waitForSelector('.guide-now', { timeout: 10000 }).then(() => ok('guide mode shows facts offline'), () => fail('guide mode did not render'));
+  await page.click('.seg button >> nth=0');
   await shot('trip');
 
   // Persisted progress survives reload offline

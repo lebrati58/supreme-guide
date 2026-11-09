@@ -423,3 +423,13 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 .topbar .pill { padding: 6px 9px; }
 /* Bottom-nav labels: long translations (e.g. Arabic “الملف الشخصي”) shrink instead of overflowing. */
 .bottom-nav a .lbl { display: block; max-width: 100%; padding: 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(10px, 2.9vw, 12px); }
+
+/* ------------------------------------------------------------ quiz / guide switch & guide mode */
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 18px; background: rgba(255,255,255,.1); }
+.seg button { min-height: 46px; border: 0; border-radius: 14px; background: transparent; color: var(--text); font: 800 17px var(--font-display); cursor: pointer; }
+.seg button.on { background: linear-gradient(180deg, var(--gold-1), var(--gold-2)); color: var(--ink); box-shadow: 0 3px 0 var(--gold-3); }
+.guide-now { display: flex; gap: 14px; align-items: flex-start; background: var(--paper); border-radius: 18px; padding: 14px; box-shadow: 0 6px 16px rgba(0,0,0,.12); animation: pop .35s both; }
+.guide-icon { flex: none; font-size: 40px; line-height: 1; }
+.guide-body { min-width: 0; }
+.guide-next { display: flex; gap: 10px; align-items: center; width: 100%; text-align: start; padding: 10px 12px; border-radius: 14px; border: 1px solid #f2c14e; background: rgba(255,255,255,.6); color: var(--ink); font: 700 15px var(--font-body); cursor: pointer; }
+.guide-next .grow { flex: 1; min-width: 0; }
