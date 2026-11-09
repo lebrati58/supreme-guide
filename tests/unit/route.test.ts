@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { loadCities, loadCountries, loadWorld110, loadWorld50 } from '../../src/data/loaders';
-import { buildSession, GENERATORS, makeGameData, validateQuestion, type GameData } from '../../src/game/engine';
+import { buildSession, GENERATORS, makeGameData, redactName, validateQuestion, type GameData } from '../../src/game/engine';
 import { mulberry32 } from '../../src/game/rng';
 import { CountryIndex } from '../../src/geo/countryIndex';
 import { JOURNEYS } from '../../src/content/journeys';
@@ -58,7 +58,7 @@ describe('trip quizzes stay on the route', () => {
         total++;
         expect(validateQuestion(q), q.prompt).toEqual([]);
         expect(q.countries?.some((c) => iso.has(c)), `${id}: off-route question: ${q.prompt}`).toBe(true);
-        if (q.id.startsWith('r-')) routeSpecific++;
+        if (q.id.startsWith('r-') || q.id.startsWith('legend-')) routeSpecific++;
         if (LOG && seed <= 2) appendFileSync(LOG, `${id} | ${q.id.slice(0, 18)} | ${q.prompt}\n`);
       }
     }
@@ -96,5 +96,48 @@ describe('guide mode', () => {
     const facts = buildGuide(ctxs.get('paris-marseille')!, data, [], '🚆');
     expect(currentFactIndex(facts, 0)).toBeLessThan(currentFactIndex(facts, 0.5));
     expect(facts[currentFactIndex(facts, 1)].id).toBe('end');
+  });
+});
+
+describe('on-demand Wikipedia riddles', () => {
+  it('hides the place name (Latin and CJK scripts) or refuses', () => {
+    const r = redactName('Lyon is the third-largest city of France. Lyon lies at the confluence of the Rhône and the Saône.', 'Lyon');
+    expect(r).toBeTruthy();
+    expect(r!.toLowerCase()).not.toContain('lyon');
+    const z = redactName('里昂是法国第三大城市，位于罗讷河与索恩河交汇处，历史悠久，以美食和丝绸业闻名于世界各地。', '里昂');
+    expect(z).toBeTruthy();
+    expect(z).not.toContain('里昂');
+    expect(redactName('Short.', 'Lyon')).toBeNull();
+  });
+  it('asks which place on the route is described, from the route’s own cards', () => {
+    const route = { ...ctxs.get('paris-marseille')! };
+    route.wiki = ['Lyon', 'Avignon', 'Valence', 'Dijon', 'Orange'].map((t) => ({
+      title: t, url: `https://en.wikipedia.org/wiki/${t}`,
+      extract: `${t} is a French town with a long history. Many travellers stop in ${t} to enjoy its old streets, food and markets every year.`,
+    }));
+    let n = 0;
+    for (let i = 0; i < 30; i++) {
+      const q = GENERATORS.rWiki(data, mulberry32(i), undefined, route);
+      if (!q) continue;
+      n++;
+      expect(validateQuestion(q)).toEqual([]);
+      expect(q.clue!.toLowerCase()).not.toContain(q.options![q.answer!].toLowerCase());
+    }
+    expect(n).toBeGreaterThan(20);
+  });
+});
+
+describe('thin routes', () => {
+  it('completes the session with labelled general-knowledge questions', () => {
+    const base = ctxs.get('paris-marseille')!;
+    const empty: RouteCtx = { ...base, places: [], landmarks: [], countries: [], offRoute: [], wiki: [], ai: [], curatedId: undefined };
+    const qs = buildSession(data, { count: 6, rnd: mulberry32(7), route: empty });
+    expect(qs).toHaveLength(6);
+    expect(qs.every((q) => q.general)).toBe(true);
+    for (const q of qs) expect(validateQuestion(q)).toEqual([]);
+  });
+  it('keeps route questions first and does not label them', () => {
+    const qs = buildSession(data, { count: 6, rnd: mulberry32(3), route: ctxs.get('tokaido')! });
+    expect(qs.filter((q) => !q.general).length).toBeGreaterThan(0);
   });
 });

@@ -51,6 +51,12 @@ tests/unit, tests/e2e
 - `game/guide.ts` turns the same context into ordered statements (departure, countries, towns, landmarks, curated facts, events, Wikipedia cards, arrival). `game/speech.ts` reads them aloud with the Web Speech API.
 - Curated stop names are keyed by English slug (`jr.<journey>.<slug>`) so adding waypoints never shifts translations.
 
+## On-demand content, legendary journeys, sharing, optional AI
+- **On demand**: when a trip is opened online, `TripView` fetches its Wikipedia place cards in the player's language (once per language, `trip.packLang`) and keeps them for offline. `rWiki` turns them into “which place on your route is described here?” (the name is redacted from the clue).
+- **Legendary journeys** (`content/legendary.ts`): 10 mythic routes with hand-checked facts anchored to stops (told by the guide), 5 questions each (`rLegend`, highest route weight) and useful phrases in the local language (BCP-47 tag) read aloud by a local device voice (`components/Phrases.tsx`). Catalog keys `legend.<journey>.*`, `phrase.*`. `tests/unit/legend.test.ts` checks stops, answers and guide placement.
+- **Share target**: the manifest's `share_target` (`/share/` → `#/share`) receives what Waze / Google Maps / Apple Maps share; `transport/shareParse.ts` decodes coordinates (Waze `ll=` and `/ul/h<geohash>`, Google `@lat,lng` / `!3d!4d`, `geo:` …) or falls back to a Nominatim text search. Navigation apps do not expose the route itself, only the destination; the game recomputes the road route.
+- **Optional AI** (`server/ai-guide/worker.ts`, not deployed): a Cloudflare Worker holding the Anthropic key as a secret. It only rewrites the route's Wikipedia extracts into questions (structured output, schema-validated), and the client validates again (`transport/aiGuide.ts`), stores them with the trip and labels them 🤖 AI. Off unless built with `VITE_AI_GUIDE_URL`. Paid per request: the free data + Wikipedia path stays the default.
+
 ## Honesty rules built into the code
 - Flight position = **schedule-based estimate** along a great circle; the UI labels it “Estimated” and never as live. GPS (opt-in) is shown separately and preferred when it matches the route.
 - Train/cruise lines are **stop-to-stop**, labelled as such; road/walk routes use OSM routing when online, else stop-to-stop.

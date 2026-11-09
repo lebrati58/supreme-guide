@@ -42,6 +42,7 @@ async function run(name, ctxOpts) {
   const controlled = await page.evaluate(() => !!navigator.serviceWorker?.controller);
   controlled ? ok('service worker controls the page') : fail('service worker not controlling');
   await page.waitForSelector('.map[data-loaded="1"]', { timeout: 20000 }).then(() => ok('interactive map loaded (online)'), () => fail('map did not load online'));
+  (await page.$$('.legend-card')).length === 10 ? ok('10 legendary journeys on the home page') : fail('legendary journeys missing');
   await shot('home');
 
   // 2. AIRPLANE MODE
@@ -70,6 +71,7 @@ async function run(name, ctxOpts) {
   await page.click('text=Ride this route → >> nth=0');
   await page.waitForSelector('text=Countries along the way', { timeout: 20000 });
   ok('trip created offline with countries computed locally');
+  (await page.isVisible('.phrases')) ? ok('local phrases card on a legendary journey') : fail('phrases card missing');
   await page.waitForSelector('.map[data-loaded="1"]', { timeout: 20000 }).then(() => ok('interactive map loaded OFFLINE with route'), () => fail('map did not load offline'));
   await page.click('text=Play stage quiz');
   await page.waitForSelector('.question-card');

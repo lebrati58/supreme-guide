@@ -14,12 +14,12 @@ function voiceFor(lang: string): SpeechSynthesisVoice | undefined {
     ?? voices.find((v) => v.lang.toLowerCase().startsWith(base));
 }
 
-export function speak(text: string, onEnd?: () => void) {
+export function speak(text: string, onEnd?: () => void, langOverride?: string) {
   if (!canSpeak()) return;
   const synth = window.speechSynthesis;
   synth.cancel();
   const u = new SpeechSynthesisUtterance(text.replace(/\p{Extended_Pictographic}/gu, ''));
-  const lang = locale() === 'zh' ? 'zh-CN' : intlLocale();
+  const lang = langOverride ?? (locale() === 'zh' ? 'zh-CN' : intlLocale());
   u.lang = lang;
   const v = voiceFor(lang);
   if (v) u.voice = v;

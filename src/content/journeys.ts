@@ -35,6 +35,10 @@ export const JOURNEYS: CuratedJourney[] = [
     stops: [s('Melbourne', -37.8136, 144.9631, 'AU'), s('Torquay', -38.3333, 144.3167, 'AU'), s('Lorne', -38.5419, 143.975, 'AU'), s('Apollo Bay', -38.757, 143.67, 'AU'), s('Twelve Apostles', -38.6662, 143.1047, 'AU'), s('Warrnambool', -38.3818, 142.488, 'AU')] },
   { id: 'iceland-south', mode: 'car', title: 'Iceland’s south coast', blurb: 'Waterfalls, black sand and a glacier lagoon on the Ring Road.',
     stops: [s('Reykjavík', 64.1466, -21.9426, 'IS'), s('Selfoss', 63.9331, -20.9971, 'IS'), s('Vík í Mýrdal', 63.4186, -19.006, 'IS'), s('Jökulsárlón', 64.0784, -16.2306, 'IS'), s('Höfn', 64.2539, -15.2082, 'IS')] },
+  { id: 'route66', mode: 'car', title: 'Route 66: Chicago → Santa Monica', blurb: 'The “Mother Road” across eight states, from the Great Lakes to the Pacific.',
+    stops: [s('Chicago', 41.8786, -87.6251, 'US'), s('St. Louis', 38.627, -90.199, 'US'), s('Springfield, Missouri', 37.209, -93.292, 'US'), s('Tulsa', 36.154, -95.993, 'US'), s('Oklahoma City', 35.468, -97.516, 'US'), s('Amarillo', 35.222, -101.831, 'US'), s('Albuquerque', 35.084, -106.651, 'US'), s('Flagstaff', 35.198, -111.651, 'US'), s('Kingman', 35.189, -114.053, 'US'), s('Barstow', 34.899, -117.022, 'US'), s('Santa Monica', 34.01, -118.496, 'US')] },
+  { id: 'amalfi', mode: 'car', title: 'Amalfi Coast: Sorrento → Salerno', blurb: 'Cliff-top villages, lemon groves and the Tyrrhenian Sea.',
+    stops: [s('Sorrento', 40.626, 14.376, 'IT'), s('Positano', 40.628, 14.485, 'IT'), s('Amalfi', 40.634, 14.603, 'IT'), s('Ravello', 40.649, 14.612, 'IT'), s('Salerno', 40.682, 14.768, 'IT')] },
   // ---------------- walks
   { id: 'paris-walk', mode: 'walk', title: 'Paris: Arc de Triomphe → Notre-Dame', blurb: 'A long classic walk through the heart of Paris.',
     stops: [s('Arc de Triomphe', 48.8738, 2.295, 'FR'), s('Eiffel Tower', 48.8584, 2.2945, 'FR'), s('Pont Alexandre III', 48.8639, 2.3136, 'FR'), s('Place de la Concorde', 48.8656, 2.3212, 'FR'), s('Louvre Pyramid', 48.8611, 2.3358, 'FR'), s('Notre-Dame de Paris', 48.853, 2.3499, 'FR')] },

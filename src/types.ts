@@ -24,7 +24,7 @@ export interface Airport {
 
 export interface City { name: string; cc: string; lat: number; lng: number; pop: number; capital: boolean }
 
-export type Category = 'geography' | 'capitals' | 'history' | 'culture' | 'landmarks' | 'transport' | 'nature' | 'flags';
+export type Category = 'geography' | 'capitals' | 'history' | 'culture' | 'landmarks' | 'transport' | 'nature' | 'flags' | 'science' | 'biology' | 'math' | 'philosophy';
 export type QuestionKind =
   | 'mcq' | 'truefalse' | 'mapfind' | 'monument' | 'chronology'
   | 'capital' | 'blitz' | 'history' | 'observation' | 'surprise';
@@ -55,6 +55,8 @@ export interface Question {
   clue?: string;
   timeLimit?: number;
   bonus?: boolean;
+  /** General-knowledge filler on a trip whose route offers too little material. */
+  general?: boolean;
 }
 
 export interface Stop { name: string; lat: number; lng: number; cc?: string; note?: string }
@@ -89,6 +91,9 @@ export interface Trip {
   depUtc?: number; arrUtc?: number;
   role?: 'passenger' | 'driver';
   packAt?: number; // when the offline pack was downloaded
+  packLang?: string; // language of the downloaded place cards
+  /** Optional AI questions (grounded on `wiki`, same language), only when the AI guide is configured. */
+  ai?: { prompt: string; options: string[]; answer: number; explanation: string; source: string }[];
   wiki?: WikiCard[];
   progress?: number; // last known 0..1
   answeredIds?: string[];

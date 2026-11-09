@@ -10,6 +10,11 @@ import type { City } from '../types';
 import { buildRouteCtx } from '../game/route';
 import { buildGuide } from '../game/guide';
 import { GuidePanel } from '../components/GuidePanel';
+import { aiConfigured, fetchAiQuestions } from '../transport/aiGuide';
+import { PhrasesCard } from '../components/Phrases';
+import { InterestPicker } from '../components/Interests';
+import type { Domain } from '../content/knowledge';
+import { legendFor } from '../content/legendary';
 import { haversineKm, locateOnPath, pointAlong } from '../geo/geo';
 import { buildSession } from '../game/engine';
 import { mulberry32, hashString } from '../game/rng';
@@ -57,6 +62,7 @@ export default function TripView({ id }: { id: string }) {
   const [world, setWorld] = useState<Awaited<ReturnType<typeof getWorld50>> | null>(null);
   const [tz, setTz] = useState<{ from?: string; to?: string }>({});
   const [gpsOn, setGpsOn] = useState(false);
+  const [askInterests, setAskInterests] = useState(false);
   const [quiz, setQuiz] = useState<Question[] | null>(null);
   const [done, setDone] = useState<QuizResult | null>(null);
   const [mood, setMood] = useState<Mood>('takeoff');
@@ -68,6 +74,7 @@ export default function TripView({ id }: { id: string }) {
   const now = useNow(trip?.mode === 'flight' ? 15000 : 30000);
   const { geo, error: geoErr } = useGeo(gpsOn);
   const discovered = useRef(new Set<string>());
+  const autoPacked = useRef(false);
 
   useEffect(() => { store.getTrip(id).then((t) => setTrip(t ?? null)); getWorld50().then(setWorld).catch(() => {}); }, [id, getWorld50]);
   const [cities, setCities] = useState<City[]>([]);
@@ -91,7 +98,7 @@ export default function TripView({ id }: { id: string }) {
   const explore = !!trip && trip.distanceKm < 0.2; // walking “explore around” mode
   const fractions = useMemo(() => (trip ? stopFractions(trip) : []), [trip]);
   const ccMap = useMemo(() => new Map([...byIso3.values()].map((c) => [c.iso3, c.iso2])), [byIso3]);
-  const route = useMemo(() => (trip && cities.length ? buildRouteCtx(trip, cities, ccMap) : null), [trip?.id, trip?.geometry, cities, ccMap]); // eslint-disable-line react-hooks/exhaustive-deps
+  const route = useMemo(() => (trip && cities.length ? buildRouteCtx(trip, cities, ccMap) : null), [trip?.id, trip?.geometry, trip?.wiki, cities, ccMap]); // eslint-disable-line react-hooks/exhaustive-deps
   const lang = locale();
   const guide = useMemo(() => (route && trip ? buildGuide(route, game, trip.wiki ?? [], MODE_META[trip.mode].emoji) : []), [route, game, trip?.wiki, lang]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -167,7 +174,7 @@ export default function TripView({ id }: { id: string }) {
       const near = await wikiNearby(trip.geometry[0], 3000, 15);
       const cards = (await Promise.all(near.slice(0, 12).map((n) => wikiSummary(n.title, n.lang)))).filter((x): x is WikiCard => !!x)
         .map((c) => { const n = near.find((x) => x.title === c.title); return { ...c, lat: c.lat ?? n?.lat, lng: c.lng ?? n?.lng }; });
-      if (cards.length) save((t) => { t.wiki = cards; });
+      if (cards.length) save((t) => { t.wiki = cards; t.packLang = locale(); });
     })();
   }, [trip?.id, explore, online]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -176,6 +183,7 @@ export default function TripView({ id }: { id: string }) {
 
   const meta = MODE_META[trip.mode];
   const title = trip.curatedId ? journeyTitle({ id: trip.curatedId, title: trip.title }) : trip.title;
+  const legend = legendFor(trip.curatedId);
   const stopLabel = (s: Trip['stops'][number], i: number) => (trip.curatedId ? journeyStop(trip.curatedId, i, s) : s.name);
   const st = 'status' in progress ? progress.status : undefined;
   const nearCard = trip.wiki ? nearestCard(trip.wiki, progress.position) : null;
@@ -188,14 +196,17 @@ export default function TripView({ id }: { id: string }) {
     ...(geo ? [{ id: 'gps', lngLat: geo.pos, kind: 'gps' as const, label: t('trip.gpsPos', { m: Math.round(geo.accuracy) }) }] : []),
   ];
 
-  const startQuiz = () => {
+  const startQuiz = (domainsArg?: Domain[]) => {
+    const domains = domainsArg ?? profile.settings.interests;
     const focus = trip.countries.slice(Math.max(0, currentIdx), currentIdx + 3).map((c) => c.iso3);
     // Questions come from the route itself (its places, landmarks and countries) — never from elsewhere.
     const qs = buildSession(game, {
       count: 6, rnd: mulberry32(hashString(trip.id + (trip.answeredIds?.length ?? 0) + Date.now())), focus: focus.length ? focus : undefined,
       route: route ? { ...route, progress: progress.fraction } : undefined,
-      exclude: new Set(trip.answeredIds), surpriseRate: 0.12, focusRate: 1, maxDifficulty: profile.kidMode ? 2 : undefined,
+      exclude: new Set(trip.answeredIds), surpriseRate: 0.12, focusRate: 1, maxDifficulty: profile.kidMode ? 2 : undefined, domains,
     });
+    // The route is running dry: ask once which domains the player enjoys for the extra questions.
+    if (!domains && qs.some((q) => q.general)) { setAskInterests(true); return; }
     setDone(null); setQuiz(qs);
     setTimeout(() => document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
@@ -224,14 +235,29 @@ export default function TripView({ id }: { id: string }) {
       const titles = pois.map((l) => decodeURIComponent(l.wiki).replace(/_/g, ' '));
       const cards = online ? await buildWikiPack(trip.geometry, titles, (d, n) => setPacking(t('trip.downloading', { d, n }))) : [];
       // Warm landmark photos & question images too.
-      save((t) => { t.wiki = cards.length ? cards : t.wiki; t.packAt = Date.now(); });
+      const ai = online && aiConfigured() && cards.length ? await fetchAiQuestions(trip, cards, title) : [];
+      save((t) => { t.wiki = cards.length ? cards : t.wiki; t.packAt = Date.now(); t.packLang = locale(); t.ai = ai.length ? ai : undefined; });
       toast({ icon: '📦', title: t('trip.readyOffline'), body: t('trip.readyOfflineBody', { n: cards.length }) });
     } finally { setPacking(null); }
   };
 
+  // On demand: as soon as the trip is open with a connection, prepare its place cards in the player's
+  // language (once per language), so the guide and the Wikipedia questions are ready — offline too.
+  if (online && !explore && !packing && !autoPacked.current && (!trip.packAt || trip.packLang !== locale())) {
+    autoPacked.current = true;
+    setTimeout(() => { void download(); }, 0);
+  }
+
   return (
     <div className="page stack">
       {celebrate > 0 && <Confetti key={celebrate} />}
+      {askInterests && (
+        <Modal label={t('interests.title')} onClose={() => { setAskInterests(false); startQuiz([]); }}>
+          <h2 style={{ marginTop: 0 }}>{t('interests.title')}</h2>
+          <p>{t('interests.routeDry')}</p>
+          <InterestPicker saveLabel={t('interests.play')} onSave={(d) => { update((p) => { p.settings.interests = d; }); setAskInterests(false); startQuiz(d); }} />
+        </Modal>
+      )}
       {locked && <DriverLock moving={moving} gps={gpsOn} audioGuide={view === 'guide'} onEnableGps={() => setGpsOn(true)} onParked={() => setParkedAt(Date.now())} />}
       <div className="row spread">
         <a className="link-btn" href={href('/trips')}>{t('trip.backShort')}</a>
@@ -326,12 +352,15 @@ export default function TripView({ id }: { id: string }) {
           <>
             <h2 style={{ margin: 0 }}>{current ? <>{current.flag} {progress.source === 'schedule' && trip.flight ? t('trip.probablyOver', { country: countryName(current) }) : t('trip.nowIn', { country: countryName(current) })}</> : t('trip.overWater')}</h2>
             {done && <p style={{ margin: 0 }}><b>{done.correct}/{done.total}</b> {t('trip.correctXp', { xp: done.xp })}</p>}
-            <button className="btn big blue" disabled={locked} onClick={startQuiz}>🎯 {done ? t('trip.nextStage') : t('trip.playStage')}</button>
+            <button className="btn big blue" disabled={locked} onClick={() => startQuiz()}>🎯 {done ? t('trip.nextStage') : t('trip.playStage')}</button>
             {!trip.completedAt && progress.fraction > 0.9 && <button className="btn green" onClick={complete}>{t('trip.arrived')}</button>}
             {!trip.completedAt && progress.fraction <= 0.9 && <button className="link-btn" style={{ color: 'var(--ink)' }} onClick={complete}>{t('trip.markComplete')}</button>}
           </>
         )}
       </section>
+
+      {/* ------------- local phrases (legendary journeys) */}
+      {legend && <PhrasesCard legend={legend} />}
 
       {/* ------------- countries timeline */}
       {trip.countries.length > 0 && !explore && (

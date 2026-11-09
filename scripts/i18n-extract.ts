@@ -10,12 +10,14 @@ import { resolve } from 'node:path';
 import { UI } from '../src/i18n/ui';
 import { slug } from '../src/i18n/slug';
 import { CURATED } from '../src/content/questions';
+import { KNOWLEDGE } from '../src/content/knowledge';
 import { LANDMARKS } from '../src/content/landmarks';
 import { EVENTS } from '../src/content/events';
 import { JOURNEYS } from '../src/content/journeys';
 import { MASCOT_LINES } from '../src/content/mascotLines';
 import { BADGES } from '../src/content/badges';
 import { TITLES } from '../src/content/ranks';
+import { LEGENDS } from '../src/content/legendary';
 
 const root = resolve(import.meta.dirname, '..');
 const out: Record<string, string> = { ...UI };
@@ -24,7 +26,7 @@ const add = (k: string, v: string) => {
   out[k] = v;
 };
 
-for (const q of CURATED) {
+for (const q of [...CURATED, ...KNOWLEDGE]) {
   add(`q.${q.id}.q`, q.prompt);
   q.options?.forEach((o, i) => add(`q.${q.id}.o${i}`, o));
   add(`q.${q.id}.e`, q.explanation);
@@ -36,6 +38,10 @@ for (const e of EVENTS) add(`ev.${slug(e.wiki)}`, e.label);
 for (const j of JOURNEYS) {
   add(`jr.${j.id}.title`, j.title); add(`jr.${j.id}.blurb`, j.blurb);
   j.stops.forEach((s) => { add(`jr.${j.id}.${slug(s.name)}`, s.name); if (s.note) add(`stopnote.${slug(s.note)}`, s.note); });
+}
+for (const l of LEGENDS) {
+  l.facts.forEach((f, i) => add(`legend.${l.journey}.f${i}`, f.text));
+  for (const q of l.questions) { add(`legend.${l.journey}.${q.id}.q`, q.q); q.o.forEach((o, i) => add(`legend.${l.journey}.${q.id}.o${i}`, o)); add(`legend.${l.journey}.${q.id}.e`, q.e); }
 }
 for (const [mood, lines] of Object.entries(MASCOT_LINES)) lines.forEach((l, i) => add(`mascot.${mood}.${i}`, l));
 for (const b of BADGES) { add(`badge.${b.id}.name`, b.name); add(`badge.${b.id}.desc`, b.desc); }

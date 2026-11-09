@@ -1,4 +1,4 @@
-import type { City, LngLat, Mode, Trip } from '../types';
+import type { City, LngLat, Mode, Trip, WikiCard } from '../types';
 import { LANDMARKS, type Landmark } from '../content/landmarks';
 import { bearing, densify, haversineKm } from '../geo/geo';
 
@@ -37,6 +37,8 @@ export interface RouteCtx {
   curatedId?: string;            // to translate curated stop names
   pathKm: number;                // length of the drawn path
   progress?: number;             // current position (0..1), set by the trip screen
+  wiki: WikiCard[];              // place cards fetched on demand for this route (player's language)
+  ai: NonNullable<Trip['ai']>;   // optional AI questions grounded on `wiki`
 }
 
 /** Corridor half-width (km) in which a town counts as “on the route”, by transport mode. */
@@ -118,7 +120,7 @@ export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, 
   const b: LngLat = [trip.stops[trip.stops.length - 1].lng, trip.stops[trip.stops.length - 1].lat];
   return {
     mode: trip.mode, places, landmarks, countries: trip.countries, from: first, to: last,
-    distanceKm: haversineKm(a, b), bearingDeg: bearing(a, b), path, offRoute, explore, curatedId: trip.curatedId, pathKm: total,
+    distanceKm: haversineKm(a, b), bearingDeg: bearing(a, b), path, offRoute, explore, curatedId: trip.curatedId, pathKm: total, wiki: trip.wiki ?? [], ai: trip.packLang && trip.ai ? trip.ai : [],
   };
 }
 

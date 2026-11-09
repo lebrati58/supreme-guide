@@ -1,3 +1,4 @@
+import { InterestPicker } from '../components/Interests';
 import { useEffect, useState } from 'react';
 import { useApp } from '../state';
 import { fmtDate, fmtNum, t, tn } from '../i18n';
@@ -9,7 +10,7 @@ import { play, setSfxOptions } from '../game/sfx';
 const AVATARS = ['🧭', '🧳', '🦊', '🐼', '🐯', '🦁', '🐨', '🐧', '🦄', '🚀', '⚽', '🎨'];
 
 export default function Profile({ install }: { install: { canInstall: boolean; prompt: () => void; installed: boolean } }) {
-  const { profile, profiles, switchProfile, createProfile, removeProfile, update, online } = useApp();
+  const { profile, profiles, switchProfile, createProfile, removeProfile, update, online, toast } = useApp();
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('🦊');
@@ -62,6 +63,12 @@ export default function Profile({ install }: { install: { canInstall: boolean; p
         <label className="row"><input type="checkbox" checked={profile.settings.sound !== false} onChange={(e) => { const on = e.target.checked; update((p) => { p.settings.sound = on; }); if (on) { setSfxOptions({ sound: true, haptics: profile.settings.haptics !== false }); play('correct'); } }} /> {t('profile.sound')}</label>
         <label className="row"><input type="checkbox" checked={profile.settings.haptics !== false} onChange={(e) => { const on = e.target.checked; update((p) => { p.settings.haptics = on; }); if (on) { setSfxOptions({ sound: profile.settings.sound !== false, haptics: true }); play('stamp'); } }} /> {t('profile.haptics')}</label>
         <label className="row"><input type="checkbox" checked={profile.settings.reducedMotion} onChange={(e) => { update((p) => { p.settings.reducedMotion = e.target.checked; }); document.documentElement.classList.toggle('reduce-motion', e.target.checked); }} /> {t('profile.reduceMotion')}</label>
+      </section>
+
+      <section className="card stack">
+        <h2>{t('interests.title')}</h2>
+        <p className="small dim" style={{ margin: 0 }}>{t('interests.help')}</p>
+        <InterestPicker key={(profile.settings.interests ?? []).join()} initial={profile.settings.interests} onSave={(d) => { update((p) => { p.settings.interests = d; }); toast({ icon: '✅', title: t('interests.saved') }); }} />
       </section>
 
       <section className="card stack">

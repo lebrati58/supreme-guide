@@ -1,7 +1,7 @@
 {
   "name": "supreme-guide",
   "private": true,
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "SUPREME GUIDE \u2014 Every Journey Is a Game! The global travel quiz game.",
   "type": "module",
   "scripts": {

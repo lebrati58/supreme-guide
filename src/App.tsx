@@ -19,6 +19,7 @@ const QuizScreen = lazy(() => import('./screens/QuizScreen'));
 const Passport = lazy(() => import('./screens/Passport'));
 const Profile = lazy(() => import('./screens/Profile'));
 const CountryPage = lazy(() => import('./screens/Country'));
+const Share = lazy(() => import('./screens/Share'));
 
 interface BIPEvent extends Event { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
 
@@ -60,6 +61,7 @@ export default function App() {
     case 'quiz': screen = <QuizScreen key={route.path + route.query.toString() + lang} type={b ?? 'quick'} query={route.query} />; break;
     case 'passport': screen = <Passport />; break;
     case 'country': screen = <CountryPage key={b} iso3={b} />; break;
+    case 'share': screen = <Share key={route.query.toString()} query={route.query} />; break;
     case 'profile': screen = <Profile install={{ canInstall: !!bip, installed, prompt: () => { void bip?.prompt(); setBip(null); } }} />; break;
     default: screen = <Home />;
   }

@@ -80,7 +80,7 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
       <Mascot mood={mood} nonce={nonce} size={64} />
 
       <div className={`question-card ${q.bonus ? 'bonus' : ''}`} key={q.id + i}>
-        <div className="kind-tag">{q.bonus ? t('quiz.bonusTag') : `${kindIcon(q)} ${kindLabel(q.kind)}`} · {'★'.repeat(q.difficulty)}</div>
+        <div className="kind-tag">{q.bonus ? t('quiz.bonusTag') : q.general ? t('quiz.generalTag') : `${kindIcon(q)} ${kindLabel(q.kind)}`} · {'★'.repeat(q.difficulty)}</div>
         <h2 className="question">{q.prompt}</h2>
         {q.timeLimit && <Timer key={`t${i}`} seconds={q.timeLimit} running={!done} onTimeout={() => settle(false, 0)} onTick={() => {}} />}
         <div style={{ marginTop: 14 }}>

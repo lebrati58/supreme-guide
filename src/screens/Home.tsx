@@ -10,6 +10,9 @@ import { store } from '../storage/db';
 import { todayKey } from '../game/rng';
 import { isRegionUnlocked, TOUR } from '../game/progression';
 import { t } from '../i18n';
+import { LEGENDS } from '../content/legendary';
+import { JOURNEYS } from '../content/journeys';
+import { journeyTitle } from '../i18n/content';
 
 const WorldMap = lazy(() => import('../map/WorldMap'));
 
@@ -55,6 +58,24 @@ export default function Home() {
               <span className="emo" aria-hidden="true">{MODE_META[m].emoji}</span>{modeLabel(m)}
             </a>
           ))}
+        </div>
+      </section>
+
+      <section>
+        <h2>{t('legend.home.title')}</h2>
+        <p className="small dim" style={{ marginTop: -6 }}>{t('legend.home.sub')}</p>
+        <div className="legend-row">
+          {LEGENDS.map((l) => {
+            const j = JOURNEYS.find((x) => x.id === l.journey);
+            if (!j) return null;
+            return (
+              <a key={l.journey} className="legend-card" href={href(`/plan/${j.mode}?j=${j.id}`)}>
+                <span className="emo" aria-hidden="true">{l.emoji}</span>
+                <b>{journeyTitle(j)}</b>
+                <span className="small">{MODE_META[j.mode].emoji} {modeLabel(j.mode)}</span>
+              </a>
+            );
+          })}
         </div>
       </section>
 
