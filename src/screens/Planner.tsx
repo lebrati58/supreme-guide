@@ -15,6 +15,7 @@ import { formatDuration, formatLocal } from '../transport/time';
 import { Mascot } from '../components/Mascot';
 import { fwd, t, type Key } from '../i18n';
 import { journeyBlurb, journeyStop, journeyTitle } from '../i18n/content';
+import { play } from '../game/sfx';
 
 export default function Planner({ mode }: { mode: Mode }) {
   const meta = MODE_META[mode];
@@ -45,6 +46,7 @@ function useCreate() {
       const trip = await createTrip({ ...args, index: await getIndex() });
       await store.putTrip(trip);
       useMode(args.mode);
+      play('takeoff');
       go(`/trip/${trip.id}`);
     } catch (e) {
       toast({ icon: '⚠️', title: t('plan.errCreate'), body: e instanceof Error ? e.message : String(e) });

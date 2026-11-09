@@ -18,7 +18,8 @@ export interface Profile {
   badges: Record<string, number>;
   daily: { last?: string; streak: number; best: number; scores: Record<string, number> };
   tourStars: Partial<Record<Region, number>>;
-  settings: { sound: boolean; reducedMotion: boolean; gpsConsent: boolean; lang: string };
+  /** `haptics` is optional: profiles created before v1.2 don't have it (treated as on). */
+  settings: { sound: boolean; haptics?: boolean; reducedMotion: boolean; gpsConsent: boolean; lang: string };
 }
 
 export function newProfile(name: string, avatar = '🧭', kidMode = false, lang = 'en'): Profile {
@@ -28,7 +29,7 @@ export function newProfile(name: string, avatar = '🧭', kidMode = false, lang 
     stats: { answered: 0, correct: 0, bestStreak: 0, mapCorrect: 0, chronoCorrect: 0, bonusCorrect: 0, perfectRounds: 0, tripsCompleted: 0 },
     modesUsed: [], stamps: {}, badges: {},
     daily: { streak: 0, best: 0, scores: {} }, tourStars: {},
-    settings: { sound: true, reducedMotion: false, gpsConsent: false, lang },
+    settings: { sound: true, haptics: true, reducedMotion: false, gpsConsent: false, lang },
   };
 }
 

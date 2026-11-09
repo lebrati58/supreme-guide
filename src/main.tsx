@@ -12,6 +12,9 @@ import '@fontsource/nunito/cyrillic-800.css';
 import './styles/app.css';
 import { AppProvider } from './state';
 import App from './App';
+import { installAudioUnlock } from './game/sfx';
+
+installAudioUnlock();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

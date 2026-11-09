@@ -19,6 +19,7 @@ import type { MapMarker } from '../map/WorldMap';
 import type { Mood } from '../game/mascot';
 import { fmtDate, fmtNum, t } from '../i18n';
 import { countryName, journeyStop, journeyTitle, lmFact, lmName, stopNote } from '../i18n/content';
+import { play } from '../game/sfx';
 
 const WorldMap = lazy(() => import('../map/WorldMap'));
 
@@ -199,6 +200,7 @@ export default function TripView({ id }: { id: string }) {
     stamp(trip.countries.map((c) => c.iso3), trip.mode);
     update((p) => { p.stats.tripsCompleted++; });
     setMood('landing'); setCelebrate((c) => c + 1);
+    play('landing');
   };
 
   const download = async () => {

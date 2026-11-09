@@ -410,6 +410,8 @@ export const UI: Record<string, string> = {
   'profile.avatarAria': 'Avatar {avatar}',
   'profile.kidMode': '🧒 Kid mode (easier questions, extra-gentle mascot)',
   'profile.reduceMotion': 'Reduce animations',
+  'profile.sound': '🔊 Sound effects',
+  'profile.haptics': '📳 Vibrations (Android phones)',
   'profile.app': '📲 App & offline',
   'profile.status': 'Status:',
   'profile.online': '🟢 online',
