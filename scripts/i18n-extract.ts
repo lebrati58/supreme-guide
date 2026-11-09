@@ -35,7 +35,7 @@ for (const l of LANDMARKS) {
 for (const e of EVENTS) add(`ev.${slug(e.wiki)}`, e.label);
 for (const j of JOURNEYS) {
   add(`jr.${j.id}.title`, j.title); add(`jr.${j.id}.blurb`, j.blurb);
-  j.stops.forEach((s, i) => { add(`jr.${j.id}.s${i}`, s.name); if (s.note) add(`stopnote.${slug(s.note)}`, s.note); });
+  j.stops.forEach((s) => { add(`jr.${j.id}.${slug(s.name)}`, s.name); if (s.note) add(`stopnote.${slug(s.note)}`, s.note); });
 }
 for (const [mood, lines] of Object.entries(MASCOT_LINES)) lines.forEach((l, i) => add(`mascot.${mood}.${i}`, l));
 for (const b of BADGES) { add(`badge.${b.id}.name`, b.name); add(`badge.${b.id}.desc`, b.desc); }

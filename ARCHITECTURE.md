@@ -45,6 +45,12 @@ tests/unit, tests/e2e
 - **Known limitation**: city search matches Latin-script city names (GeoNames); typing Paris in Hebrew script will not find it.
 - Daily and friend challenges pick the same questions on every device; distractor choices can differ between languages.
 
+## Route-aware quizzes & guide mode
+- `game/route.ts` builds a **RouteCtx** per trip: named stops (in order), GeoNames towns within a corridor of the path (flight 30 km, train 8 km, road 6 km, cruise 12 km; one town per agglomeration), landmarks near the path and the countries crossed.
+- `game/engine.ts` route generators (`rOrder`, `rOnRoute`, `rLargest`, `rDistance`, `rDirection`, `rCountryOf`, `rNextCountry`, `rLandmarkNear`) only use that context. With a route, sessions use `ROUTE_WEIGHTS`, never fall back to world-wide content, and drop any question not about the route's countries.
+- `game/guide.ts` turns the same context into ordered statements (departure, countries, towns, landmarks, curated facts, events, Wikipedia cards, arrival). `game/speech.ts` reads them aloud with the Web Speech API.
+- Curated stop names are keyed by English slug (`jr.<journey>.<slug>`) so adding waypoints never shifts translations.
+
 ## Honesty rules built into the code
 - Flight position = **schedule-based estimate** along a great circle; the UI labels it “Estimated” and never as live. GPS (opt-in) is shown separately and preferred when it matches the route.
 - Train/cruise lines are **stop-to-stop**, labelled as such; road/walk routes use OSM routing when online, else stop-to-stop.

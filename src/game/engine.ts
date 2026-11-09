@@ -1,8 +1,10 @@
 import type { Country, Difficulty, Question, QuestionKind, Region } from '../types';
 import { LANDMARKS } from '../content/landmarks';
 import { EVENTS } from '../content/events';
-import { listJoin, tc, type Key, t } from '../i18n';
-import { capitalName, capitalsList, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, lmCity, lmClue, lmFact, lmName, regionLabel, subregionLabel } from '../i18n/content';
+import { fmtNum, fwd, listJoin, tc, type Key, t } from '../i18n';
+import { compassKey, type RouteCtx, type RoutePlace } from './route';
+import { haversineKm } from '../geo/geo';
+import { journeyStop, capitalName, capitalsList, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, lmCity, lmClue, lmFact, lmName, regionLabel, subregionLabel } from '../i18n/content';
 import { type Rng, pick, shuffle, weightedPick } from './rng';
 
 /**
@@ -59,7 +61,7 @@ const eligible = (c: Country) => c.un;
 // ------------------------------------------------------------------ generators
 // Every visible string goes through the catalog (gen.* keys) and CLDR names, so generated
 // questions come out in the player's language. Answers still come from structured data only.
-export type Gen = (data: GameData, rnd: Rng, focus?: Country) => Question | null;
+export type Gen = (data: GameData, rnd: Rng, focus?: Country, route?: RouteCtx) => Question | null;
 const cn = countryName;
 
 const genCapital: Gen = (data, rnd, focus) => {
@@ -173,13 +175,18 @@ const genCurrency: Gen = (data, rnd, focus) => {
     explanation: tc('gen.cur.e', 'The official currency of {country}: {currency}.', { country: cn(c), currency: currencyLabel(c) }), source: DATA_SRC, countries: [c.iso3] };
 };
 
-function landmarkPool(focus?: Country) {
+/** Landmarks to ask about. On a trip: landmarks near the route, else in the route's countries — never the whole world. */
+function landmarkPool(focus?: Country, route?: RouteCtx) {
+  if (route?.landmarks.length) return route.landmarks.map((x) => x.l);
   const local = focus ? LANDMARKS.filter((l) => l.iso3 === focus.iso3 || l.shared?.includes(focus.iso3)) : [];
+  if (route) return local;
   return local.length ? local : LANDMARKS;
 }
 
-const genLandmarkCountry: Gen = (data, rnd, focus) => {
-  const l = pick(landmarkPool(focus).filter((x) => !x.shared), rnd);
+const genLandmarkCountry: Gen = (data, rnd, focus, route) => {
+  const pool0 = landmarkPool(focus, route).filter((x) => !x.shared);
+  if (!pool0.length) return null;
+  const l = pick(pool0, rnd);
   if (!l) return null;
   const c = data.byIso3.get(l.iso3);
   if (!c) return null;
@@ -191,8 +198,10 @@ const genLandmarkCountry: Gen = (data, rnd, focus) => {
     source: W(decodeURIComponent(l.wiki)), countries: [l.iso3], imageTitle: l.wiki };
 };
 
-const genMonument: Gen = (_data, rnd, focus) => {
-  const l = pick(landmarkPool(focus), rnd);
+const genMonument: Gen = (_data, rnd, focus, route) => {
+  const lp = landmarkPool(focus, route);
+  if (!lp.length) return null;
+  const l = pick(lp, rnd);
   const others = shuffle(LANDMARKS.filter((x) => x.id !== l.id && x.kind === l.kind), rnd);
   const pool = [...others, ...shuffle(LANDMARKS.filter((x) => x.id !== l.id && x.kind !== l.kind), rnd)].slice(0, 8).map(lmName);
   const { options, answer } = optionsFor(lmName(l), pool, rnd);
@@ -202,10 +211,11 @@ const genMonument: Gen = (_data, rnd, focus) => {
     source: W(decodeURIComponent(l.wiki)), countries: [l.iso3, ...(l.shared ?? [])] };
 };
 
-const genChronology: Gen = (_data, rnd, focus) => {
+const genChronology: Gen = (_data, rnd, focus, route) => {
   const local = focus ? EVENTS.filter((e) => e.tags?.includes(focus.iso3)) : [];
-  const pool = shuffle(EVENTS, rnd);
-  const set = [...shuffle(local, rnd).slice(0, 2)];
+  if (route && local.length < 3) return null; // on a trip, only timelines about the route's countries
+  const pool = shuffle(route ? local : EVENTS, rnd);
+  const set = [...shuffle(local, rnd).slice(0, route ? 4 : 2)];
   for (const e of pool) {
     if (set.length >= 4) break;
     if (!set.some((x) => x.label === e.label || Math.abs(x.year - e.year) < 3)) set.push(e);
@@ -223,18 +233,172 @@ const curatedFor = (focus?: Country) => {
   return focus ? all.filter((q) => q.countries?.includes(focus.iso3)) : all;
 };
 
-const genCurated: Gen = (_d, rnd, focus) => {
+const genCurated: Gen = (_d, rnd, focus, route) => {
+  if (route && !focus) return null;
   const pool = curatedFor(focus);
   return pool.length ? { ...pick(pool, rnd) } : null;
 };
 
+// ------------------------------------------------------------------ route generators
+// Built only from the trip's own stops, towns (GeoNames), landmarks and countries.
+function placeName(p: RoutePlace, route: RouteCtx) {
+  return route.curatedId && p.stopIndex !== undefined ? journeyStop(route.curatedId, p.stopIndex, { name: p.name }) : p.name;
+}
+const GEONAMES_SRC = { label: 'GeoNames (CC BY 4.0)', url: 'https://www.geonames.org/' };
+const routeIsos = (route: RouteCtx) => route.countries.map((c) => c.iso3);
+const uniqueByName = (ps: RoutePlace[], route: RouteCtx) => {
+  const seen = new Set<string>();
+  return ps.filter((p) => { const n = placeName(p, route); if (seen.has(n)) return false; seen.add(n); return true; });
+};
+/** Pick up to n places whose positions along the route are clearly apart. */
+function spaced(ps: RoutePlace[], n: number, rnd: Rng, gap = 0.04) {
+  const out: RoutePlace[] = [];
+  for (const p of shuffle(ps, rnd)) { if (out.every((q) => Math.abs(q.at - p.at) >= gap)) out.push(p); if (out.length === n) break; }
+  return out;
+}
+const roundKm = (km: number) => (km < 100 ? Math.max(5, Math.round(km / 5) * 5) : km < 1000 ? Math.round(km / 10) * 10 : Math.round(km / 50) * 50);
+
+const rOrder: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.explore) return null;
+  const pool = uniqueByName(route.places, route).filter((p) => p !== route.from && p !== route.to);
+  const upcoming = pool.filter((p) => p.at > (route.progress ?? 0) + 0.01);
+  const set = spaced(upcoming.length >= 4 ? upcoming : pool, 4, rnd);
+  if (set.length < 4) return null;
+  const sorted = set.slice().sort((a, b) => a.at - b.at);
+  const names = sorted.map((p) => placeName(p, route));
+  const options = shuffle(names, rnd);
+  return { id: `r-order-${names.join('|')}`, kind: 'mcq', category: 'geography', difficulty: 2,
+    prompt: tc('gen.r.order.q', 'Starting from {from}, which of these places do you reach first?', { from: placeName(route.from, route) }),
+    options, answer: options.indexOf(names[0]),
+    explanation: tc('gen.r.order.e', 'In order along your route: {list}.', { list: names.join(` ${fwd()} `) }), source: GEONAMES_SRC, countries: routeIsos(route) };
+};
+
+const rOnRoute: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.explore || route.offRoute.length < 3) return null;
+  const towns = uniqueByName(route.places, route).filter((p) => p.cc && p !== route.from && p !== route.to);
+  if (!towns.length) return null;
+  const p = pick(towns, rnd);
+  const name = placeName(p, route);
+  const onNames = new Set(route.places.map((x) => placeName(x, route)));
+  const same = route.offRoute.filter((c) => c.cc === p.cc && !onNames.has(c.name));
+  const pool = (same.length >= 3 ? same : route.offRoute.filter((c) => !onNames.has(c.name)))
+    .sort((a, b) => Math.abs(Math.log((a.pop || 1) / (p.pop || 1e5))) - Math.abs(Math.log((b.pop || 1) / (p.pop || 1e5))));
+  const distract = shuffle(pool.slice(0, 8), rnd).slice(0, 3).map((c) => c.name);
+  if (new Set([name, ...distract]).size < 4) return null;
+  const options = shuffle([name, ...distract], rnd);
+  return { id: `r-on-${name}`, kind: 'mcq', category: 'geography', difficulty: 2,
+    prompt: tc('gen.r.on.q', 'Which of these places is on your route?'), options, answer: options.indexOf(name),
+    explanation: tc('gen.r.on.e', '{place} is on your route, about {km} km from {from}. The others are well away from it.', { place: name, km: Math.round(p.at * route.pathKm), from: placeName(route.from, route) }),
+    source: GEONAMES_SRC, countries: routeIsos(route) };
+};
+
+const rLargest: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.explore) return null;
+  const withPop = shuffle(uniqueByName(route.places, route).filter((p) => p.pop > 0), rnd).filter((p, i, arr) => arr.findIndex((q) => (q.town ?? q.name) === (p.town ?? p.name)) === i);
+  const set: RoutePlace[] = [];
+  for (const p of withPop) { if (set.every((q) => Math.max(p.pop, q.pop) / Math.min(p.pop, q.pop) > 1.4)) set.push(p); if (set.length === 4) break; }
+  if (set.length < 4) return null;
+  const top = set.reduce((a, b) => (a.pop > b.pop ? a : b));
+  const label = (x: RoutePlace) => x.town ?? placeName(x, route);
+  const options = shuffle(set.map(label), rnd);
+  const approx = (n: number) => fmtNum(Number(n.toPrecision(2)));
+  return { id: `r-big-${options.slice().sort().join('|')}`, kind: 'observation', category: 'geography', difficulty: 2,
+    prompt: tc('gen.r.big.q', 'Which of these places on your route has the most inhabitants?'), options, answer: options.indexOf(label(top)),
+    explanation: set.sort((a, b) => b.pop - a.pop).map((x) => tc('gen.r.big.item', '{place}: about {pop}', { place: label(x), pop: approx(x.pop) })).join(' · '),
+    source: GEONAMES_SRC, countries: routeIsos(route) };
+};
+
+const rDistance: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.explore || route.distanceKm < 10) return null;
+  const km = roundKm(route.distanceKm);
+  const values = [...new Set([km, roundKm(km * 0.55), roundKm(km * 1.6), roundKm(km * 2.4)])];
+  if (values.length < 4) return null;
+  const label = (v: number) => tc('gen.r.km', '{km} km', { km: v });
+  const options = shuffle(values.map(label), rnd);
+  return { id: `r-dist-${km}`, kind: 'mcq', category: 'geography', difficulty: 2,
+    prompt: tc('gen.r.dist.q', 'As the crow flies, how far is it from {from} to {to}?', { from: placeName(route.from, route), to: placeName(route.to, route) }),
+    options, answer: options.indexOf(label(km)),
+    explanation: tc('gen.r.dist.e', 'About {km} km in a straight line (great-circle distance). The line of your trip is about {path} km.', { km, path: roundKm(route.pathKm) }),
+    source: { label: 'Great-circle distance', url: 'https://en.wikipedia.org/wiki/Great-circle_distance' }, countries: routeIsos(route) };
+};
+
+const DIRS = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'] as const;
+const rDirection: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.explore || route.distanceKm < 20) return null;
+  const k = compassKey(route.bearingDeg);
+  const i = DIRS.indexOf(k);
+  const far = DIRS.filter((_, j) => Math.min(Math.abs(j - i), 8 - Math.abs(j - i)) >= 2);
+  const keys = shuffle([k, ...shuffle(far, rnd).slice(0, 3)], rnd);
+  const options = keys.map((x) => t(`dir.${x}` as Key));
+  return { id: `r-dir-${k}-${Math.round(route.distanceKm)}`, kind: 'mcq', category: 'geography', difficulty: 1,
+    prompt: tc('gen.r.dir.q', 'Going from {from} to {to}, which direction are you mainly heading?', { from: placeName(route.from, route), to: placeName(route.to, route) }),
+    options, answer: keys.indexOf(k),
+    explanation: tc('gen.r.dir.e', 'Mainly {dir}: the initial compass bearing is about {deg}°.', { dir: t(`dir.${k}` as Key), deg: Math.round(route.bearingDeg) }),
+    source: { label: 'Bearing', url: 'https://en.wikipedia.org/wiki/Bearing_(navigation)' }, countries: routeIsos(route) };
+};
+
+const rCountryOf: Gen = (data, rnd, _f, route) => {
+  if (!route || route.countries.length < 2) return null;
+  const towns = route.places.filter((p) => p.cc && p !== route.from);
+  if (!towns.length) return null;
+  const p = pick(towns, rnd);
+  const c = data.countries.find((x) => x.iso2 === p.cc);
+  if (!c) return null;
+  const pool = [...route.countries.map((x) => data.byIso3.get(x.iso3)), ...neighbours(data, c, rnd, eligible).slice(0, 6)]
+    .filter((x): x is Country => !!x && x.iso3 !== c.iso3).map(cn);
+  const { options, answer } = optionsFor(cn(c), pool, rnd);
+  if (new Set(options).size < 4) return null;
+  return { id: `r-cc-${p.name}`, kind: 'mcq', category: 'geography', difficulty: 2,
+    prompt: tc('gen.r.cc.q', '{place} is on your route. Which country is it in?', { place: placeName(p, route) }), options, answer,
+    explanation: tc('gen.r.cc.e', '{place} is in {country}.', { place: placeName(p, route), country: cn(c) }), source: GEONAMES_SRC, countries: [c.iso3] };
+};
+
+const rNextCountry: Gen = (data, rnd, _f, route) => {
+  if (!route || route.countries.length < 2) return null;
+  const i = 1 + Math.floor(rnd() * (route.countries.length - 1));
+  const a = data.byIso3.get(route.countries[i - 1].iso3), b = data.byIso3.get(route.countries[i].iso3);
+  if (!a || !b) return null;
+  const pool = [...route.countries.map((x) => data.byIso3.get(x.iso3)), ...neighbours(data, a, rnd, eligible).slice(0, 6)]
+    .filter((x): x is Country => !!x && x.iso3 !== a.iso3 && x.iso3 !== b.iso3).map(cn);
+  const { options, answer } = optionsFor(cn(b), pool, rnd);
+  if (new Set(options).size < 4) return null;
+  const order = route.countries.map((x) => data.byIso3.get(x.iso3)).filter((x): x is Country => !!x).map(cn).join(` ${fwd()} `);
+  return { id: `r-next-${a.iso3}-${b.iso3}`, kind: 'mcq', category: 'geography', difficulty: 2,
+    prompt: tc('gen.r.next.q', 'After {country}, which country does your route enter next?', { country: cn(a) }), options, answer,
+    explanation: tc('gen.r.next.e', 'Countries in order along your route: {list}.', { list: order }), source: DATA_SRC, countries: [a.iso3, b.iso3] };
+};
+
+const rLandmarkNear: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.explore || !route.landmarks.length) return null;
+  const { l } = pick(route.landmarks, rnd);
+  const places = uniqueByName(route.places, route);
+  const dist = places.map((p) => ({ p, d: haversineKm([p.lng, p.lat], [l.lng, l.lat]) })).sort((a, b) => a.d - b.d);
+  if (dist.length < 4 || dist[0].d > 60 || dist[1].d < dist[0].d * 1.5) return null;
+  const correct = placeName(dist[0].p, route);
+  const others = shuffle(dist.slice(1).filter((x) => x.d > dist[0].d * 1.5), rnd).slice(0, 3).map((x) => placeName(x.p, route));
+  if (others.length < 3) return null;
+  const options = shuffle([correct, ...others], rnd);
+  return { id: `r-lm-${l.id}`, kind: 'monument', category: 'landmarks', difficulty: 2,
+    prompt: tc('gen.r.lm.q', '{emoji} {landmark} is near your route. Which place on your route is it closest to?', { emoji: l.emoji, landmark: lmName(l) }),
+    options, answer: options.indexOf(correct),
+    explanation: tc('gen.r.lm.e', '{landmark} is about {km} km from {place}. {fact}', { landmark: lmName(l), km: Math.max(1, Math.round(dist[0].d)), place: correct, fact: lmFact(l) }),
+    source: W(decodeURIComponent(l.wiki)), countries: [l.iso3], imageTitle: l.wiki };
+};
+
 export const GENERATORS: Record<string, Gen> = {
+  rOrder, rOnRoute, rLargest, rDistance, rDirection, rCountryOf, rNextCountry, rLandmarkNear,
   curated: genCurated, capital: genCapital, capitalReverse: genCapitalReverse, flag: genFlag, border: genBorderTF,
   landlocked: genLandlocked, area: genArea, region: genRegion, mapfind: genMapFind, currency: genCurrency,
   landmarkCountry: genLandmarkCountry, monument: genMonument, chronology: genChronology,
 };
 
-const DEFAULT_WEIGHTS: Record<keyof typeof GENERATORS, number> = {
+/** On a trip: mostly questions about the route itself, then about the route's countries. */
+export const ROUTE_WEIGHTS: Partial<Record<keyof typeof GENERATORS, number>> = {
+  rOrder: 2, rOnRoute: 2, rLargest: 1.2, rDistance: 0.8, rDirection: 0.7, rCountryOf: 1, rNextCountry: 1, rLandmarkNear: 1.6,
+  monument: 1.4, landmarkCountry: 0.6, curated: 1.4, capital: 0.6, currency: 0.4, flag: 0.4, mapfind: 0.5, border: 0.3, chronology: 0.4,
+};
+
+const DEFAULT_WEIGHTS: Partial<Record<keyof typeof GENERATORS, number>> = {
   curated: 3, capital: 2, capitalReverse: 1, flag: 1.2, border: 1, landlocked: 0.5, area: 1, region: 0.5,
   mapfind: 1.3, currency: 0.6, landmarkCountry: 1, monument: 1.5, chronology: 0.7,
 };
@@ -254,24 +418,36 @@ export interface SessionOptions {
   exclude?: Set<string>;
   /** Share of questions targeted at `focus` countries (default 0.75). */
   focusRate?: number;
+  /** Trip context: questions are then strictly about the route and its countries. */
+  route?: RouteCtx;
 }
 
 export function buildSession(data: GameData, o: SessionOptions): Question[] {
-  const weights = Object.entries(o.weights ?? DEFAULT_WEIGHTS) as [string, number][];
+  const weights = Object.entries(o.weights ?? (o.route ? ROUTE_WEIGHTS : DEFAULT_WEIGHTS)) as [string, number][];
   let focusCountries = (o.focus ?? []).map((i) => data.byIso3.get(i)).filter((c): c is Country => !!c);
+  const routeSet = o.route ? new Set(o.route.countries.map((c) => c.iso3)) : null;
+  if (o.route && !focusCountries.length) focusCountries = o.route.countries.map((c) => data.byIso3.get(c.iso3)).filter((c): c is Country => !!c);
   if (o.region) focusCountries = data.countries.filter((c) => c.region === o.region && c.un);
   const out: Question[] = [];
   const seen = new Set<string>(o.exclude ?? []);
   let guard = 0;
+  // Variety: in short sessions each question type appears once (relaxed if the pool runs dry).
+  const perGen = new Map<string, number>();
+  const cap = () => (guard > o.count * 20 ? Infinity : o.count <= 8 ? 1 : 2);
   while (out.length < o.count && guard++ < o.count * 40) {
-    const gen = GENERATORS[weightedPick(weights, o.rnd)];
-    const useFocus = focusCountries.length > 0 && o.rnd() < (o.region ? 1 : o.focusRate ?? 0.75);
+    const genName = weightedPick(weights, o.rnd);
+    if ((perGen.get(genName) ?? 0) >= cap()) continue;
+    const gen = GENERATORS[genName];
+    const useFocus = focusCountries.length > 0 && o.rnd() < (o.region || o.route ? 1 : o.focusRate ?? 0.75);
     const focus = useFocus ? pick(focusCountries, o.rnd) : undefined;
-    const q = gen(data, o.rnd, focus);
+    const q = gen(data, o.rnd, focus, o.route);
     if (!q || seen.has(q.id)) continue;
+    // On a trip, never keep a question unrelated to the route's countries.
+    if (routeSet && !(q.countries ?? []).some((iso) => routeSet.has(iso))) continue;
     if (o.region && q.countries && !q.countries.some((iso) => data.byIso3.get(iso)?.region === o.region)) continue;
     if (o.maxDifficulty && q.difficulty > o.maxDifficulty) continue;
     seen.add(q.id);
+    perGen.set(genName, (perGen.get(genName) ?? 0) + 1);
     if (o.timeLimit && q.kind !== 'chronology' && q.kind !== 'mapfind') q.timeLimit = o.timeLimit;
     if (o.surpriseRate && out.length > 1 && o.rnd() < o.surpriseRate) q.bonus = true;
     out.push(q);
