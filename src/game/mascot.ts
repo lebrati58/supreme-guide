@@ -8,15 +8,20 @@ export type { Mood };
 
 const bags = new Map<Mood, number[]>();
 
-/** Next line for a mood, in the current language. Indexes are shuffled so a line never repeats until all were used. */
-export function say(mood: Mood): string {
+/** Index of the next line for a mood. Indexes are shuffled so a line never repeats until all were used. */
+export function nextLine(mood: Mood): number {
   let bag = bags.get(mood);
   if (!bag || bag.length === 0) {
     bag = LINES[mood].map((_, i) => i).sort(() => Math.random() - 0.5);
     bags.set(mood, bag);
   }
-  const i = bag.pop()!;
-  return tc(`mascot.${mood}.${i}`, LINES[mood][i]);
+  return bag.pop()!;
 }
+
+/** A mascot line in the CURRENT language (translate at render time, so a language switch updates it). */
+export const lineText = (mood: Mood, i: number) => tc(`mascot.${mood}.${i}`, LINES[mood][i]);
+
+/** Next line for a mood, in the current language. */
+export const say = (mood: Mood): string => lineText(mood, nextLine(mood));
 
 export const allLines = () => LINES;

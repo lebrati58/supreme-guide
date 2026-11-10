@@ -112,6 +112,9 @@ async function run(name, ctxOpts) {
     await page.click('.lang-chip[lang="he"]');
     await page.waitForFunction(() => document.documentElement.dir === 'rtl' && document.documentElement.lang === 'he', null, { timeout: 10000 })
       .then(() => ok('switched to Hebrew offline (dir=rtl)'), () => fail('language switch failed'));
+    // Nothing on screen may stay in the previous language (e.g. the mascot's speech bubble).
+    const bubble = (await page.textContent('.bubble')) ?? '';
+    /[֐-׿]/.test(bubble) ? ok('mascot bubble switched to Hebrew') : fail(`mascot bubble not in Hebrew: ${bubble}`);
     await page.goto(`${BASE}#/quiz/quick`);
     await page.waitForSelector('.question-card');
     const qText = await page.textContent('.question');
