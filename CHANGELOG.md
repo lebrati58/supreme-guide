@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.0 — 2026-11-10
+### Added
+- **📡 Live multiplayer**: play together in real time, each on your own phone. The host creates a game (short code + QR code / link), up to 8 players join, everyone gets the same questions at the same time — each in their own language — with a 20-second timer, points for right answers plus a speed bonus, a live scoreboard and a podium. XP counts like any quiz.
+- Peer-to-peer (WebRTC via PeerJS): no account and nothing stored online; the free public PeerJS server only introduces the phones. Needs internet on every phone; strict networks that block direct connections show a clear message.
+- Tests: referee logic and identical quizzes across languages (unit); a full two-phone game against a local PeerServer (e2e, in CI).
+
 ## 1.5.0 — 2026-11-10
 ### Added
 - **City names in your language, offline**: search a city in any of the 10 languages — “Londres”, “Moscou”, “Pekin” (accents optional), “לונדון”, “Лондон”, “伦敦” — even in airplane mode. Towns along the route are named in your language in quizzes and in the guide (“Moscou”, “מוסקבה”, “莫斯科”). Names from GeoNames alternate names (CC BY 4.0) for 9,126 cities (Chinese converted to Simplified with OpenCC); when a name is missing the usual name is kept. Rebuild with `scripts/build_city_names.py`.
