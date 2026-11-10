@@ -3,7 +3,7 @@ import type { GameData } from './engine';
 import { nearestOnPath, compassKey, type RouteCtx, type RoutePlace } from './route';
 import { EVENTS } from '../content/events';
 import { fmtNum, listJoin, t, type Key } from '../i18n';
-import { capitalName, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, journeyStop, languagesLabel, lmFact, lmName } from '../i18n/content';
+import { capitalName, cityName, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, journeyStop, languagesLabel, lmFact, lmName } from '../i18n/content';
 import { haversineKm } from '../geo/geo';
 import { legendFor } from '../content/legendary';
 import { JOURNEYS } from '../content/journeys';
@@ -23,7 +23,7 @@ export interface GuideFact {
 }
 
 const placeName = (p: RoutePlace, route: RouteCtx) =>
-  (route.curatedId && p.stopIndex !== undefined ? journeyStop(route.curatedId, p.stopIndex, { name: p.name }) : p.name);
+  (route.curatedId && p.stopIndex !== undefined ? journeyStop(route.curatedId, p.stopIndex, { name: p.name }) : p.stop ? p.name : cityName(p));
 
 function countrySummary(c: Country): string {
   const kv = (k: string, v: string) => t('guide.kv', { k, v });
@@ -73,8 +73,9 @@ export function buildGuide(route: RouteCtx, data: GameData, wiki: WikiCard[] = [
     const name = placeName(p, route);
     const bits: string[] = [];
     const pop = fmtNum(Number(p.pop.toPrecision(2)));
-    if (p.pop > 0 && c && p.town && !name.includes(p.town)) bits.push(t('guide.place.stopTown', { place: name, town: p.town, country: countryName(c), pop }));
-    else if (p.pop > 0 && c) bits.push(t('guide.place.pop', { place: p.town ?? name, country: countryName(c), pop }));
+    const town = p.town ? cityName({ name: p.town, names: p.names }) : undefined;
+    if (p.pop > 0 && c && town && !name.includes(town)) bits.push(t('guide.place.stopTown', { place: name, town, country: countryName(c), pop }));
+    else if (p.pop > 0 && c) bits.push(t('guide.place.pop', { place: town ?? name, country: countryName(c), pop }));
     else if (c) bits.push(t('guide.place.in', { place: name, country: countryName(c) }));
     if (p.capital && c) bits.push(t('guide.place.capital', { country: countryName(c) }));
     facts.push({ id: `place-${p.name}`, at: p.at, icon: p.stop ? modeEmoji : '🏙️', title: name,

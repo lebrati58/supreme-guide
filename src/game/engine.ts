@@ -4,7 +4,7 @@ import { EVENTS } from '../content/events';
 import { fmtNum, fwd, listJoin, tc, type Key, t } from '../i18n';
 import { compassKey, type RouteCtx, type RoutePlace } from './route';
 import { haversineKm } from '../geo/geo';
-import { journeyStop, capitalName, capitalsList, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, lmCity, lmClue, lmFact, lmName, regionLabel, subregionLabel } from '../i18n/content';
+import { cityName, journeyStop, capitalName, capitalsList, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, lmCity, lmClue, lmFact, lmName, regionLabel, subregionLabel } from '../i18n/content';
 import { type Rng, pick, shuffle, weightedPick } from './rng';
 import { legendFor } from '../content/legendary';
 import { DOMAIN_CATEGORIES, type Domain } from '../content/knowledge';
@@ -245,8 +245,11 @@ const genCurated: Gen = (_d, rnd, focus, route) => {
 // ------------------------------------------------------------------ route generators
 // Built only from the trip's own stops, towns (GeoNames), landmarks and countries.
 function placeName(p: RoutePlace, route: RouteCtx) {
-  return route.curatedId && p.stopIndex !== undefined ? journeyStop(route.curatedId, p.stopIndex, { name: p.name }) : p.name;
+  if (route.curatedId && p.stopIndex !== undefined) return journeyStop(route.curatedId, p.stopIndex, { name: p.name });
+  return p.stop ? p.name : cityName(p); // towns: GeoNames name in the player's language
 }
+/** The town a stop belongs to (e.g. Avignon for “Avignon TGV”), in the player's language. */
+const townLabel = (p: RoutePlace) => (p.town ? cityName({ name: p.town, names: p.names }) : undefined);
 const GEONAMES_SRC = { label: 'GeoNames (CC BY 4.0)', url: 'https://www.geonames.org/' };
 const routeIsos = (route: RouteCtx) => route.countries.map((c) => c.iso3);
 const uniqueByName = (ps: RoutePlace[], route: RouteCtx) => {
@@ -283,13 +286,13 @@ const rOnRoute: Gen = (_d, rnd, _f, route) => {
   const p = pick(towns, rnd);
   const name = placeName(p, route);
   const onNames = new Set(route.places.map((x) => placeName(x, route)));
-  const same = route.offRoute.filter((c) => c.cc === p.cc && !onNames.has(c.name));
-  const pool = (same.length >= 3 ? same : route.offRoute.filter((c) => !onNames.has(c.name)))
+  const same = route.offRoute.filter((c) => c.cc === p.cc && !onNames.has(cityName(c)));
+  const pool = (same.length >= 3 ? same : route.offRoute.filter((c) => !onNames.has(cityName(c))))
     .sort((a, b) => Math.abs(Math.log((a.pop || 1) / (p.pop || 1e5))) - Math.abs(Math.log((b.pop || 1) / (p.pop || 1e5))));
-  const distract = shuffle(pool.slice(0, 8), rnd).slice(0, 3).map((c) => c.name);
+  const distract = shuffle(pool.slice(0, 8), rnd).slice(0, 3).map((c) => cityName(c));
   if (new Set([name, ...distract]).size < 4) return null;
   const options = shuffle([name, ...distract], rnd);
-  return { id: `r-on-${name}`, kind: 'mcq', category: 'geography', difficulty: 2,
+  return { id: `r-on-${p.name}`, kind: 'mcq', category: 'geography', difficulty: 2,
     prompt: tc('gen.r.on.q', 'Which of these places is on your route?'), options, answer: options.indexOf(name),
     explanation: tc('gen.r.on.e', '{place} is on your route, about {km} km from {from}. The others are well away from it.', { place: name, km: Math.round(p.at * route.pathKm), from: placeName(route.from, route) }),
     source: GEONAMES_SRC, countries: routeIsos(route) };
@@ -302,7 +305,7 @@ const rLargest: Gen = (_d, rnd, _f, route) => {
   for (const p of withPop) { if (set.every((q) => Math.max(p.pop, q.pop) / Math.min(p.pop, q.pop) > 1.4)) set.push(p); if (set.length === 4) break; }
   if (set.length < 4) return null;
   const top = set.reduce((a, b) => (a.pop > b.pop ? a : b));
-  const label = (x: RoutePlace) => x.town ?? placeName(x, route);
+  const label = (x: RoutePlace) => townLabel(x) ?? placeName(x, route);
   const options = shuffle(set.map(label), rnd);
   const approx = (n: number) => fmtNum(Number(n.toPrecision(2)));
   return { id: `r-big-${options.slice().sort().join('|')}`, kind: 'observation', category: 'geography', difficulty: 2,

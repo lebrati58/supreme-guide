@@ -70,3 +70,10 @@ export const legendQuestion = (l: LegendPack, q: LegendQuestion) => ({
   options: q.o.map((o, i) => tc(`legend.${l.journey}.${q.id}.o${i}`, o)),
   explanation: tc(`legend.${l.journey}.${q.id}.e`, q.e),
 });
+
+// ---------------------------------------------------------------- cities (GeoNames names per language)
+const CITY_LANG_INDEX: Record<string, number> = { en: 0, fr: 1, es: 2, de: 3, it: 4, pt: 5, ru: 6, he: 7, ar: 8, zh: 9 };
+/** A city's name in the current language (GeoNames), or its default name. */
+export const cityName = (c: { name: string; names?: string[] }) => c.names?.[CITY_LANG_INDEX[locale()] ?? -1] || c.name;
+/** Every known name of a city, for search in any language. */
+export const cityAllNames = (c: { name: string; names?: string[] }) => [c.name, ...(c.names ?? []).filter(Boolean)];

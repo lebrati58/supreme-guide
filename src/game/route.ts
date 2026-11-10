@@ -19,6 +19,8 @@ export interface RoutePlace {
   stopIndex?: number;
   /** For a stop merged with a nearby GeoNames town of another name (e.g. “Avignon TGV” → Avignon). */
   town?: string;
+  /** GeoNames names of the place (or of its merged town) in the game languages. */
+  names?: string[];
 }
 export interface RouteLandmark { l: Landmark; at: number; offKm: number }
 export interface RouteCtx {
@@ -86,7 +88,7 @@ export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, 
       const inBox = c.lng >= w - pad && c.lng <= e + pad && c.lat >= s - pad && c.lat <= n + pad;
       if (inBox && c.pop >= MIN_POP[trip.mode]) {
         const loc = nearestOnPath(path, [c.lng, c.lat]);
-        if (loc.offKm <= corridor) { towns.push({ name: c.name, cc: c.cc, lat: c.lat, lng: c.lng, pop: c.pop, at: loc.at, offKm: loc.offKm, stop: false, capital: c.capital }); continue; }
+        if (loc.offKm <= corridor) { towns.push({ name: c.name, names: c.names, cc: c.cc, lat: c.lat, lng: c.lng, pop: c.pop, at: loc.at, offKm: loc.offKm, stop: false, capital: c.capital }); continue; }
         if (loc.offKm >= 80 && routeCC.has(c.cc)) offRoute.push(c);
       } else if (routeCC.has(c.cc) && c.pop >= 50000 && offRoute.length < 400) {
         offRoute.push(c);
@@ -99,7 +101,7 @@ export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, 
   const cluster = trip.mode === 'flight' ? 60 : 20;
   for (const t of towns.sort((a, b) => b.pop - a.pop)) {
     const same = places.find((p) => haversineKm([p.lng, p.lat], [t.lng, t.lat]) < 8);
-    if (same) { if (!same.pop) { same.pop = t.pop; same.capital = t.capital; same.cc ??= t.cc; if (same.stop && t.name !== same.name) same.town = t.name; } continue; }
+    if (same) { if (!same.pop) { same.pop = t.pop; same.capital = t.capital; same.cc ??= t.cc; if (same.stop && t.name !== same.name) same.town = t.name; same.names ??= t.names; } continue; }
     if (places.some((p) => haversineKm([p.lng, p.lat], [t.lng, t.lat]) < cluster)) continue;
     places.push(t);
   }
