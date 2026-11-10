@@ -57,6 +57,11 @@ tests/unit, tests/e2e
 - **Share target**: the manifest's `share_target` (`/share/` → `#/share`) receives what Waze / Google Maps / Apple Maps share; `transport/shareParse.ts` decodes coordinates (Waze `ll=` and `/ul/h<geohash>`, Google `@lat,lng` / `!3d!4d`, `geo:` …) or falls back to a Nominatim text search. Navigation apps do not expose the route itself, only the destination; the game recomputes the road route.
 - **Optional AI** (`server/ai-guide/worker.ts`, not deployed): a Cloudflare Worker holding the Anthropic key as a secret. It only rewrites the route's Wikipedia extracts into questions (structured output, schema-validated), and the client validates again (`transport/aiGuide.ts`), stores them with the trip and labels them 🤖 AI. Off unless built with `VITE_AI_GUIDE_URL`. Paid per request: the free data + Wikipedia path stays the default.
 
+## Live multiplayer
+- `live/logic.ts`: host referee (`HostGame`) — lobby, questions, answers, scoring (500 + speed bonus up to 500), ranking. Pure and unit-tested.
+- `live/questions.ts`: every phone builds the same quiz from the host's seed (each in its own language); the host also sends question ids so a version mismatch is detected.
+- `live/net.ts`: PeerJS data channels. The public PeerJS server only does signalling; game messages go phone to phone. `localStorage['sg.peerServer']` points to another PeerServer (used by `tests/e2e/live.mjs`).
+
 ## Honesty rules built into the code
 - Flight position = **schedule-based estimate** along a great circle; the UI labels it “Estimated” and never as live. GPS (opt-in) is shown separately and preferred when it matches the route.
 - Train/cruise lines are **stop-to-stop**, labelled as such; road/walk routes use OSM routing when online, else stop-to-stop.

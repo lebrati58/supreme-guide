@@ -489,7 +489,7 @@ const genMath: Gen = (_d, rnd) => {
     if (wrong.size === 3) break;
   }
   const opts = shuffle([answer, ...wrong], rnd);
-  return { id: `math-${prompt}`, kind: 'mcq', category: 'math', difficulty: 1, prompt, options: opts.map((x) => `${fmtNum(x)}${unit}`),
+  return { id: `math-${kind}-${answer}-${opts.join('/')}`, kind: 'mcq', category: 'math', difficulty: 1, prompt, options: opts.map((x) => `${fmtNum(x)}${unit}`),
     answer: opts.indexOf(answer), explanation };
 };
 

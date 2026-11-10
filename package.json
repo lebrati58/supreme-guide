@@ -1,8 +1,8 @@
 {
   "name": "supreme-guide",
   "private": true,
-  "version": "1.5.0",
-  "description": "SUPREME GUIDE \u2014 Every Journey Is a Game! The global travel quiz game.",
+  "version": "1.6.0",
+  "description": "SUPREME GUIDE — Every Journey Is a Game! The global travel quiz game.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,13 +13,16 @@
     "test:e2e": "node tests/e2e/offline.mjs",
     "data": "python3 scripts/build_data.py",
     "i18n": "tsx scripts/i18n-extract.ts",
-    "i18n:check": "tsx scripts/i18n-extract.ts --check && node scripts/i18n-validate.mjs"
+    "i18n:check": "tsx scripts/i18n-extract.ts --check && node scripts/i18n-validate.mjs",
+    "test:e2e:live": "node tests/e2e/live.mjs"
   },
   "dependencies": {
     "@fontsource/baloo-2": "^5.3.0",
     "@fontsource/nunito": "^5.3.0",
     "idb": "^8.0.4",
     "maplibre-gl": "^6.17.0",
+    "peerjs": "^1.5.5",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "topojson-client": "^3.1.0"
@@ -27,6 +30,7 @@
   "devDependencies": {
     "@types/geojson": "^7946.0.16",
     "@types/node": "^22.20.5",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@types/topojson-client": "^3.1.5",
@@ -36,6 +40,7 @@
     "all-the-cities": "^3.1.0",
     "fake-indexeddb": "^6.2.7",
     "jsdom": "^31.0.0",
+    "peer": "^1.0.2",
     "tsx": "^4.23.15",
     "typescript": "5.6",
     "vite": "^6.4.5",

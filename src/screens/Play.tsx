@@ -38,6 +38,7 @@ export default function Play() {
         {tile('/quiz/timeline', '⏳', t('play.timeline'), t('play.timelineSub'))}
         {tile('/quiz/landmarks', '🏛️', t('play.landmarks'), t('play.landmarksSub'))}
         {tile('/quiz/topics', '🧠', t('play.topics'), t('play.topicsSub'))}
+        {tile('/live', '📡', t('live.title'), t('live.tileSub'))}
       </div>
 
       <h2>🌍 {t('home.tour')}</h2>
