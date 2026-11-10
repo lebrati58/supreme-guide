@@ -6,6 +6,9 @@ import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson';
 const base = import.meta.env.BASE_URL;
 const cache = new Map<string, Promise<unknown>>();
 
+/** Languages of public/data/city-names.json, in order (see scripts/build_city_names.py). */
+export const CITY_LANGS = ['en', 'fr', 'es', 'de', 'it', 'pt', 'ru', 'he', 'ar', 'zh'];
+
 function getJson<T>(file: string): Promise<T> {
   if (!cache.has(file)) {
     cache.set(file, fetch(`${base}data/${file}`).then((r) => {
@@ -23,9 +26,20 @@ export async function loadAirports(): Promise<Airport[]> {
   return rows.map(([iata, icao, name, cc, lat, lng, tz, size]) => ({ iata, icao, name, cc, lat, lng, tz, size }));
 }
 
-export async function loadCities(): Promise<City[]> {
-  const rows = await getJson<[string, string, number, number, number, 0 | 1][]>('cities.json');
-  return rows.map(([name, cc, lat, lng, pop, cap]) => ({ name, cc, lat, lng, pop, capital: cap === 1 }));
+let citiesP: Promise<City[]> | null = null;
+/** GeoNames cities (pop ≥ 50 000 or capital), with their names in the game languages when available. */
+export function loadCities(): Promise<City[]> {
+  citiesP ??= Promise.all([
+    getJson<[string, string, number, number, number, 0 | 1][]>('cities.json'),
+    getJson<{ n: number; langs: string[]; names: (string[] | 0)[] }>('city-names.json').catch(() => null),
+  ]).then(([rows, i18n]) => {
+    const ok = i18n && i18n.n === rows.length && i18n.langs.join() === CITY_LANGS.join();
+    return rows.map(([name, cc, lat, lng, pop, cap], i) => {
+      const names = ok ? i18n!.names[i] : 0;
+      return { name, cc, lat, lng, pop, capital: cap === 1, ...(names ? { names } : {}) };
+    });
+  }).catch((e) => { citiesP = null; throw e; });
+  return citiesP;
 }
 
 export interface CountryProps { name: string; num: string; iso3?: string }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.0 — 2026-11-10
+### Added
+- **City names in your language, offline**: search a city in any of the 10 languages — “Londres”, “Moscou”, “Pekin” (accents optional), “לונדון”, “Лондон”, “伦敦” — even in airplane mode. Towns along the route are named in your language in quizzes and in the guide (“Moscou”, “מוסקבה”, “莫斯科”). Names from GeoNames alternate names (CC BY 4.0) for 9,126 cities (Chinese converted to Simplified with OpenCC); when a name is missing the usual name is kept. Rebuild with `scripts/build_city_names.py`.
+
+## 1.4.1 — 2026-11-10
+### Fixed
+- The mascot's speech bubble now follows a language switch.
+
 ## 1.4.0 — 2026-11-09
 ### Added
 - **On-demand route content**: opening a trip online prepares its Wikipedia place cards in your language automatically (kept for offline); new quiz “which place on your route is described here?”.

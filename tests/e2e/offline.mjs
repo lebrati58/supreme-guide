@@ -104,6 +104,11 @@ async function run(name, ctxOpts) {
   await page.fill('#ap-from', 'TLV');
   await page.waitForSelector('.suggest button');
   ok('airport search works offline');
+  // City search in another language, offline (GeoNames names): “Londres” finds London.
+  await page.goto(`${BASE}#/plan/car`);
+  await page.fill('.field input >> nth=0', 'Londres');
+  await page.waitForSelector('.suggest button:has-text("London")', { timeout: 10000 })
+    .then(() => ok('city search in another language works offline'), () => fail('“Londres” did not find London offline'));
 
   // Languages, still in airplane mode: switch to Hebrew (right-to-left) and play a quiz.
   if (name === 'mobile') {

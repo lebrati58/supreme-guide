@@ -4,7 +4,7 @@ import { loadAirports, loadCities } from '../data/loaders';
 import { searchAirports } from '../transport/flight';
 import { useApp } from '../state';
 import { fmtNum, intlLocale, t } from '../i18n';
-import { countryName } from '../i18n/content';
+import { cityAllNames, cityName, countryName } from '../i18n/content';
 
 /** Offline place search over bundled GeoNames cities (+ airports). Optional online search via Nominatim. */
 export function PlaceSearch({ label, value, onChange, airports = false, placeholder, inputId }: {
@@ -30,7 +30,8 @@ export function PlaceSearch({ label, value, onChange, airports = false, placehol
     if (s.length < 2 || (value && value.name === q)) return { ap: [] as Airport[], ct: [] as City[] };
     const norm = (x: string) => x.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
     const ns = norm(s);
-    const ct = cities.filter((c) => norm(c.name).startsWith(ns)).slice(0, airports ? 4 : 8);
+    // Any known name matches (London, Londres, Лондон, לונדון, 伦敦…), with or without accents.
+    const ct = cities.filter((c) => cityAllNames(c).some((n) => norm(n).startsWith(ns))).slice(0, airports ? 4 : 8);
     return { ap: airports ? searchAirports(aps, s, 6) : [], ct };
   }, [q, cities, aps, airports, value]);
 
@@ -58,8 +59,8 @@ export function PlaceSearch({ label, value, onChange, airports = false, placehol
             </button>
           ))}
           {results.ct.map((c, k) => (
-            <button key={`${c.name}${k}`} type="button" role="option" aria-selected="false" onMouseDown={(e) => e.preventDefault()} onClick={() => { onChange({ name: c.name, lat: c.lat, lng: c.lng, cc: c.cc }); setOpen(false); }}>
-              <span>{c.capital ? '🏛️' : '🏙️'}</span><span><b>{c.name}</b><br /><small>{ccName(c.cc)}{c.pop ? ` · ${t('search.people', { n: fmtNum(c.pop, { notation: 'compact', maximumFractionDigits: 1 }) })}` : ''}</small></span>
+            <button key={`${c.name}${k}`} type="button" role="option" aria-selected="false" onMouseDown={(e) => e.preventDefault()} onClick={() => { onChange({ name: cityName(c), lat: c.lat, lng: c.lng, cc: c.cc }); setOpen(false); }}>
+              <span>{c.capital ? '🏛️' : '🏙️'}</span><span><b>{cityName(c)}</b><br /><small>{ccName(c.cc)}{c.pop ? ` · ${t('search.people', { n: fmtNum(c.pop, { notation: 'compact', maximumFractionDigits: 1 }) })}` : ''}</small></span>
             </button>
           ))}
           {remote.map((r, k) => (

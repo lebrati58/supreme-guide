@@ -22,7 +22,11 @@ export interface Airport {
   lat: number; lng: number; tz: string; size: 'L' | 'M';
 }
 
-export interface City { name: string; cc: string; lat: number; lng: number; pop: number; capital: boolean }
+export interface City {
+  name: string; cc: string; lat: number; lng: number; pop: number; capital: boolean;
+  /** GeoNames names in the game languages (CITY_LANGS order; '' = same as `name`). */
+  names?: string[];
+}
 
 export type Category = 'geography' | 'capitals' | 'history' | 'culture' | 'landmarks' | 'transport' | 'nature' | 'flags' | 'science' | 'biology' | 'math' | 'philosophy';
 export type QuestionKind =
