@@ -5,6 +5,7 @@ import { useApp } from '../state';
 import { JOURNEYS, SAMPLE_FLIGHTS, type CuratedJourney } from '../content/journeys';
 import { createTrip, MODE_META, modeLabel, useRouteLabel } from '../transport/trips';
 import { PlaceSearch } from '../components/PlaceSearch';
+import { MapPicker } from '../components/MapPicker';
 import { buildSchedule, estimateBlockMinutes, normaliseFlightNumber } from '../transport/flight';
 import { lookupConfigured, lookupFlight } from '../transport/flightLookup';
 import { loadAirports } from '../data/loaders';
@@ -203,6 +204,7 @@ function GroundForm({ mode }: { mode: Ground }) {
   const [when, setWhen] = useState('');
   const [hours, setHours] = useState('');
   const set = (i: number, s: Stop | null) => setStops((x) => x.map((y, k) => (k === i ? s : y)));
+  const [picking, setPicking] = useState(false);
   const ready = stops.every(Boolean) && (mode !== 'car' || role);
   const submit = () => {
     const st = stops as Stop[];
@@ -224,7 +226,11 @@ function GroundForm({ mode }: { mode: Ground }) {
           {i > 0 && i < stops.length - 1 && <button className="btn small red" type="button" aria-label={t('plan.removeStop', { n: i })} onClick={() => setStops((x) => x.filter((_, k) => k !== i))}>✕</button>}
         </div>
       ))}
-      <button className="link-btn" style={{ color: 'var(--sky-2)', justifySelf: 'start' }} type="button" onClick={() => setStops((x) => [...x.slice(0, -1), null, x[x.length - 1]])}>{t('plan.addStop')}</button>
+      <div className="row">
+        <button className="link-btn" style={{ color: 'var(--sky-2)' }} type="button" onClick={() => setStops((x) => [...x.slice(0, -1), null, x[x.length - 1]])}>{t('plan.addStop')}</button>
+        <button className="btn small ghost" style={{ color: 'var(--ink)' }} type="button" onClick={() => setPicking(true)}>🗺️ {t('pick.open')}</button>
+      </div>
+      {picking && <MapPicker onClose={() => setPicking(false)} onDone={([a, b]) => { setStops([a, b]); setPicking(false); }} />}
       {(mode === 'train' || mode === 'bus') && (
         <div className="field">
           <label htmlFor="lbl">{mode === 'train' ? t('plan.trainNumber') : t('plan.busLine')}</label>

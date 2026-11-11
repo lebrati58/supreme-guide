@@ -61,3 +61,6 @@ async function world(file: string): Promise<WorldFC> {
 }
 export const loadWorld50 = () => world('world-50m.json');
 export const loadWorld110 = () => world('world-110m.json');
+
+/** Rivers, ranges/deserts and peaks (Natural Earth + GeoNames names); loaded when a trip opens. */
+export const loadGeoFeatures = () => getJson<import('../game/nature').GeoFeatures>('geo-features.json');

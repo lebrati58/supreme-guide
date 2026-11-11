@@ -1,6 +1,7 @@
 import type { City, LngLat, Mode, Trip, WikiCard } from '../types';
 import { LANDMARKS, type Landmark } from '../content/landmarks';
 import { bearing, densify, haversineKm } from '../geo/geo';
+import { natureAlong, sideOf, sideThresholdKm, type GeoFeatures, type NatureAlong, type Side } from './nature';
 
 /**
  * Everything that is really ON the player's route: ordered stops, the towns and cities the path
@@ -22,7 +23,7 @@ export interface RoutePlace {
   /** GeoNames names of the place (or of its merged town) in the game languages. */
   names?: string[];
 }
-export interface RouteLandmark { l: Landmark; at: number; offKm: number }
+export interface RouteLandmark { l: Landmark; at: number; offKm: number; side?: Side }
 export interface RouteCtx {
   mode: Mode;
   places: RoutePlace[];          // sorted by `at`
@@ -41,6 +42,8 @@ export interface RouteCtx {
   progress?: number;             // current position (0..1), set by the trip screen
   wiki: WikiCard[];              // place cards fetched on demand for this route (player's language)
   ai: NonNullable<Trip['ai']>;   // optional AI questions grounded on `wiki`
+  /** Rivers crossed, ranges/deserts entered and peaks in view (when geo-features are loaded). */
+  nature: NatureAlong;
 }
 
 /** Corridor half-width (km) in which a town counts as “on the route”, by transport mode. */
@@ -61,7 +64,7 @@ export function nearestOnPath(path: RouteCtx['path'], p: LngLat): { at: number; 
   return { at, offKm: best };
 }
 
-export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, string>): RouteCtx {
+export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, string>, geo?: GeoFeatures): RouteCtx {
   const dense = densify(trip.geometry, 5);
   let acc = 0;
   const lens = dense.map((p, i) => (i ? (acc += haversineKm(dense[i - 1], p)) : 0));
@@ -112,7 +115,7 @@ export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, 
   const landmarks: RouteLandmark[] = LANDMARKS.map((l) => {
     if (explore) { const d = haversineKm(center, [l.lng, l.lat]); return { l, at: 0, offKm: d }; }
     const loc = nearestOnPath(path, [l.lng, l.lat]);
-    return { l, at: loc.at, offKm: loc.offKm };
+    return { l, at: loc.at, offKm: loc.offKm, side: loc.offKm >= sideThresholdKm(trip.geometrySource) ? sideOf(path, [l.lng, l.lat]) : undefined };
   }).filter((x) => x.offKm <= (explore ? 5 : radius)).sort((a, b) => a.at - b.at);
 
   // Endpoints are the trip's first and last stops (not a suburb that happens to sort at the ends).
@@ -123,6 +126,7 @@ export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, 
   return {
     mode: trip.mode, places, landmarks, countries: trip.countries, from: first, to: last,
     distanceKm: haversineKm(a, b), bearingDeg: bearing(a, b), path, offRoute, explore, curatedId: trip.curatedId, pathKm: total, wiki: trip.wiki ?? [], ai: trip.packLang && trip.ai ? trip.ai : [],
+    nature: geo && !explore ? natureAlong(path, trip.mode, geo, trip.geometrySource) : { rivers: [], regions: [], peaks: [], nearRivers: [], nearRegions: [] },
   };
 }
 
