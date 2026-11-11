@@ -4,7 +4,7 @@ import { loadCountries, loadWorld110, loadWorld50, type WorldFC } from './data/l
 import { makeGameData, type GameData } from './game/engine';
 import { supportsFlagEmoji } from './data/flags';
 import { store } from './storage/db';
-import { addStamp, awardBadges, badgeDefs, levelFromXp, newProfile, xpForAnswer, type BadgeDef, type Profile } from './game/progression';
+import { addStamp, awardBadges, badgeDefs, levelFromXp, newProfile, xpForAnswer, type BadgeDef, type Profile, trackMistake } from './game/progression';
 import { CountryIndex } from './geo/countryIndex';
 import { detectLocale, setLocale, t, tc } from './i18n';
 import { play } from './game/sfx';
@@ -139,6 +139,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (q.bonus) p.stats.bonusCorrect++;
       }
       p.stats.bestStreak = Math.max(p.stats.bestStreak, streak);
+      trackMistake(p, q, correct);
     });
     void store.enqueue('answer', { q: q.id, correct, xp, at: Date.now() });
     const levelUp = after > before ? after : null;

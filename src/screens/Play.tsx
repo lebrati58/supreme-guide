@@ -4,7 +4,7 @@ import { isRegionUnlocked, levelFromXp, TOUR } from '../game/progression';
 import { href } from '../router';
 import { todayKey } from '../game/rng';
 import { Mascot } from '../components/Mascot';
-import { fmtNum, t } from '../i18n';
+import { fmtNum, t, tn } from '../i18n';
 import { regionLabel } from '../i18n/content';
 
 export default function Play() {
@@ -38,6 +38,9 @@ export default function Play() {
         {tile('/quiz/timeline', '⏳', t('play.timeline'), t('play.timelineSub'))}
         {tile('/quiz/landmarks', '🏛️', t('play.landmarks'), t('play.landmarksSub'))}
         {tile('/quiz/topics', '🧠', t('play.topics'), t('play.topicsSub'))}
+        {tile('/quiz/survival', '🔥', t('play.survival'), t('play.survivalSub', { n: profile.records?.survival ?? 0 }))}
+        {tile('/quiz/review', '🔁', t('play.review'), (profile.mistakes?.length ?? 0) ? tn('play.reviewSub', profile.mistakes!.length) : t('play.reviewEmpty'))}
+        {tile('/quiz/learn', '🌱', t('play.learn'), t('play.learnSub'))}
         {tile('/live', '📡', t('live.title'), t('live.tileSub'))}
       </div>
 

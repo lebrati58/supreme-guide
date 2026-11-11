@@ -86,3 +86,41 @@ describe('live: every phone builds the same quiz, in its own language', () => {
     expect(liveQuestions(data, 'other', 12).map((q) => q.id)).not.toEqual(en.map((q) => q.id));
   });
 });
+
+describe('live: elimination and teams', () => {
+  it('elimination: missing a question knocks you out, unless everyone misses; last one standing ends the game', () => {
+    const { g, last } = room();
+    g.setMode('elimination');
+    g.start('s', ['a', 'b', 'c', 'd'], [0, 0, 0, 0]);
+    // Q1: everyone misses → nobody out
+    g.answer('host', { t: 'answer', i: 0, choice: 1, ms: 0 }); g.answer('p2', { t: 'answer', i: 0, choice: 1, ms: 0 }); g.answer('p3', { t: 'answer', i: 0, choice: 1, ms: 0 });
+    expect(g.alive()).toHaveLength(3);
+    g.next();
+    // Q2: Ben misses → out
+    g.answer('host', { t: 'answer', i: 1, choice: 0, ms: 0 }); g.answer('p2', { t: 'answer', i: 1, choice: 2, ms: 0 }); g.answer('p3', { t: 'answer', i: 1, choice: 0, ms: 0 });
+    expect(g.players.get('p2')!.out).toBe(true);
+    g.next();
+    g.answer('p2', { t: 'answer', i: 2, choice: 0, ms: 0 }); // out players can't answer
+    expect(g.answers.has('p2')).toBe(false);
+    g.answer('host', { t: 'answer', i: 2, choice: 0, ms: 0 }); g.answer('p3', { t: 'answer', i: 2, choice: 3, ms: 0 }); // reveal with 2 alive answers
+    expect(g.phase).toBe('reveal');
+    g.next(); // only Ana left → end
+    const end = last('end') as Extract<ToGuest, { t: 'end' }>;
+    expect(end.mode).toBe('elimination');
+    expect(end.players[0].name).toBe('Ana');
+    expect(end.players.filter((p) => !p.out)).toHaveLength(1);
+  });
+
+  it('teams: balanced on join, host can switch, average score per team', async () => {
+    const { g } = room();
+    g.setMode('teams');
+    const teams = [...g.players.values()].map((p) => p.team);
+    expect(teams.filter((x) => x === 0).length).toBe(2);
+    expect(g.players.get('p2')!.team).toBe(1);
+    g.switchTeam('p3');
+    expect(g.players.get('p3')!.team).toBe(1);
+    const { teamScores } = await import('../../src/live/logic');
+    g.players.get('host')!.score = 1000; g.players.get('p2')!.score = 0; g.players.get('p3')!.score = 600;
+    expect(teamScores([...g.players.values()])).toEqual([1000, 300]); // blue: Ana; red: Ben + Chloé (average)
+  });
+});

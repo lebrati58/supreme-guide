@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.0 — 2026-11-11
+### Added (ideas from GeoGuessr and Seterra)
+- **🔥 Survival**: questions until your first mistake; your record is kept.
+- **🔁 Review my mistakes**: replay only the questions you got wrong (the last 40); a question leaves the list once you get it right.
+- **🌱 Learn mode**: no timer, no points — try again until you find the answer.
+- **Live multiplayer modes**: 💀 Elimination (a wrong or late answer and you're out; last one standing wins) and 🔵🔴 Teams (blue vs red, best average wins; the host moves players between teams).
+### Fixed
+- Live: a “Leave the game” button during questions; opening a new invite link while on the Live screen now joins the new game.
+
 ## 1.6.0 — 2026-11-10
 ### Added
 - **📡 Live multiplayer**: play together in real time, each on your own phone. The host creates a game (short code + QR code / link), up to 8 players join, everyone gets the same questions at the same time — each in their own language — with a 20-second timer, points for right answers plus a speed bonus, a live scoreboard and a podium. XP counts like any quiz.
