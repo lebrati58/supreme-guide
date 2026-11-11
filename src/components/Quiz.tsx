@@ -20,11 +20,15 @@ interface Props {
   onFinish: (r: QuizResult) => void;
   onAnswered?: (q: Question, correct: boolean) => void;
   finishLabel?: string;
+  /** Learn mode: no timer, no XP; a wrong answer can be retried until the right one is found. */
+  learn?: boolean;
+  /** Survival: the quiz ends at the first mistake. */
+  stopOnWrong?: boolean;
 }
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E'];
 
-export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Props) {
+export function Quiz({ questions, title, onFinish, onAnswered, finishLabel, learn, stopOnWrong }: Props) {
   const { recordAnswer, update } = useApp();
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
@@ -34,6 +38,7 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
   const [nonce, setNonce] = useState(0);
   const [xpGain, setXpGain] = useState(0);
   const [celebrate, setCelebrate] = useState(0);
+  const [tried, setTried] = useState<number[]>([]);
   const tally = useRef({ correct: 0, xp: 0, answers: [] as QuizResult['answers'] });
   const q = questions[i];
   const done = result !== null;
@@ -43,7 +48,7 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
     const s = correct ? streak + 1 : 0;
     setStreak(s);
     setResult(correct);
-    const r = recordAnswer(q, correct, s, timeRatio);
+    const r = learn ? { xp: 0, levelUp: null } : recordAnswer(q, correct, s, timeRatio);
     tally.current.xp += r.xp;
     tally.current.answers.push({ id: q.id, correct });
     if (correct) tally.current.correct++;
@@ -57,13 +62,13 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
   }, [done, streak, recordAnswer, q, onAnswered]);
 
   const next = () => {
-    if (i + 1 >= questions.length) {
-      const perfect = tally.current.correct === questions.length && questions.length >= 8;
+    if (i + 1 >= questions.length || (stopOnWrong && result === false)) {
+      const perfect = !learn && !stopOnWrong && tally.current.correct === questions.length && questions.length >= 8;
       if (perfect) { update((p) => { p.stats.perfectRounds++; }); setCelebrate((c) => c + 1); }
       onFinish({ correct: tally.current.correct, total: questions.length, xp: tally.current.xp, answers: tally.current.answers });
       return;
     }
-    setI(i + 1); setPicked(null); setResult(null); setXpGain(0);
+    setI(i + 1); setPicked(null); setResult(null); setXpGain(0); setTried([]);
     if (questions[i + 1].bonus) { setMood('surprise'); setNonce((n) => n + 1); }
   };
 
@@ -74,7 +79,7 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
       <XPFloat xp={xpGain} nonce={nonce} />
       <div className="quiz-head">
         <b>{title ?? t('quiz.title')}</b>
-        <span className="pill">{i + 1} / {questions.length}{streak >= 2 ? ` · 🔥${streak}` : ''}</span>
+        <span className="pill">{stopOnWrong ? `🔥 ${tally.current.correct}` : `${i + 1} / ${questions.length}${streak >= 2 ? ` · 🔥${streak}` : ''}`}</span>
       </div>
       <div className="quiz-progress" aria-hidden="true"><i style={{ width: `${(100 * (i + (done ? 1 : 0))) / questions.length}%` }} /></div>
       <Mascot mood={mood} nonce={nonce} size={64} />
@@ -86,7 +91,11 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
         <div style={{ marginTop: 14 }}>
           {q.kind === 'chronology' ? <Chronology q={q} done={done} onSubmit={(ok) => settle(ok)} />
             : q.kind === 'mapfind' ? <MapFind q={q} done={done} onAnswer={(ok) => settle(ok)} />
-            : <Choices q={q} picked={picked} done={done} onPick={(k, ratio) => { setPicked(k); settle(k === q.answer, ratio); }} />}
+            : <Choices q={q} picked={picked} done={done} tried={tried} onPick={(k, ratio) => {
+              if (learn && k !== q.answer) { setTried((x) => [...x, k]); play('wrong'); setMood('wrong'); setNonce((n) => n + 1); return; }
+              setPicked(k); settle(k === q.answer, ratio);
+            }} />}
+          {learn && !done && tried.length > 0 && <p className="small" role="status">{t('quiz.tryAgain')}</p>}
         </div>
       </div>
 
@@ -96,7 +105,7 @@ export function Quiz({ questions, title, onFinish, onAnswered, finishLabel }: Pr
           <p style={{ margin: '4px 0 8px' }}>{q.explanation}</p>
           {q.source && <a className="small" href={q.source.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--sky-2)' }}>{t('quiz.source')}: {q.source.label} ↗</a>}
           <div style={{ marginTop: 12 }}>
-            <button className="btn block" onClick={next} autoFocus>{i + 1 >= questions.length ? (finishLabel ?? t('common.finish')) : `${t('common.next')} ${fwd()}`}</button>
+            <button className="btn block" onClick={next} autoFocus>{i + 1 >= questions.length || (stopOnWrong && !result) ? (finishLabel ?? t('common.finish')) : `${t('common.next')} ${fwd()}`}</button>
           </div>
         </div>
       )}
@@ -109,7 +118,7 @@ function kindIcon(q: Question) {
 }
 
 // ------------------------------------------------------------------ choices
-function Choices({ q, picked, done, onPick }: { q: Question; picked: number | null; done: boolean; onPick: (k: number, timeRatio?: number) => void }) {
+function Choices({ q, picked, done, tried = [], onPick }: { q: Question; picked: number | null; done: boolean; tried?: number[]; onPick: (k: number, timeRatio?: number) => void }) {
   const start = useRef(Date.now());
   const opts = q.options ?? [];
   const ratio = () => (q.timeLimit ? Math.max(0, 1 - (Date.now() - start.current) / (q.timeLimit * 1000)) : undefined);
@@ -118,9 +127,9 @@ function Choices({ q, picked, done, onPick }: { q: Question; picked: number | nu
       {q.kind === 'monument' && q.clue !== undefined && <MonumentVisual q={q} />}
       <div className={`answers ${opts.length === 2 ? 'two' : ''}`}>
         {opts.map((o, k) => {
-          const cls = done ? (k === q.answer ? 'right' : k === picked ? 'wrong' : '') : '';
+          const cls = k === q.answer && done ? 'right' : (done && k === picked) || tried.includes(k) ? 'wrong' : '';
           return (
-            <button key={k} className={`answer ${cls}`} disabled={done} onClick={() => onPick(k, ratio())}>
+            <button key={k} className={`answer ${cls}`} disabled={done || tried.includes(k)} onClick={() => onPick(k, ratio())}>
               <span className="letter">{opts.length === 2 ? (k === 0 ? '✓' : '✗') : LETTERS[k]}</span>{o}
             </button>
           );

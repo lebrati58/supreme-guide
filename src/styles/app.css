@@ -467,3 +467,11 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 .podium .emo { font-size: 34px; }
 .podium b { overflow-wrap: anywhere; }
 .podium .place { margin-top: auto; font-family: var(--font-display); font-size: 28px; }
+.live-board li.out { opacity: .55; text-decoration: line-through; }
+.team-banner { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); }
+.team-banner .lead b { color: var(--gold-1); }
+.teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.teams .team { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 14px; }
+.teams .t0 { background: color-mix(in srgb, #3b82f6 22%, transparent); }
+.teams .t1 { background: color-mix(in srgb, #ef4444 22%, transparent); }
+.teams > p { grid-column: 1 / -1; }

@@ -52,7 +52,7 @@ try {
     .then(() => ok('guest sees the lobby'), () => fail('guest lobby missing'));
   if (SHOTS) await host.page.screenshot({ path: `${SHOTS}/live-lobby.png` });
 
-  await host.page.click('.chip >> nth=0'); // 5 questions
+  await host.page.click('text=5 questions');
   await host.page.click('.btn.big.green');
   for (let q = 0; q < 5; q++) {
     await Promise.all([host.page.waitForSelector('.answer:not([disabled])', { timeout: 20000 }), guest.page.waitForSelector('.answer:not([disabled])', { timeout: 20000 })]);
@@ -72,6 +72,29 @@ try {
   const [hs, gs] = await Promise.all([host.page.textContent('.live-board'), guest.page.textContent('.live-board')]);
   hs.replace(/[^\p{L}\d]/gu, '') === gs.replace(/[^\p{L}\d]/gu, '') ? ok('identical final scores') : fail(`scores differ: ${hs} | ${gs}`);
   if (SHOTS) await host.page.screenshot({ path: `${SHOTS}/live-podium.png` });
+
+  // Replay in elimination mode: the mode reaches the guest and the survivor counter shows.
+  await host.page.click('text=Play again');
+  await guest.page.waitForSelector('.answer:not([disabled])', { timeout: 20000 });
+  await host.page.waitForSelector('.answer:not([disabled])', { timeout: 20000 });
+  ok('replay started');
+  await host.page.click('text=Leave the game');
+  await guest.page.waitForSelector('.notice.warn', { timeout: 15000 }).then(() => ok('guest is told when the host leaves (mid-game)'), () => fail('guest not told mid-game'));
+
+  // A second room in elimination mode, with teams check on the lobby.
+  await host.page.click('.btn.big');
+  await host.page.waitForSelector('.live-code-big', { timeout: 20000 });
+  const code2 = (await host.page.textContent('.live-code-big')).trim();
+  await guest.page.goto(`${BASE}#/live?join=${code2}`);
+  await guest.page.click('.btn.blue');
+  await host.page.waitForSelector('.live-board li:nth-child(2)', { timeout: 20000 });
+  await host.page.click('text=Teams');
+  await guest.page.waitForSelector('.teams', { timeout: 10000 }).then(() => ok('teams mode reaches the guest lobby'), () => fail('teams lobby missing on guest'));
+  await host.page.click('text=Elimination');
+  await host.page.click('.btn.big.green');
+  await Promise.all([host.page.waitForSelector('text=2 still in the game', { timeout: 20000 }), guest.page.waitForSelector('.answer', { timeout: 20000 })])
+    .then(() => ok('elimination game started with a survivor counter'), () => fail('elimination did not start'));
+  if (SHOTS) await guest.page.screenshot({ path: `${SHOTS}/live-elimination-fr.png` });
 
   // Host leaves → guest is told.
   await host.page.click('text=Leave the game');

@@ -9,8 +9,16 @@ import { Mascot } from '../components/Mascot';
 import { Confetti } from '../components/Bits';
 import { InterestPicker } from '../components/Interests';
 import { href } from '../router';
-import { fmtDate, t } from '../i18n';
-import { countryName, regionLabel } from '../i18n/content';
+import { fmtDate, t, tn } from '../i18n';
+import { countryName, curatedQuestions, regionLabel } from '../i18n/content';
+import { shuffle } from '../game/rng';
+import type { Question } from '../types';
+
+/** Saved mistakes, re-translated when they come from the hand-written banks (ids are stable). */
+function reviewQuestions(saved: Question[], rnd: () => number): Question[] {
+  const banks = new Map([...curatedQuestions(), ...curatedQuestions('knowledge')].map((q) => [q.id, q]));
+  return shuffle(saved.map((q) => banks.get(q.id) ?? q), rnd).slice(0, 10);
+}
 
 const yesterday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return todayKey(d); };
 
@@ -32,6 +40,9 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
       case 'map': return { title: t('qs.map'), qs: buildSession(game, { count: 8, rnd: seedRandom, weights: { mapfind: 1 }, maxDifficulty: kid }) };
       case 'timeline': return { title: t('qs.timeline'), qs: buildSession(game, { count: 5, rnd: seedRandom, weights: { chronology: 1 } }) };
       case 'topics': return { title: t('play.topics'), qs: buildGeneral(game, { count: 8, rnd: seedRandom, domains: profile.settings.interests, maxDifficulty: kid }) };
+      case 'survival': return { title: t('play.survival'), qs: buildSession(game, { count: 80, rnd: seedRandom, maxDifficulty: kid }) };
+      case 'learn': return { title: t('play.learn'), qs: buildSession(game, { count: 16, rnd: seedRandom, maxDifficulty: kid ?? 2 }).filter((q) => q.options && q.answer !== undefined).slice(0, 8) };
+      case 'review': return { title: t('play.review'), qs: reviewQuestions(profile.mistakes ?? [], seedRandom) };
       case 'landmarks': return { title: t('qs.landmarks'), qs: buildSession(game, { count: 8, rnd: seedRandom, weights: { monument: 2, landmarkCountry: 1 } }) };
       case 'friend': {
         const seed = query.get('seed') ?? 'x';
@@ -51,8 +62,14 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
 
   const alreadyDaily = type === 'daily' && profile.daily.scores[day] !== undefined && !result;
 
+  const [record, setRecord] = useState<{ n: number; isNew: boolean } | null>(null);
   const finish = (r: QuizResult) => {
     setResult(r);
+    if (type === 'survival') {
+      const best = profile.records?.survival ?? 0;
+      setRecord({ n: r.correct, isNew: r.correct > best });
+      if (r.correct > best) update((p) => { p.records = { ...p.records, survival: r.correct }; });
+    }
     if (type === 'daily') update((p) => { recordDaily(p, day, r.correct, yesterday()); });
     if (type === 'tour' && region) {
       const stars = r.correct >= r.total ? 3 : r.correct >= r.total * 0.75 ? 2 : r.correct >= r.total * 0.5 ? 1 : 0;
@@ -79,6 +96,7 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
       <a className="btn" href={href('/play')}>{t('qs.more')}</a>
     </div>
   );
+  if (!setup.qs.length && type === 'review') return <div className="page stack"><h1>✅ {t('play.review')}</h1><p>{t('play.reviewEmpty')}</p><a className="btn" href={href('/play')}>{t('common.back')}</a></div>;
   if (!setup.qs.length) return <div className="page"><h1>{t('qs.locked')}</h1><p>{t('qs.lockedHelp')}</p><a className="btn" href={href('/play')}>{t('common.back')}</a></div>;
 
   if (result) {
@@ -87,7 +105,9 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
       <div className="page stack">
         {pct >= 0.8 && <Confetti />}
         <div className="card result-hero">
-          <div className="big-score">{result.correct}/{result.total}</div>
+          {type === 'survival' ? <div className="big-score">🔥 {result.correct}</div> : <div className="big-score">{result.correct}/{result.total}</div>}
+          {type === 'survival' && <p>{tn('qs.survivalScore', result.correct)}{record?.isNew ? ` — 🏆 ${t('qs.newRecord')}` : ''}</p>}
+          {type === 'review' && <p className="small">{t('qs.reviewDone')}</p>}
           <p className="display" style={{ fontSize: 24 }}>+{result.xp} XP</p>
           {type === 'friend' && <p>{t('qs.sendBack', { name: query.get('from') ?? t('qs.yourFriend') })} <b>{result.correct}/{result.total}</b> 🏆</p>}
         </div>
@@ -99,5 +119,5 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
       </div>
     );
   }
-  return <div className="page"><Quiz key={round} questions={setup.qs} title={setup.title} onFinish={finish} /></div>;
+  return <div className="page"><Quiz key={round} questions={setup.qs} title={setup.title} onFinish={finish} learn={type === 'learn'} stopOnWrong={type === 'survival'} /></div>;
 }

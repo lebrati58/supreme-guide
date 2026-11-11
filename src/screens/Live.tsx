@@ -6,7 +6,7 @@ import { Confetti } from '../components/Bits';
 import { href } from '../router';
 import { fmtNum, t, type Key } from '../i18n';
 import { play } from '../game/sfx';
-import { HostGame, normCode, PROTOCOL, QUESTION_SECONDS, roomCode, ranking, type LivePlayer, type ToGuest, type ToHost } from '../live/logic';
+import { HostGame, normCode, PROTOCOL, QUESTION_SECONDS, roomCode, ranking, teamScores, type LiveMode, type LivePlayer, type ToGuest, type ToHost } from '../live/logic';
 import { liveQuestions } from '../live/questions';
 import { hostRoom, joinRoom, type GuestLink, type HostLink } from '../live/net';
 
@@ -31,6 +31,7 @@ export default function Live({ query }: { query: URLSearchParams }) {
   const [err, setErr] = useState<string>('');
   const [qr, setQr] = useState('');
   const [now, setNow] = useState(Date.now());
+  const [mode, setMode] = useState<LiveMode>('classic');
 
   const hostRef = useRef<{ link: HostLink; game: HostGame } | null>(null);
   const guestRef = useRef<GuestLink | null>(null);
@@ -43,11 +44,11 @@ export default function Live({ query }: { query: URLSearchParams }) {
   // ---------------------------------------------------------------- messages every player receives (host included)
   const onGuestMessage = useCallback((m: ToGuest) => {
     switch (m.t) {
-      case 'lobby': setPlayers(m.players); setMe(m.you); setPhase((p) => (p === 'connecting' || p === 'end' ? 'lobby' : p)); break;
+      case 'lobby': setPlayers(m.players); setMe(m.you); setMode(m.mode); setPhase((p) => (p === 'connecting' || p === 'end' ? 'lobby' : p)); break;
       case 'start': {
         const local = liveQuestions(game, m.seed, m.count);
         if (local.map((q) => q.id).join() !== m.ids.join()) { setErr('live.errVersion'); setPhase('error'); return; }
-        setQs(local); st.current.streak = 0; break;
+        setQs(local); setMode(m.mode); st.current.streak = 0; break;
       }
       case 'question':
         setI(m.i); setMine(null); setAnswered([]); setRight(null);
@@ -56,7 +57,8 @@ export default function Live({ query }: { query: URLSearchParams }) {
       case 'reveal': {
         setRight(m.answer); setPlayers(m.players); setPhase('reveal');
         const q = st.current.qs[m.i];
-        if (q) {
+        const wasOut = m.players.find((p) => p.id === st.current.me)?.out && !m.players.find((p) => p.id === st.current.me)?.last;
+        if (q && !(wasOut && st.current.mine === null)) {
           const ok = st.current.mine === m.answer;
           st.current.streak = ok ? st.current.streak + 1 : 0;
           recordAnswer(q, ok, st.current.streak); // XP, sounds and stats like any quiz
@@ -111,7 +113,7 @@ export default function Live({ query }: { query: URLSearchParams }) {
     const h = hostRef.current; if (!h) return;
     clearTimers();
     const seed = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-    const local = liveQuestions(game, seed, count);
+    const local = liveQuestions(game, seed, h.game.mode === 'elimination' ? 30 : count);
     h.game.start(seed, local.map((q) => q.id), local.map((q) => q.answer ?? 0));
   };
 
@@ -163,14 +165,29 @@ export default function Live({ query }: { query: URLSearchParams }) {
   const Board = ({ list, compact }: { list: LivePlayer[]; compact?: boolean }) => (
     <ol className="live-board">
       {ranking(list).map((p, k) => (
-        <li key={p.id} className={p.id === me ? 'me' : ''}>
-          <span className="rank">{k + 1}</span><span aria-hidden="true">{p.avatar}</span>
+        <li key={p.id} className={`${p.id === me ? 'me' : ''} ${p.out ? 'out' : ''}`}>
+          <span className="rank">{p.out ? '💀' : k + 1}</span><span aria-hidden="true">{p.avatar}</span>
+          {mode === 'teams' && <span aria-label={t(p.team === 1 ? 'live.teamRed' : 'live.teamBlue')}>{p.team === 1 ? '🔴' : '🔵'}</span>}
           <span className="grow">{p.name}{!compact && p.last ? <small className="dim"> {p.last.points ? `+${fmtNum(p.last.points)}` : '✗'}</small> : null}</span>
           <b>{fmtNum(p.score)}</b>
         </li>
       ))}
     </ol>
   );
+
+  const TeamBanner = () => {
+    if (mode !== 'teams') return null;
+    const [b, r] = teamScores(players);
+    return (
+      <div className="team-banner" role="status">
+        <span className={b >= r ? 'lead' : ''}>🔵 {t('live.teamBlue')} <b>{fmtNum(b)}</b></span>
+        <span className={r > b ? 'lead' : ''}>🔴 {t('live.teamRed')} <b>{fmtNum(r)}</b></span>
+      </div>
+    );
+  };
+  const meP = players.find((p) => p.id === me);
+  const amOut = !!meP?.out;
+  const aliveN = players.filter((p) => !p.out).length;
 
   if (phase === 'menu') return (
     <div className="page stack">
@@ -219,13 +236,31 @@ export default function Live({ query }: { query: URLSearchParams }) {
       </section>
       <section className="card stack">
         <h2 style={{ margin: 0 }}>{t('live.players', { n: players.length })}</h2>
-        <Board list={players} compact />
+        {mode === 'teams' ? (
+          <div className="teams">
+            {([0, 1] as const).map((tm) => (
+              <div key={tm} className={`team t${tm}`}>
+                <b>{tm ? `🔴 ${t('live.teamRed')}` : `🔵 ${t('live.teamBlue')}`}</b>
+                {players.filter((p) => (p.team ?? 0) === tm).map((p) => (
+                  <button key={p.id} className="chip" disabled={role !== 'host'} onClick={() => hostRef.current?.game.switchTeam(p.id)}>{p.avatar} {p.name}</button>
+                ))}
+              </div>
+            ))}
+            {role === 'host' && <p className="small dim" style={{ margin: 0 }}>{t('live.teamsHelp')}</p>}
+          </div>
+        ) : <Board list={players} compact />}
       </section>
       {role === 'host' ? (
         <section className="card stack">
-          <div className="chips" role="radiogroup" aria-label={t('live.length')}>
-            {[5, 8, 12].map((n) => <button key={n} className={`chip ${count === n ? 'on' : ''}`} aria-pressed={count === n} onClick={() => setCount(n)}>{t('live.questionsN', { n })}</button>)}
+          <div className="chips" role="radiogroup" aria-label={t('live.modeLabel')}>
+            {(['classic', 'elimination', 'teams'] as LiveMode[]).map((m) => (
+              <button key={m} className={`chip ${mode === m ? 'on' : ''}`} aria-pressed={mode === m} onClick={() => hostRef.current?.game.setMode(m)}>{t(`live.mode.${m}` as Key)}</button>
+            ))}
           </div>
+          <p className="small dim" style={{ margin: 0 }}>{t(`live.mode.${mode}.help` as Key)}</p>
+          {mode !== 'elimination' && <div className="chips" role="radiogroup" aria-label={t('live.length')}>
+            {[5, 8, 12].map((n) => <button key={n} className={`chip ${count === n ? 'on' : ''}`} aria-pressed={count === n} onClick={() => setCount(n)}>{t('live.questionsN', { n })}</button>)}
+          </div>}
           <button className="btn big green" disabled={players.length < 2} onClick={startGame}>🚀 {t('live.start')}</button>
           {players.length < 2 && <p className="small dim" style={{ margin: 0 }}>{t('live.waiting')}</p>}
         </section>
@@ -237,7 +272,7 @@ export default function Live({ query }: { query: URLSearchParams }) {
   if ((phase === 'question' || phase === 'reveal') && q) return (
     <div className="page stack">
       <div className="row spread">
-        <span className="pill">{t('live.qOf', { i: i + 1, n: qs.length })}</span>
+        <span className="pill">{mode === 'elimination' ? t('live.survivors', { n: aliveN }) : t('live.qOf', { i: i + 1, n: qs.length })}</span>
         {phase === 'question' && <span className={`pill ${secondsLeft <= 5 ? 'off' : 'gold'}`} aria-live="off">⏱️ {secondsLeft}</span>}
       </div>
       <div className="question-card">
@@ -246,23 +281,31 @@ export default function Live({ query }: { query: URLSearchParams }) {
         <div className="answers">
           {q.options!.map((o, k) => {
             const cls = phase === 'reveal' ? (k === right ? 'right' : k === mine ? 'wrong' : '') : k === mine ? 'picked' : '';
-            return <button key={k} className={`answer ${cls}`} disabled={mine !== null || phase !== 'question'} onClick={() => answer(k)}>{o}</button>;
+            return <button key={k} className={`answer ${cls}`} disabled={amOut || mine !== null || phase !== 'question'} onClick={() => answer(k)}>{o}</button>;
           })}
         </div>
-        {phase === 'question' && <p className="small dim">{mine !== null ? t('live.waitOthers', { n: answered.length, total: players.length }) : t('live.answeredN', { n: answered.length, total: players.length })}</p>}
-        {phase === 'reveal' && <p className="live-result">{mine === right ? `✅ ${t('live.right')}` : mine === null ? `⌛ ${t('live.tooLate')}` : `❌ ${t('live.wrong')}`} {q.explanation}</p>}
+        {phase === 'question' && amOut && <p className="notice small">💀 {t('live.youAreOut')}</p>}
+        {phase === 'question' && <p className="small dim">{mine !== null ? t('live.waitOthers', { n: answered.length, total: aliveN }) : t('live.answeredN', { n: answered.length, total: aliveN })}</p>}
+        {phase === 'reveal' && !amOut && <p className="live-result">{mine === right ? `✅ ${t('live.right')}` : mine === null ? `⌛ ${t('live.tooLate')}` : `❌ ${t('live.wrong')}`} {q.explanation}</p>}
       </div>
-      {phase === 'reveal' && <section className="card"><Board list={players} /></section>}
+      {phase === 'reveal' && meP?.out && meP.last && <p className="notice warn">💀 {t('live.eliminated')}</p>}
+      <button className="btn ghost small" onClick={leave}>{t('live.quit')}</button>
+      {phase === 'reveal' && <section className="card stack"><TeamBanner /><Board list={players} /></section>}
     </div>
   );
 
   if (phase === 'end') {
     const top = ranking(players);
-    const iWon = top[0]?.id === me;
+    const [tb, tr] = teamScores(players);
+    const myTeamWon = mode === 'teams' && meP && tb !== tr && (tb > tr ? 0 : 1) === meP.team;
+    const iWon = mode === 'teams' ? myTeamWon : top[0]?.id === me;
     return (
       <div className="page stack">
         {iWon && <Confetti />}
         <h1>🏆 {t('live.podium')}</h1>
+        {mode === 'teams' && <p className="display" style={{ fontSize: 24, textAlign: 'center', margin: 0 }}>{tb === tr ? t('live.teamsDraw') : t('live.teamWins', { team: tb > tr ? `🔵 ${t('live.teamBlue')}` : `🔴 ${t('live.teamRed')}` })}</p>}
+        {mode === 'teams' && <TeamBanner />}
+        {mode === 'elimination' && top[0] && <p className="display" style={{ fontSize: 22, textAlign: 'center', margin: 0 }}>{t('live.lastStanding', { name: top[0].name })}</p>}
         <div className="podium">
           {[1, 0, 2].map((k) => top[k] && (
             <div key={top[k].id} className={`step s${k + 1}`}>

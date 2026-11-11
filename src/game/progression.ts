@@ -21,6 +21,20 @@ export interface Profile {
   tourStars: Partial<Record<Region, number>>;
   /** `haptics` is optional: profiles created before v1.2 don't have it (treated as on). */
   settings: { sound: boolean; haptics?: boolean; reducedMotion: boolean; gpsConsent: boolean; lang: string; interests?: Domain[] };
+  /** Questions answered wrongly (most recent last), removed once answered right. */
+  mistakes?: Question[];
+  records?: { survival?: number };
+}
+
+export const MAX_MISTAKES = 40;
+/** Keep a wrong answer for “Review my mistakes”; forget it when answered right. */
+export function trackMistake(p: Profile, q: Question, correct: boolean) {
+  const list = (p.mistakes ?? []).filter((m) => m.id !== q.id);
+  if (!correct && q.options && q.answer !== undefined) {
+    const { timeLimit: _t, bonus: _b, ...keep } = q;
+    list.push(keep);
+  }
+  p.mistakes = list.slice(-MAX_MISTAKES);
 }
 
 export function newProfile(name: string, avatar = '🧭', kidMode = false, lang = 'en'): Profile {
