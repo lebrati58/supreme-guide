@@ -29,6 +29,8 @@ export interface WorldMapProps {
   tall?: boolean;
   detailed?: boolean;
   onCountryClick?: (iso3: string | undefined, name: string) => void;
+  /** Any tap on the map (used to pick places). */
+  onMapClick?: (lngLat: LngLat) => void;
   label: string;
 }
 
@@ -101,6 +103,7 @@ export default function WorldMap(props: WorldMapProps) {
       const f = e.features?.[0];
       if (f) propsRef.current.onCountryClick?.(f.properties?.iso3 as string | undefined, f.properties?.name as string);
     });
+    m.on('click', (e) => propsRef.current.onMapClick?.([e.lngLat.lng, e.lngLat.lat]));
     m.on('error', (e) => console.warn('map error', e.error?.message));
     return () => { m.remove(); map.current = null; setLoaded(false); };
   }, [failed]); // eslint-disable-line react-hooks/exhaustive-deps

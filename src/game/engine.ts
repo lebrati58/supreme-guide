@@ -7,6 +7,7 @@ import { haversineKm } from '../geo/geo';
 import { cityName, journeyStop, capitalName, capitalsList, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, lmCity, lmClue, lmFact, lmName, regionLabel, subregionLabel } from '../i18n/content';
 import { type Rng, pick, shuffle, weightedPick } from './rng';
 import { legendFor } from '../content/legendary';
+import { featureName } from './nature';
 import { DOMAIN_CATEGORIES, type Domain } from '../content/knowledge';
 import { legendQuestion } from '../i18n/content';
 
@@ -439,6 +440,57 @@ const rLegend: Gen = (_d, rnd, _f, route) => {
     source: { label: 'Wikipedia', url: `https://en.wikipedia.org/wiki/${l.wiki}` }, countries: routeIsos(route) };
 };
 
+const NE_SRC = { label: 'Natural Earth · GeoNames', url: 'https://www.naturalearthdata.com/' };
+
+/** A river the route really crosses, among rivers of the same area that it doesn't. */
+const rRiver: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.explore || !route.nature.rivers.length || route.nature.nearRivers.length < 3) return null;
+  const r = pick(route.nature.rivers, rnd);
+  const crossed = new Set(route.nature.rivers.map((x) => x.name));
+  const name = featureName(r);
+  const others = shuffle(route.nature.nearRivers.filter((x) => !crossed.has(x.name)), rnd).map(featureName).filter((x, k, a) => x !== name && a.indexOf(x) === k).slice(0, 3);
+  if (others.length < 3) return null;
+  const options = shuffle([name, ...others], rnd);
+  return { id: `r-river-${r.name}`, kind: 'mcq', category: 'nature', difficulty: 2, prompt: tc('gen.r.river.q', 'Which of these rivers does your route cross?'),
+    options, answer: options.indexOf(name), explanation: tc('gen.r.river.e', 'Your route crosses {name}, about {km} km after {from}.', { name, km: Math.round(r.at * route.pathKm), from: placeName(route.from, route) }),
+    source: NE_SRC, countries: routeIsos(route) };
+};
+
+/** A mountain range / desert / plateau the route really goes through. */
+const rRegion: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.explore || !route.nature.regions.length || route.nature.nearRegions.length < 3) return null;
+  const g = pick(route.nature.regions, rnd);
+  const inside = new Set(route.nature.regions.map((x) => x.name));
+  const name = featureName(g);
+  const others = shuffle(route.nature.nearRegions.filter((x) => !inside.has(x.name)), rnd).map(featureName).filter((x, k, a) => x !== name && a.indexOf(x) === k).slice(0, 3);
+  if (others.length < 3) return null;
+  const options = shuffle([name, ...others], rnd);
+  return { id: `r-region-${g.name}`, kind: 'mcq', category: 'nature', difficulty: 2, prompt: tc('gen.r.region.q', 'Which of these mountain ranges, deserts or plateaus does your route go through?'),
+    options, answer: options.indexOf(name), explanation: tc('gen.r.region.e', 'Your route goes through {name}.', { name }), source: NE_SRC, countries: routeIsos(route) };
+};
+
+/** Highest summit in view, or the height of one summit (exact value vs. clearly different ones). */
+const rPeak: Gen = (_d, rnd, _f, route) => {
+  if (!route || route.explore || !route.nature.peaks.length) return null;
+  const peaks = route.nature.peaks;
+  const distinct = peaks.filter((p, k) => peaks.findIndex((q) => Math.abs(q.elevation - p.elevation) < 150) === k);
+  if (distinct.length >= 3 && rnd() < 0.5) {
+    const set = shuffle(distinct, rnd).slice(0, 4);
+    const top = set.reduce((a, b) => (a.elevation > b.elevation ? a : b));
+    const options = shuffle(set.map(featureName), rnd);
+    return { id: `r-peak-top-${set.map((p) => p.name).sort().join('|')}`, kind: 'observation', category: 'nature', difficulty: 2,
+      prompt: tc('gen.r.peak.top.q', 'Which of these summits near your route is the highest?'), options, answer: options.indexOf(featureName(top)),
+      explanation: set.sort((a, b) => b.elevation - a.elevation).map((p) => `${featureName(p)}: ${fmtNum(p.elevation)} m`).join(' · '), source: NE_SRC, countries: routeIsos(route) };
+  }
+  const p = pick(peaks, rnd);
+  const e = p.elevation;
+  const vals = [e, ...shuffle([0.7, 0.8, 1.2, 1.35], rnd).slice(0, 3).map((f) => Math.round((e * f) / 100) * 100)];
+  if (new Set(vals).size < 4) return null;
+  const opts = shuffle(vals, rnd);
+  return { id: `r-peak-h-${p.name}`, kind: 'mcq', category: 'nature', difficulty: 2, prompt: tc('gen.r.peak.h.q', 'How high is {name}, near your route?', { name: featureName(p) }),
+    options: opts.map((v) => `${fmtNum(v)} m`), answer: opts.indexOf(e), explanation: tc('gen.r.peak.h.e', '{name} rises to {m} m.', { name: featureName(p), m: fmtNum(e) }), source: NE_SRC, countries: routeIsos(route) };
+};
+
 /** Optional AI questions (rewritten from the route's Wikipedia cards), labelled as such. */
 const rAi: Gen = (_d, rnd, _f, route) => {
   if (!route?.ai.length) return null;
@@ -494,7 +546,7 @@ const genMath: Gen = (_d, rnd) => {
 };
 
 export const GENERATORS: Record<string, Gen> = {
-  knowledge: genKnowledge, math: genMath, rAi, rLegend, rWiki, rOrder, rOnRoute, rLargest, rDistance, rDirection, rCountryOf, rNextCountry, rLandmarkNear,
+  knowledge: genKnowledge, math: genMath, rRiver, rRegion, rPeak, rAi, rLegend, rWiki, rOrder, rOnRoute, rLargest, rDistance, rDirection, rCountryOf, rNextCountry, rLandmarkNear,
   curated: genCurated, capital: genCapital, capitalReverse: genCapitalReverse, flag: genFlag, border: genBorderTF,
   landlocked: genLandlocked, area: genArea, region: genRegion, mapfind: genMapFind, currency: genCurrency,
   landmarkCountry: genLandmarkCountry, monument: genMonument, chronology: genChronology,
@@ -502,7 +554,7 @@ export const GENERATORS: Record<string, Gen> = {
 
 /** On a trip: mostly questions about the route itself, then about the route's countries. */
 export const ROUTE_WEIGHTS: Partial<Record<keyof typeof GENERATORS, number>> = {
-  rLegend: 6, rAi: 1.5, rWiki: 1.8, rOrder: 2, rOnRoute: 2, rLargest: 1.2, rDistance: 0.8, rDirection: 0.7, rCountryOf: 1, rNextCountry: 1, rLandmarkNear: 1.6,
+  rLegend: 6, rAi: 1.5, rWiki: 1.8, rRiver: 1.2, rRegion: 1, rPeak: 1, rOrder: 2, rOnRoute: 2, rLargest: 1.2, rDistance: 0.8, rDirection: 0.7, rCountryOf: 1, rNextCountry: 1, rLandmarkNear: 1.6,
   monument: 1.4, landmarkCountry: 0.6, curated: 1.4, capital: 0.6, currency: 0.4, flag: 0.4, mapfind: 0.5, border: 0.3, chronology: 0.4,
 };
 

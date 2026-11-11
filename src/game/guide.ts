@@ -5,6 +5,7 @@ import { EVENTS } from '../content/events';
 import { fmtNum, listJoin, t, type Key } from '../i18n';
 import { capitalName, cityName, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, journeyStop, languagesLabel, lmFact, lmName } from '../i18n/content';
 import { haversineKm } from '../geo/geo';
+import { featureName, type Side } from './nature';
 import { legendFor } from '../content/legendary';
 import { JOURNEYS } from '../content/journeys';
 import { legendFact } from '../i18n/content';
@@ -20,7 +21,26 @@ export interface GuideFact {
   title: string;
   text: string;
   source?: { label: string; url: string };
+  /** Which side to look (from the direction of travel). */
+  side?: Side;
+  /** The place's name in its local language, to hear it pronounced by a local voice. */
+  say?: { text: string; lang: string };
 }
+
+/** BCP-47 voices for the local languages we have names for (single-language countries only, plus Israel). */
+const ISO3_TO_LANG: Record<string, string> = { eng: 'en', fra: 'fr', spa: 'es', deu: 'de', ita: 'it', por: 'pt', rus: 'ru', heb: 'he', ara: 'ar', zho: 'zh' };
+const VOICE: Record<string, string> = { en: 'en-GB', fr: 'fr-FR', es: 'es-ES', de: 'de-DE', it: 'it-IT', pt: 'pt-PT', ru: 'ru-RU', he: 'he-IL', ar: 'ar-SA', zh: 'zh-CN' };
+const NAME_INDEX: Record<string, number> = { en: 0, fr: 1, es: 2, de: 3, it: 4, pt: 5, ru: 6, he: 7, ar: 8, zh: 9 };
+export function localSay(country: Country | undefined, name: string, names?: string[]): GuideFact['say'] {
+  if (!country) return undefined;
+  const codes = country.iso3 === 'ISR' ? ['heb'] : country.languageCodes ?? [];
+  if (codes.length !== 1) return undefined; // several official languages: we can't tell which one locals use here
+  const lang = ISO3_TO_LANG[codes[0]];
+  if (!lang) return undefined;
+  const local = names?.[NAME_INDEX[lang]] || (['ru', 'he', 'ar', 'zh'].includes(lang) ? '' : name);
+  return local ? { text: local, lang: VOICE[lang] } : undefined;
+}
+const sideText = (side?: Side) => (side ? ` ${t(side === 'left' ? 'guide.side.left' : 'guide.side.right')}` : '');
 
 const placeName = (p: RoutePlace, route: RouteCtx) =>
   (route.curatedId && p.stopIndex !== undefined ? journeyStop(route.curatedId, p.stopIndex, { name: p.name }) : p.stop ? p.name : cityName(p));
@@ -79,7 +99,8 @@ export function buildGuide(route: RouteCtx, data: GameData, wiki: WikiCard[] = [
     else if (c) bits.push(t('guide.place.in', { place: name, country: countryName(c) }));
     if (p.capital && c) bits.push(t('guide.place.capital', { country: countryName(c) }));
     facts.push({ id: `place-${p.name}`, at: p.at, icon: p.stop ? modeEmoji : '🏙️', title: name,
-      text: bits.join(' ') || t('guide.place.stop', { place: name }), source: { label: 'GeoNames', url: 'https://www.geonames.org/' } });
+      text: bits.join(' ') || t('guide.place.stop', { place: name }), source: { label: 'GeoNames', url: 'https://www.geonames.org/' },
+      say: p.stop && !p.town ? undefined : localSay(c, p.town ?? p.name, p.names) });
   }
 
   // Legendary journeys: verified stories told at the right stop
@@ -94,10 +115,19 @@ export function buildGuide(route: RouteCtx, data: GameData, wiki: WikiCard[] = [
       source: { label: 'Wikipedia', url: `https://en.wikipedia.org/wiki/${legend.wiki}` } });
   });
 
+  // Nature: rivers crossed, ranges/deserts entered, peaks in view (Natural Earth, GeoNames names)
+  const NE_SRC = { label: 'Natural Earth · GeoNames', url: 'https://www.naturalearthdata.com/' };
+  for (const r of route.nature.rivers) facts.push({ id: `river-${r.name}`, at: r.at, icon: '🌊', title: featureName(r), text: t('guide.river', { name: featureName(r) }), source: NE_SRC });
+  for (const g of route.nature.regions) facts.push({ id: `region-${g.name}`, at: g.at, icon: g.kind === 'desert' ? '🏜️' : g.kind === 'plateau' ? '🟫' : '⛰️', title: featureName(g),
+    text: t(`guide.region.${g.kind}` as Key, { name: featureName(g) }), source: NE_SRC });
+  const nearLandmark = (_c: { at: number }, name: string) => route.landmarks.some((x) => (x.l.name.includes(name) || name.includes(x.l.name) || lmName(x.l) === name));
+  for (const pk of route.nature.peaks.filter((x) => !nearLandmark(x, x.name) && !nearLandmark(x, featureName(x)))) facts.push({ id: `peak-${pk.name}`, at: pk.at, icon: pk.volcano ? '🌋' : '🏔️', title: featureName(pk), side: pk.side,
+    text: `${t(pk.volcano ? 'guide.volcano' : 'guide.peak', { name: featureName(pk), m: fmtNum(pk.elevation), km: Math.max(1, Math.round(pk.offKm)) })}${sideText(pk.side)}`, source: NE_SRC });
+
   // Landmarks near the route
-  for (const { l, at, offKm } of route.landmarks) {
-    facts.push({ id: `lm-${l.id}`, at, icon: l.emoji, title: lmName(l),
-      text: `${lmFact(l)} ${route.explore ? t('guide.lm.around', { km: offKm < 1 ? '<1' : Math.round(offKm) }) : t('guide.lm.near', { km: Math.max(1, Math.round(offKm)) })}`,
+  for (const { l, at, offKm, side } of route.landmarks) {
+    facts.push({ id: `lm-${l.id}`, at, icon: l.emoji, title: lmName(l), side: route.explore ? undefined : side,
+      text: `${lmFact(l)} ${route.explore ? t('guide.lm.around', { km: offKm < 1 ? '<1' : Math.round(offKm) }) : t('guide.lm.near', { km: Math.max(1, Math.round(offKm)) })}${route.explore ? '' : sideText(side)}`,
       source: { label: 'Wikipedia', url: `https://en.wikipedia.org/wiki/${l.wiki}` } });
   }
 
@@ -114,7 +144,7 @@ export function buildGuide(route: RouteCtx, data: GameData, wiki: WikiCard[] = [
 
   // De-duplicate by id, order along the route (explore: by distance)
   // Same position: departure, then country, facts, towns, landmarks, Wikipedia, arrival.
-  const rank = (f: GuideFact) => ['start', 'country', 'fact', 'ev', 'place', 'legend', 'lm', 'wiki', 'end'].indexOf(f.id.split('-')[0]);
+  const rank = (f: GuideFact) => ['start', 'country', 'fact', 'ev', 'place', 'legend', 'river', 'region', 'peak', 'lm', 'wiki', 'end'].indexOf(f.id.split('-')[0]);
   const seen = new Set<string>();
   return facts.filter((f) => (seen.has(f.id) ? false : (seen.add(f.id), true)))
     .sort((a, b) => a.at - b.at || rank(a) - rank(b));
