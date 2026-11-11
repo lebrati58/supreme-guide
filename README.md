@@ -44,7 +44,7 @@ GitHub Actions (`.github/workflows/ci-deploy.yml`) type-checks, tests, builds, r
 ## Credits & licences
 Logo & mascot © Supreme Guide. Code: see repository owner.
 Data: [mledoze/countries](https://github.com/mledoze/countries) (ODbL) · [Natural Earth](https://www.naturalearthdata.com/) (public domain) ·
-[OurAirports](https://ourairports.com/data/) via airport-data-js (CC BY 4.0) · [GeoNames](https://www.geonames.org/) via all-the-cities, and GeoNames alternate names for city names in the 10 languages (CC BY 4.0) ·
+[OurAirports](https://ourairports.com/data/) via airport-data-js (CC BY 4.0) · [GeoNames](https://www.geonames.org/) via all-the-cities, and GeoNames alternate names for city and river names in the 10 languages (CC BY 4.0) · [Natural Earth](https://www.naturalearthdata.com/) rivers, geographic regions and elevation points (public domain) ·
 online: [OpenFreeMap](https://openfreemap.org) / © OpenMapTiles / © OpenStreetMap contributors, OSRM, Nominatim, Wikipedia (CC BY-SA).
 Map engine: MapLibre GL JS (BSD-3). Fonts: Baloo 2, Nunito (OFL).
 

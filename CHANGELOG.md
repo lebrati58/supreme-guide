@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.0 — 2026-11-11
+### Added (ideas from GuideAlong, Autio and Flyover Country)
+- **Rivers, mountains and deserts along the way**: the guide tells you when your route crosses a river, enters a mountain range, a desert or a plateau, and which summits are in view (with their height). New quiz questions about them. Offline data: Natural Earth (public domain) with names in the 10 languages (GeoNames for rivers).
+- **⬅️ Left or right?** Landmarks and summits come with the side to look at, and the trip radio warns you a few km before. Given only where it is reliable: on real road/walking routes, or far enough from approximate train/flight lines (a wrong side is worse than none).
+- **📻 Trip radio**: the guide reads every story in order as you reach it, without skipping any, plus heads-ups for things to see.
+- **🔊 Hear place names in the local language** (Москва, ירושלים, 北京…), with the phone's local voice — for countries with one official language, and Israel.
+- **🗺️ Choose your trip on the map**: tap the start, then the destination.
+
 ## 1.7.0 — 2026-11-11
 ### Added (ideas from GeoGuessr and Seterra)
 - **🔥 Survival**: questions until your first mistake; your record is kept.
