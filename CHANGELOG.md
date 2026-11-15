@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.0 — 2026-11-15
+### Added
+- **📥 Restore a backup**: the “Export my data” file can now be restored (Profile). A preview shows the players and trips first; **merge** keeps the best of both (XP, stamps, badges, records, trip progress) — nothing is lost — or **replace** after confirmation. Backup files are strictly checked (types, sizes, http(s)-only links).
+- **📲 Transfer to another phone**: directly phone to phone (no account, nothing stored online) with a code or QR code; the sending phone confirms before anything is sent.
+- **💾 Reminder**: after 3 trips without a backup for 30 days, a gentle reminder on the home screen (dismiss for a week).
+
 ## 1.8.0 — 2026-11-11
 ### Added (ideas from GuideAlong, Autio and Flyover Country)
 - **Rivers, mountains and deserts along the way**: the guide tells you when your route crosses a river, enters a mountain range, a desert or a plateau, and which summits are in view (with their height). New quiz questions about them. Offline data: Natural Earth (public domain) with names in the 10 languages (GeoNames for rivers).
