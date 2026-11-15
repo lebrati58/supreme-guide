@@ -26,6 +26,14 @@ export default function Home() {
   const locked = useMemo(() => new Set(countries.filter((c) => !isRegionUnlocked(profile, c.region)).map((c) => c.iso3)), [countries, profile]);
   const playedToday = profile.daily.scores[todayKey()] !== undefined;
   const firstTime = profile.stats.answered === 0;
+  // Gentle reminder: some progress, and no backup for 30 days (snoozed for a week when dismissed).
+  const [backupNag, setBackupNag] = useState(false);
+  useEffect(() => {
+    Promise.all([store.get<number>('lastBackupAt'), store.get<number>('backupNagSnooze')]).then(([last, snooze]) => {
+      const day = 86400000, now = Date.now();
+      setBackupNag(trips.length >= 3 && (!last || now - last > 30 * day) && (!snooze || now - snooze > 7 * day));
+    });
+  }, [trips.length]);
 
   return (
     <div className="page stack">
@@ -40,6 +48,14 @@ export default function Home() {
       </section>
 
       <Mascot mood={firstTime ? 'welcome' : online ? 'idle' : 'offline'} />
+
+      {backupNag && (
+        <section className="notice row" role="status">
+          <span className="grow">💾 {t('backup.nag')}</span>
+          <a className="btn small" href={href('/profile')}>{t('backup.nagGo')}</a>
+          <button className="btn small ghost" aria-label={t('common.close')} onClick={() => { setBackupNag(false); void store.set('backupNagSnooze', Date.now()); }}>✕</button>
+        </section>
+      )}
 
       <section className="card">
         <XPBar xp={profile.xp} />

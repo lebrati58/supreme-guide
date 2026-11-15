@@ -1,7 +1,10 @@
 import { InterestPicker } from '../components/Interests';
+import { RestorePreview } from '../components/RestorePreview';
+import { makeBackup, parseBackup, type Backup } from '../storage/backup';
+import { href } from '../router';
 import { useEffect, useState } from 'react';
 import { useApp } from '../state';
-import { fmtDate, fmtNum, t, tn } from '../i18n';
+import { fmtDate, fmtNum, t, tn, type Key } from '../i18n';
 import { storageEstimate, store } from '../storage/db';
 import { XPBar, Modal } from '../components/Bits';
 import { LanguageList } from '../components/LanguagePicker';
@@ -19,8 +22,18 @@ export default function Profile({ install }: { install: { canInstall: boolean; p
   const [credits, setCredits] = useState(false);
   useEffect(() => { storageEstimate().then(setEst); }, []);
 
+  const [restoring, setRestoring] = useState<Backup | null>(null);
+  const [lastBackup, setLastBackup] = useState<number | undefined>(undefined);
+  useEffect(() => { store.get<number>('lastBackupAt').then(setLastBackup); }, [restoring]);
+  const pickFile = async (f: File | undefined) => {
+    if (!f) return;
+    const b = parseBackup(await f.text());
+    if (typeof b === 'string') { toast({ icon: '⚠️', title: t('backup.invalid'), body: t(`backup.err.${b}` as Key) }); return; }
+    setRestoring(b);
+  };
   const exportData = async () => {
-    const blob = new Blob([JSON.stringify({ profiles, trips: await store.getTrips(), exportedAt: new Date().toISOString(), app: 'supreme-guide' }, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(makeBackup(profiles, await store.getTrips()), null, 1)], { type: 'application/json' });
+    void store.set('lastBackupAt', Date.now()).then(() => setLastBackup(Date.now()));
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `supreme-guide-backup-${new Date().toISOString().slice(0, 10)}.json`;
@@ -89,10 +102,22 @@ export default function Profile({ install }: { install: { canInstall: boolean; p
           <li>{t('profile.privacy4')}</li>
         </ul>
         <div className="row">
-          <button className="btn small ghost" onClick={exportData}>{t('profile.export')}</button>
+          <button className="btn small ghost" onClick={exportData}>💾 {t('profile.export')}</button>
+          <label className="btn small ghost" style={{ cursor: 'pointer' }}>📥 {t('backup.restore')}
+            <input type="file" accept="application/json,.json" hidden onChange={(e) => { void pickFile(e.target.files?.[0]); e.target.value = ''; }} />
+          </label>
+          <a className="btn small ghost" href={href('/transfer')}>📲 {t('transfer.title')}</a>
           <button className="btn small red" onClick={async () => { if (confirm(t('profile.eraseConfirm'))) { indexedDB.deleteDatabase('supreme-guide'); location.reload(); } }}>{t('profile.erase')}</button>
         </div>
       </section>
+
+      <p className="small dim" id="backup" style={{ margin: '-8px 0 0' }}>{lastBackup ? t('backup.last', { date: fmtDate(lastBackup, { dateStyle: 'medium' }) }) : t('backup.never')}</p>
+      {restoring && (
+        <Modal label={t('backup.restore')} onClose={() => setRestoring(null)}>
+          <h2 style={{ marginTop: 0 }}>📥 {t('backup.restore')}</h2>
+          <RestorePreview backup={restoring} onCancel={() => setRestoring(null)} onDone={() => setRestoring(null)} />
+        </Modal>
+      )}
 
       <button className="link-btn" onClick={() => setCredits(true)}>{t('profile.credits')}</button>
 

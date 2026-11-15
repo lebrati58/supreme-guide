@@ -16,7 +16,7 @@ function options(): PeerOptions {
   return { debug: 0 };
 }
 
-async function newPeer(id?: string): Promise<Peer> {
+export async function newPeer(id?: string): Promise<Peer> {
   const { Peer } = await import('peerjs');
   return new Promise((resolve, reject) => {
     const p = id ? new Peer(id, options()) : new Peer(options());
