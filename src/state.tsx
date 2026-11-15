@@ -4,6 +4,7 @@ import { loadCountries, loadWorld110, loadWorld50, type WorldFC } from './data/l
 import { makeGameData, type GameData } from './game/engine';
 import { supportsFlagEmoji } from './data/flags';
 import { store } from './storage/db';
+import type { RestorePlan } from './storage/backup';
 import { addStamp, awardBadges, badgeDefs, levelFromXp, newProfile, xpForAnswer, type BadgeDef, type Profile, trackMistake } from './game/progression';
 import { CountryIndex } from './geo/countryIndex';
 import { detectLocale, setLocale, t, tc } from './i18n';
@@ -26,6 +27,8 @@ interface Ctx {
   switchProfile: (id: string) => void;
   createProfile: (name: string, avatar: string, kid: boolean) => Promise<void>;
   removeProfile: (id: string) => Promise<void>;
+  /** Apply a restore plan (from a backup file or another phone). */
+  restore: (plan: RestorePlan, mode: 'merge' | 'replace') => Promise<void>;
   update: (fn: (p: Profile) => void) => void;
   recordAnswer: (q: Question, correct: boolean, streak: number, timeRatio?: number) => AnswerResult;
   stamp: (iso3s: string[], mode: Profile['stamps'][string]['mode']) => string[];
@@ -172,6 +175,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (activeId === id) switchProfile(rest[0].id);
   }, [profiles, activeId, switchProfile]);
 
+  const restore = useCallback(async (plan: RestorePlan, mode: 'merge' | 'replace') => {
+    const keep = new Set(plan.profiles.map((p) => p.id));
+    if (mode === 'replace') {
+      for (const p of profilesRef.current) if (!keep.has(p.id)) await store.deleteProfile(p.id);
+      const tripIds = new Set(plan.trips.map((t) => t.id));
+      for (const t of await store.getTrips()) if (!tripIds.has(t.id)) await store.deleteTrip(t.id);
+    }
+    for (const p of plan.profiles) await store.putProfile(p);
+    for (const t of plan.trips) await store.putTrip(t);
+    profilesRef.current = plan.profiles;
+    setProfiles(plan.profiles);
+    if (!activeRef.current || !keep.has(activeRef.current)) switchProfile(plan.profiles[0].id);
+    await store.set('lastBackupAt', Date.now());
+  }, [switchProfile]);
+
   const getIndex = useCallback(() => {
     if (!indexRef.current) indexRef.current = loadWorld50().then((w) => new CountryIndex(w)).catch((e) => { indexRef.current = null; throw e; });
     return indexRef.current;
@@ -179,7 +197,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: Ctx | null = profile ? {
     ready: countries.length > 0 && !!profile && localeReady !== null, error, countries, byIso3, game, world110, getIndex, getWorld50: loadWorld50,
-    profile, profiles, switchProfile, createProfile, removeProfile, update, recordAnswer, stamp, useMode,
+    profile, profiles, switchProfile, createProfile, removeProfile, restore, update, recordAnswer, stamp, useMode,
     online, toasts, toast, badges,
   } : null;
 

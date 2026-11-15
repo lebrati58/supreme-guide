@@ -100,6 +100,32 @@ try {
   await host.page.click('text=Leave the game');
   await guest.page.waitForSelector('.notice.warn', { timeout: 15000 }).then(() => ok('guest is told when the host leaves'), () => fail('guest not told'));
 
+  // ---- Transfer the progress from the host's phone (Ana) to the guest's phone (Ben), directly.
+  await host.page.goto(`${BASE}#/transfer`);
+  await host.page.click('.card .btn >> nth=0'); // send: show my code
+  await host.page.waitForSelector('.live-code-big', { timeout: 20000 });
+  const xcode = (await host.page.textContent('.live-code-big')).trim();
+  await guest.page.goto(`${BASE}#/transfer?code=${xcode}`);
+  await guest.page.click('.btn.blue'); // receive
+  await host.page.waitForSelector('.btn.green', { timeout: 20000 }).then(() => ok('sender asked to confirm before sending'), () => fail('no confirmation on sender'));
+  await host.page.click('.btn.green');
+  await guest.page.waitForSelector('.live-board li', { timeout: 20000 }).then(() => ok('receiver previews the backup before restoring'), () => fail('no preview on receiver'));
+  await guest.page.click('.btn.green'); // merge
+  await host.page.waitForSelector('text=Transfer complete', { timeout: 20000 }).then(() => ok('sender told the transfer is complete'), () => fail('sender not told'));
+  await guest.page.goto(`${BASE}#/profile`);
+  await guest.page.waitForSelector('.tile b');
+  const names = await guest.page.$$eval('.tile b', (bs) => bs.map((b) => b.textContent));
+  names.some((n) => n?.startsWith('Ana')) && names.some((n) => n?.startsWith('Ben')) ? ok('both players on the receiving phone after merge') : fail(`players after transfer: ${names.join(', ')}`);
+
+  // ---- Backup file: export on one phone, restore on the other.
+  await host.page.goto(`${BASE}#/profile`);
+  const [download] = await Promise.all([host.page.waitForEvent('download'), host.page.click('button:has-text("💾")')]);
+  const file = await download.path();
+  await guest.page.setInputFiles('input[type=file]', file);
+  await guest.page.waitForSelector('.modal .btn.green', { timeout: 10000 }).then(() => ok('backup file accepted and previewed'), () => fail('backup file not accepted'));
+  await guest.page.click('.modal .btn.green');
+  await guest.page.waitForSelector('.modal', { state: 'detached', timeout: 10000 }).then(() => ok('backup file restored (merge)'), () => fail('restore did not complete'));
+
   const errs = [...host.errors, ...guest.errors];
   errs.length ? fail(`JS errors: ${errs.join(' | ')}`) : ok('no JavaScript errors');
 } catch (e) {
