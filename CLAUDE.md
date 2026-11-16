@@ -34,3 +34,6 @@ Avant chaque PR, lance la même chaîne que la CI : `typecheck` → `i18n:check`
 - Aucune clé API dans le client. Les services payants passent par un proxy serveur (`server/`), désactivé par défaut.
 - Mets à jour `CHANGELOG.md` à chaque version. Travaille sur une branche avec une PR. « **yallah** » veut dire : fusionne dans `main`, puis vérifie la publication.
 - Ne dis jamais qu'une chose est testée si elle ne l'a pas été.
+
+## Sous-agents (Claude Mastery 2.0)
+Dix sous-agents spécialisés dans `.claude/agents/` (architecte, dev full-stack, UX/UI, QA, sécurité, DevOps, recherche, intégrations, prompts, expert Claude Code), plus les skills `/mission <id>` et `/audit-equipe`. Règles de coordination : `docs/claude-mastery/REGLES.md` ; catalogue des 172 exercices et dashboard : `docs/claude-mastery/`. Ne délègue qu'aux agents utiles, un seul agent modifie un fichier à la fois, et les règles ci-dessus (i18n, hors ligne, sources vérifiées) s'appliquent aussi à eux.

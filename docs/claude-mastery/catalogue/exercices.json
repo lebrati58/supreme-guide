@@ -1,0 +1,1722 @@
+[
+  {
+    "id": "01-01",
+    "number": 1,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Définir le résultat attendu pour une application",
+    "evidence": "Écrire un objectif mesurable et deux exclusions",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-02",
+    "number": 2,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Transformer une idée orale en cahier des charges",
+    "evidence": "Livrer objectifs, utilisateurs, contraintes et livrables",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-03",
+    "number": 3,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Réécrire un prompt vague en prompt structuré",
+    "evidence": "Afficher avant/après et expliquer trois améliorations",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-04",
+    "number": 4,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Isoler les contraintes non négociables",
+    "evidence": "Lister cinq contraintes testables sans ambiguïté",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-05",
+    "number": 5,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Rédiger des critères d’acceptation",
+    "evidence": "Produire trois scénarios Given/When/Then",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-06",
+    "number": 6,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Définir le public cible d’une interface",
+    "evidence": "Créer deux personas avec besoins distincts",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-07",
+    "number": 7,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Composer un prompt pour obtenir du JSON valide",
+    "evidence": "Vérifier l’analyse avec un parseur JSON",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-08",
+    "number": 8,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Exiger des sources pour les affirmations factuelles",
+    "evidence": "Séparer citations et hypothèses dans une réponse",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-09",
+    "number": 9,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Concevoir un prompt bilingue français-hébreu",
+    "evidence": "Valider les deux langues et le sens des consignes",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-10",
+    "number": 10,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Prévenir les réponses inventées",
+    "evidence": "Ajouter une règle explicite de signalement des inconnues",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-11",
+    "number": 11,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Réduire un prompt long sans perdre d’exigences",
+    "evidence": "Comparer la couverture de dix contraintes",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-12",
+    "number": 12,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Rédiger un prompt de correction de bug",
+    "evidence": "Inclure reproduction, attendu, réel et preuve",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-13",
+    "number": 13,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Préparer un prompt d’audit en lecture seule",
+    "evidence": "Interdire explicitement les modifications et le déploiement",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-14",
+    "number": 14,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Écrire un prompt de comparaison de deux designs",
+    "evidence": "Définir quatre critères et un verdict argumenté",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-15",
+    "number": 15,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Définir un schéma de sortie CSV",
+    "evidence": "Créer et ouvrir un CSV conforme avec en-têtes",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-16",
+    "number": 16,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Créer un exemple positif et un contre-exemple",
+    "evidence": "Identifier pourquoi l’un passe et l’autre échoue",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-17",
+    "number": 17,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Séparer un objectif complexe en sous-tâches",
+    "evidence": "Construire un plan de cinq tâches avec dépendances",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-18",
+    "number": 18,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Tester la robustesse d’un prompt sur trois entrées",
+    "evidence": "Documenter trois sorties et leurs défauts",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-19",
+    "number": 19,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Créer une bibliothèque de prompts réutilisables",
+    "evidence": "Enregistrer cinq prompts avec champs variables",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "01-20",
+    "number": 20,
+    "level": 1,
+    "level_name": "Prompting maîtrisé",
+    "title": "Préparer la mission de lancement du projet",
+    "evidence": "Produire un brief final et sa checklist de validation",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-01",
+    "number": 21,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Vérifier l’installation de Claude Code",
+    "evidence": "Noter la version et le résultat du diagnostic",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-02",
+    "number": 22,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Identifier le système et le terminal",
+    "evidence": "Documenter OS, shell et répertoire de travail",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-03",
+    "number": 23,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Explorer les dossiers du projet",
+    "evidence": "Produire une arborescence courte des dossiers utiles",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-04",
+    "number": 24,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Reconnaître les fichiers de configuration",
+    "evidence": "Expliquer les rôles de package.json et .env.example",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-05",
+    "number": 25,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Lire un README et résumer les commandes",
+    "evidence": "Recopier les commandes disponibles sans les exécuter",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-06",
+    "number": 26,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Consulter le statut Git",
+    "evidence": "Identifier branche, fichiers modifiés et dépôts distants",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-07",
+    "number": 27,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Créer une branche locale sûre",
+    "evidence": "Confirmer le nom et l’absence de modifications perdues",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-08",
+    "number": 28,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Inspecter l’historique Git récent",
+    "evidence": "Résumer les trois commits précédents",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-09",
+    "number": 29,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Comparer deux versions d’un fichier",
+    "evidence": "Expliquer précisément le diff",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-10",
+    "number": 30,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Lister les scripts npm existants",
+    "evidence": "Documenter lint, test, build et dev",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-11",
+    "number": 31,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Installer des dépendances en environnement test",
+    "evidence": "Conserver le journal et signaler les erreurs",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-12",
+    "number": 32,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Lancer un serveur local",
+    "evidence": "Confirmer l’URL locale et le processus",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-13",
+    "number": 33,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Lire les logs sans divulguer de secrets",
+    "evidence": "Extraire trois indices et masquer valeurs sensibles",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-14",
+    "number": 34,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Exécuter un script de lint",
+    "evidence": "Conserver le code de sortie et les erreurs",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-15",
+    "number": 35,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Exécuter une suite de tests",
+    "evidence": "Compter les tests réussis, échoués et ignorés",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-16",
+    "number": 36,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Exécuter un build de production en local",
+    "evidence": "Confirmer le résultat ou diagnostiquer l’échec",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-17",
+    "number": 37,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Trouver une fonction dans le dépôt",
+    "evidence": "Donner chemin, ligne et contexte",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-18",
+    "number": 38,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Rechercher un appel API",
+    "evidence": "Lister endpoint, méthode et fichiers consommateurs",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-19",
+    "number": 39,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Identifier les variables d’environnement requises",
+    "evidence": "Fournir uniquement les noms, jamais les valeurs",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-20",
+    "number": 40,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Lire un fichier JSON et valider sa syntaxe",
+    "evidence": "Obtenir une validation automatique",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-21",
+    "number": 41,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Créer un fichier Markdown de rapport",
+    "evidence": "Vérifier son existence et sa lisibilité",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-22",
+    "number": 42,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Comprendre un conflit de fusion Git",
+    "evidence": "Expliquer les deux versions sans supprimer de travail",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-23",
+    "number": 43,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Proposer une stratégie de résolution du conflit",
+    "evidence": "Documenter la résolution avant application",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-24",
+    "number": 44,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Créer un commit local limité",
+    "evidence": "Vérifier la liste exacte des fichiers inclus",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-25",
+    "number": 45,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Lire une issue GitHub avec accès autorisé",
+    "evidence": "Citer titre, contraintes et état réellement observés",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-26",
+    "number": 46,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Analyser une erreur TypeScript",
+    "evidence": "Pointer la cause et proposer une correction vérifiable",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-27",
+    "number": 47,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Inspecter les ports utilisés",
+    "evidence": "Identifier le processus responsable d’un conflit",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-28",
+    "number": 48,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Comprendre les git worktrees",
+    "evidence": "Créer ou décrire un espace de travail isolé et le nettoyer",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-29",
+    "number": 49,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Utiliser les raccourcis et commandes Claude Code",
+    "evidence": "Documenter cinq commandes confirmées",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-30",
+    "number": 50,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Lister les agents Claude chargés",
+    "evidence": "Vérifier les dix noms attendus",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-31",
+    "number": 51,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Diagnostiquer une erreur de permission",
+    "evidence": "Identifier règle, outil et remède sans bypass",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "02-32",
+    "number": 52,
+    "level": 2,
+    "level_name": "Claude Code & terminal",
+    "title": "Écrire une procédure de reprise après échec",
+    "evidence": "Prévoir sauvegarde, rollback et nouveau test",
+    "agent": "claude-code-expert",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-01",
+    "number": 53,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Inventorier les outils et connecteurs disponibles",
+    "evidence": "Distinguer connecté, absent et non vérifié",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-02",
+    "number": 54,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Vérifier le statut des serveurs MCP",
+    "evidence": "Produire un tableau des états remontés",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-03",
+    "number": 55,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Comprendre la différence API et MCP",
+    "evidence": "Dessiner deux chaînes de traitement avec exemples",
+    "agent": "fullstack-developer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-04",
+    "number": 56,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Préparer un plan de permissions minimales",
+    "evidence": "Lister lecture et écriture séparément",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-05",
+    "number": 57,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Connecter GitHub en lecture seule si autorisé",
+    "evidence": "Prouver la lecture d’un dépôt sans écriture",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-06",
+    "number": 58,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Lire les métadonnées d’un dépôt GitHub",
+    "evidence": "Relever branche par défaut et dernier commit",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-07",
+    "number": 59,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Lister les issues d’un dépôt autorisé",
+    "evidence": "Afficher numéros et statuts cités",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-08",
+    "number": 60,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Préparer une PR sans publication",
+    "evidence": "Rédiger titre, description et plan de test",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-09",
+    "number": 61,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Vérifier la connexion Google Drive",
+    "evidence": "Confirmer la lecture d’un dossier choisi",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-10",
+    "number": 62,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Trouver un document précis dans Drive",
+    "evidence": "Rapporter nom, ID et dernière modification",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-11",
+    "number": 63,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Extraire une section autorisée d’un document",
+    "evidence": "Rendre la section avec référence claire",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-12",
+    "number": 64,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Comprendre les différences Drive et dépôt Git",
+    "evidence": "Établir qui fait autorité pour chaque type de donnée",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-13",
+    "number": 65,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Vérifier l’accès Google Calendar",
+    "evidence": "Lire un événement test avec accord",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-14",
+    "number": 66,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Créer une proposition d’événement sans l’envoyer",
+    "evidence": "Rendre horaire, fuseau et invités attendus",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-15",
+    "number": 67,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Vérifier Gmail sans expédier de message",
+    "evidence": "Récupérer un message autorisé et son objet",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-16",
+    "number": 68,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Préparer un brouillon d’e-mail",
+    "evidence": "Contrôler destinataire et sujet sans envoyer",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-17",
+    "number": 69,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Tester une intégration Figma en lecture",
+    "evidence": "Identifier fichier et permissions réelles",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-18",
+    "number": 70,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Documenter un design system depuis Figma",
+    "evidence": "Extraire couleurs et composants validés",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-19",
+    "number": 71,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Examiner la configuration Supabase sans secret",
+    "evidence": "Identifier projet et environnements sans clé affichée",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-20",
+    "number": 72,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Comprendre Supabase RLS",
+    "evidence": "Décrire une règle de lecture et son test",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-21",
+    "number": 73,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Lire un schéma SQL autorisé",
+    "evidence": "Dessiner une table et ses relations",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-22",
+    "number": 74,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Préparer une migration SQL réversible",
+    "evidence": "Fournir up/down et critères de rollback",
+    "agent": "fullstack-developer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-23",
+    "number": 75,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Examiner un projet Vercel connecté",
+    "evidence": "Identifier environnement, branche et dernier déploiement",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-24",
+    "number": 76,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Lire les logs d’un déploiement autorisé",
+    "evidence": "Relever succès ou erreur réelle",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-25",
+    "number": 77,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Tester un endpoint HTTP public de démonstration",
+    "evidence": "Enregistrer statut, durée et payload attendu",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-26",
+    "number": 78,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Créer un schéma d’intégration webhook",
+    "evidence": "Préciser signature, retries et idempotence",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-27",
+    "number": 79,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Vérifier la gestion des erreurs API",
+    "evidence": "Simuler une réponse 429 sans données réelles",
+    "agent": "fullstack-developer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-28",
+    "number": 80,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Gérer les fuseaux horaires d’une intégration",
+    "evidence": "Tester une date avec décalage explicite",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-29",
+    "number": 81,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Comparer OAuth et token statique",
+    "evidence": "Dresser les risques et durées d’accès",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-30",
+    "number": 82,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Identifier les champs personnels d’une API",
+    "evidence": "Créer une matrice de minimisation des données",
+    "agent": "fullstack-developer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-31",
+    "number": 83,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Préparer un export CSV depuis des données fictives",
+    "evidence": "Vérifier l’encodage UTF-8 et les en-têtes",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-32",
+    "number": 84,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Créer une stratégie de synchronisation incrémentale",
+    "evidence": "Définir curseur, doublons et checkpoints",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-33",
+    "number": 85,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Préparer une stratégie de reprise des webhooks",
+    "evidence": "Préciser backoff, file d’attente et preuve",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-34",
+    "number": 86,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Documenter une intégration de bout en bout",
+    "evidence": "Rédiger contrat, permissions, erreurs et tests",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "03-35",
+    "number": 87,
+    "level": 3,
+    "level_name": "Tools, APIs & MCP",
+    "title": "Auditer les connecteurs devenus inutiles",
+    "evidence": "Recommander ceux à désactiver avec justification",
+    "agent": "integration-engineer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-01",
+    "number": 88,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Lister et valider les dix définitions d’agents",
+    "evidence": "Confirmer unicité, frontmatter et périmètres",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-02",
+    "number": 89,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Écrire une demande au Prompt Master",
+    "evidence": "Recevoir une spécification et trois tests",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-03",
+    "number": 90,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Déléguer une lecture technique au CLI Expert",
+    "evidence": "Obtenir les commandes et preuves sans modification",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-04",
+    "number": 91,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Demander une revue de connecteurs à Integration Engineer",
+    "evidence": "Obtenir accès disponible et manquant",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-05",
+    "number": 92,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Déléguer un schéma d’architecture au System Architect",
+    "evidence": "Recevoir composants et frontières",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-06",
+    "number": 93,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Demander un audit UX au Designer",
+    "evidence": "Obtenir trois améliorations hiérarchisées",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-07",
+    "number": 94,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Déléguer une petite fonctionnalité au Developer",
+    "evidence": "Livrer code et tests dans un périmètre limité",
+    "agent": "fullstack-developer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-08",
+    "number": 95,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Demander la validation d’une date au Research Agent",
+    "evidence": "Recevoir source ou statut non vérifiable",
+    "agent": "research-knowledge",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-09",
+    "number": 96,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Confier une recette à QA Tester",
+    "evidence": "Recevoir tests pass/fail et reproductions",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-10",
+    "number": 97,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Demander une revue sécurité indépendante",
+    "evidence": "Recevoir criticité, preuve et remédiation",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-11",
+    "number": 98,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Confier le plan CI au DevOps Agent",
+    "evidence": "Recevoir workflow proposé sans publication",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-12",
+    "number": 99,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Déléguer deux lectures indépendantes en parallèle",
+    "evidence": "Comparer deux rapports sans chevauchement",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-13",
+    "number": 100,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Créer un graphe de dépendances entre tâches",
+    "evidence": "Identifier tâches bloquantes et parallélisables",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-14",
+    "number": 101,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Définir un propriétaire par dossier",
+    "evidence": "Éviter les écritures concurrentes sur un même fichier",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-15",
+    "number": 102,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Simuler un conflit de deux agents",
+    "evidence": "Appliquer une règle d’arbitrage documentée",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-16",
+    "number": 103,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Chaîner architecture puis développement",
+    "evidence": "Faire valider le contrat avant de coder",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-17",
+    "number": 104,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Chaîner développement puis QA",
+    "evidence": "Tester exactement les changements réalisés",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-18",
+    "number": 105,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Chaîner QA puis sécurité",
+    "evidence": "Ajouter une revue de risque distincte",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-19",
+    "number": 106,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Gérer un agent indisponible",
+    "evidence": "Décrire une solution de repli explicite",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-20",
+    "number": 107,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Fixer une limite de coût et de contexte",
+    "evidence": "Comparer un passage séquentiel et parallèle",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-21",
+    "number": 108,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Préparer un point de synthèse du coordinateur",
+    "evidence": "Afficher statut et preuves par sous-agent",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-22",
+    "number": 109,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Distinguer tâche exploratoire et action externe",
+    "evidence": "Obtenir approbation pour l’action risquée",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-23",
+    "number": 110,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Orchestrer une correction d’interface complète",
+    "evidence": "Livrer plan UX, code, vérification et rollback",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-24",
+    "number": 111,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Concevoir une file de tâches priorisée",
+    "evidence": "Associer priorité, responsable, dépendance et blocage",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "04-25",
+    "number": 112,
+    "level": 4,
+    "level_name": "Orchestration des dix agents",
+    "title": "Présenter une revue multi-agents au propriétaire",
+    "evidence": "Produire décision go/no-go fondée sur des preuves",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-01",
+    "number": 113,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Créer une skill de projet au bon emplacement",
+    "evidence": "Valider SKILL.md avec frontmatter minimal",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-02",
+    "number": 114,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Expliquer la différence agent et skill",
+    "evidence": "Donner un usage exact de chacun",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-03",
+    "number": 115,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Créer la skill mission pour une tâche précise",
+    "evidence": "Lancer une tâche par identifiant sans ambiguïté",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-04",
+    "number": 116,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Créer une skill de revue de code",
+    "evidence": "Prévoir checklist et seuils d’acceptation",
+    "agent": "fullstack-developer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-05",
+    "number": 117,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Créer une skill de vérification fonctionnelle",
+    "evidence": "Exiger exécution et preuves",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-06",
+    "number": 118,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Limiter une skill à l’invocation manuelle",
+    "evidence": "Vérifier disable-model-invocation",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-07",
+    "number": 119,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Documenter la portée des permissions",
+    "evidence": "Comparer user, project et local",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-08",
+    "number": 120,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Définir un protocole de secrets",
+    "evidence": "Proscrire les clés dans commits et logs",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-09",
+    "number": 121,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Rechercher les secrets accidentels localement",
+    "evidence": "Rapporter seulement les chemins, masquer les valeurs",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-10",
+    "number": 122,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Prévoir la rotation d’un secret divulgué",
+    "evidence": "Décrire invalidation et vérification de remède",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-11",
+    "number": 123,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Analyser les permissions d’un sous-agent",
+    "evidence": "Prouver que le chercheur ne peut pas éditer",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-12",
+    "number": 124,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Analyser les permissions d’une skill",
+    "evidence": "Repérer les autorisations implicites",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-13",
+    "number": 125,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Créer une checklist de revue de PR",
+    "evidence": "Vérifier tests, dépendances, sécurité et documentation",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-14",
+    "number": 126,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Auditer les dépendances d’un projet test",
+    "evidence": "Distinguer vulnérabilités confirmées et faux positifs",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-15",
+    "number": 127,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Analyser une politique RLS fictive",
+    "evidence": "Décrire qui peut lire et écrire chaque ligne",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-16",
+    "number": 128,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Tester une requête non autorisée en sandbox",
+    "evidence": "Confirmer le refus sans données réelles",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-17",
+    "number": 129,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Détecter une entrée utilisateur non validée",
+    "evidence": "Produire un cas de test reproductible",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-18",
+    "number": 130,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Réduire les risques d’injection de prompt",
+    "evidence": "Séparer données externes et consignes de confiance",
+    "agent": "prompt-master",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-19",
+    "number": 131,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Définir une politique de logs sécurisés",
+    "evidence": "Masquer jetons, emails et numéros si inutiles",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-20",
+    "number": 132,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Prévoir le contrôle d’accès d’un admin",
+    "evidence": "Distinguer utilisateur, modérateur et administrateur",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-21",
+    "number": 133,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Préparer une migration de schéma sûre",
+    "evidence": "Sauvegarde, dry-run et rollback documentés",
+    "agent": "fullstack-developer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-22",
+    "number": 134,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Concevoir une sauvegarde test",
+    "evidence": "Vérifier qu’une restauration est possible",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-23",
+    "number": 135,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Ajouter un test de non-régression",
+    "evidence": "Montrer l’échec avant et le succès après correction",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-24",
+    "number": 136,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Préparer des tests d’accessibilité",
+    "evidence": "Vérifier clavier, labels et contrastes",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-25",
+    "number": 137,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Tester un parcours RTL hébreu",
+    "evidence": "Contrôler direction, chiffres et ordre visuel",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-26",
+    "number": 138,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Tester un parcours mobile petit écran",
+    "evidence": "Vérifier défilement et boutons tactiles",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-27",
+    "number": 139,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Créer une checklist de confidentialité",
+    "evidence": "Identifier collecte, rétention et accès",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-28",
+    "number": 140,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Définir une politique de publication GitHub",
+    "evidence": "Empêcher l’exposition de données privées",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-29",
+    "number": 141,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Créer une matrice des environnements",
+    "evidence": "Distinguer local, staging et production",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-30",
+    "number": 142,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Prévoir un rollback automatique non destructif",
+    "evidence": "Définir trigger et retour à une version stable",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-31",
+    "number": 143,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Examiner la provenance des données éducatives",
+    "evidence": "Associer chaque question à une source",
+    "agent": "research-knowledge",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-32",
+    "number": 144,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Évaluer la qualité d’un agent",
+    "evidence": "Mesurer exactitude sur cinq cas test",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-33",
+    "number": 145,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Créer un journal de décisions techniques",
+    "evidence": "Tracer qui a décidé quoi et pourquoi",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-34",
+    "number": 146,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Valider tous les fichiers YAML et JSON du kit",
+    "evidence": "Exécuter un parseur et corriger les erreurs",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "05-35",
+    "number": 147,
+    "level": 5,
+    "level_name": "Skills, qualité & sécurité",
+    "title": "Réaliser un audit de sécurité final",
+    "evidence": "Rédiger risques résiduels et conditions go/no-go",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-01",
+    "number": 148,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Choisir un projet réel et définir le périmètre",
+    "evidence": "Rédiger l’objectif et les limites non négociables",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-02",
+    "number": 149,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Obtenir un état initial Git vérifiable",
+    "evidence": "Conserver branche, commit et statut avant travail",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-03",
+    "number": 150,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Faire l’inventaire de l’architecture existante",
+    "evidence": "Recenser points d’entrée, données et déploiement",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-04",
+    "number": 151,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Identifier les principaux risques utilisateurs",
+    "evidence": "Classer cinq risques par gravité",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-05",
+    "number": 152,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Élaborer un plan multi-agents complet",
+    "evidence": "Définir responsabilités et dépendances",
+    "agent": "system-architect",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-06",
+    "number": 153,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Obtenir l’approbation du plan de modification",
+    "evidence": "Conserver décision avant les écritures sensibles",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-07",
+    "number": 154,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Concevoir le parcours UX cible",
+    "evidence": "Valider deux écrans clés ou wireframes",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-08",
+    "number": 155,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Élaborer les contrats API et données",
+    "evidence": "Spécifier entrées, sorties et erreurs",
+    "agent": "fullstack-developer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-09",
+    "number": 156,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Préparer les changements de schéma en sandbox",
+    "evidence": "Vérifier migration réversible",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-10",
+    "number": 157,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Implémenter une première fonctionnalité verticale",
+    "evidence": "Prouver front, backend et test associés",
+    "agent": "fullstack-developer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-11",
+    "number": 158,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Ajouter la traduction française et hébraïque",
+    "evidence": "Tester le sens et le RTL sur l’interface",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-12",
+    "number": 159,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Ajouter un jeu de données fictives",
+    "evidence": "Éviter tout mélange avec les données réelles",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-13",
+    "number": 160,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Lancer les tests unitaires pertinents",
+    "evidence": "Enregistrer la commande et le bilan",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-14",
+    "number": 161,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Lancer des tests d’intégration en environnement isolé",
+    "evidence": "Vérifier appels, réponses et erreurs",
+    "agent": "qa-tester",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-15",
+    "number": 162,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Lancer une recette utilisateur sur mobile",
+    "evidence": "Documenter les parcours réellement exécutés",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-16",
+    "number": 163,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Exécuter l’audit sécurité indépendant",
+    "evidence": "Obtenir une liste de risques priorisés",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-17",
+    "number": 164,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Corriger les risques bloquants",
+    "evidence": "Repasser les tests qui prouvent la correction",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-18",
+    "number": 165,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Mesurer accessibilité et performance",
+    "evidence": "Rapporter métriques réellement mesurées",
+    "agent": "ux-ui-designer",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-19",
+    "number": 166,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Préparer la documentation de maintenance",
+    "evidence": "Expliquer installation, environnement et reprise",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-20",
+    "number": 167,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Préparer le pipeline CI non destructif",
+    "evidence": "Exécuter lint, tests et build sur branche de test",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-21",
+    "number": 168,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Créer une demande de revue prête à publier",
+    "evidence": "Présenter diff, risques et tests",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-22",
+    "number": 169,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Préparer la mise en production et son rollback",
+    "evidence": "Exiger un go/no-go explicite",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-23",
+    "number": 170,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Déployer seulement avec autorisation expresse",
+    "evidence": "Enregistrer l’URL et la version si déploiement autorisé",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-24",
+    "number": 171,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Vérifier le système après déploiement autorisé",
+    "evidence": "Tester santé, logs et action clé sans effet réel",
+    "agent": "security-auditor",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  },
+  {
+    "id": "06-25",
+    "number": 172,
+    "level": 6,
+    "level_name": "Autonomie encadrée de bout en bout",
+    "title": "Produire un bilan final et la suite priorisée",
+    "evidence": "Résumer preuves, état exact, limites et prochains exercices",
+    "agent": "devops-release",
+    "project": "Au choix : projet d’entraînement / moreh-derech-next / gala-live / 4-florentine"
+  }
+]
