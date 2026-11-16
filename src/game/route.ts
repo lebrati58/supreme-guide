@@ -1,4 +1,5 @@
-import type { City, LngLat, Mode, Trip, WikiCard } from '../types';
+import type { Airport, City, LngLat, Mode, Trip, WikiCard } from '../types';
+import { timeZonesAlong, type Practical } from './practical';
 import { LANDMARKS, type Landmark } from '../content/landmarks';
 import { bearing, densify, haversineKm } from '../geo/geo';
 import { natureAlong, sideOf, sideThresholdKm, type GeoFeatures, type NatureAlong, type Side } from './nature';
@@ -44,6 +45,8 @@ export interface RouteCtx {
   ai: NonNullable<Trip['ai']>;   // optional AI questions grounded on `wiki`
   /** Rivers crossed, ranges/deserts entered and peaks in view (when geo-features are loaded). */
   nature: NatureAlong;
+  /** Time-zone changes and driving side (when airports / travel info are loaded). */
+  practical: Practical;
 }
 
 /** Corridor half-width (km) in which a town counts as “on the route”, by transport mode. */
@@ -64,7 +67,7 @@ export function nearestOnPath(path: RouteCtx['path'], p: LngLat): { at: number; 
   return { at, offKm: best };
 }
 
-export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, string>, geo?: GeoFeatures): RouteCtx {
+export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, string>, geo?: GeoFeatures, extras?: { airports?: Airport[]; drive?: Record<string, 'l' | 'r'>; when?: number }): RouteCtx {
   const dense = densify(trip.geometry, 5);
   let acc = 0;
   const lens = dense.map((p, i) => (i ? (acc += haversineKm(dense[i - 1], p)) : 0));
@@ -126,6 +129,11 @@ export function buildRouteCtx(trip: Trip, cities: City[], ccByIso3: Map<string, 
   return {
     mode: trip.mode, places, landmarks, countries: trip.countries, from: first, to: last,
     distanceKm: haversineKm(a, b), bearingDeg: bearing(a, b), path, offRoute, explore, curatedId: trip.curatedId, pathKm: total, wiki: trip.wiki ?? [], ai: trip.packLang && trip.ai ? trip.ai : [],
+    practical: { tz: extras?.airports && !explore ? timeZonesAlong(path, extras.airports, extras.when ?? trip.depUtc ?? Date.now(), (at) => {
+      let iso3: string | undefined;
+      for (const c of trip.countries) if (c.at <= at + 1e-9) iso3 = c.iso3;
+      return iso3 ? ccByIso3.get(iso3) : undefined;
+    }) : [], drive: extras?.drive ?? {} },
     nature: geo && !explore ? natureAlong(path, trip.mode, geo, trip.geometrySource) : { rivers: [], regions: [], peaks: [], nearRivers: [], nearRegions: [] },
   };
 }

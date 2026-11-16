@@ -6,6 +6,7 @@ import { fmtNum, listJoin, t, type Key } from '../i18n';
 import { capitalName, cityName, countryName, curatedQuestions, currencyLabel, eventLabel, formatYearL, journeyStop, languagesLabel, lmFact, lmName } from '../i18n/content';
 import { haversineKm } from '../geo/geo';
 import { featureName, type Side } from './nature';
+import { formatShift, formatUtc } from './practical';
 import { legendFor } from '../content/legendary';
 import { JOURNEYS } from '../content/journeys';
 import { legendFact } from '../i18n/content';
@@ -85,6 +86,22 @@ export function buildGuide(route: RouteCtx, data: GameData, wiki: WikiCard[] = [
     }));
   });
 
+  // Practical: time-zone changes, and the driving side when it changes (road trips)
+  for (const z of route.practical.tz) facts.push({ id: `tz-${z.at.toFixed(4)}`, at: z.at, icon: '🕐', title: t('guide.tz.t'),
+    text: t(z.toMin > z.fromMin ? 'guide.tz.fwd' : 'guide.tz.back', { shift: formatShift(z.toMin - z.fromMin), utc: formatUtc(z.toMin) }) });
+  if (route.mode === 'car' || route.mode === 'bus') {
+    let prev: 'l' | 'r' | undefined;
+    route.countries.forEach(({ iso3, at }, k) => {
+      const c = data.byIso3.get(iso3);
+      const side = c ? route.practical.drive[c.iso2] : undefined;
+      if (!c || !side) return;
+      // Say it when it changes, and at the start only when it is on the left (the less usual side).
+      if ((k === 0 && side === 'l') || (prev && side !== prev)) facts.push({ id: `drive-${iso3}`, at: k === 0 ? 0 : at + 0.0001, icon: '🚗', title: countryName(c),
+        text: t(side === 'l' ? 'guide.drive.left' : 'guide.drive.right', { country: countryName(c) }), source: { label: 'OpenStreetMap · country-coder', url: 'https://github.com/rapideditor/country-coder' } });
+      prev = side;
+    });
+  }
+
   // Towns and stops along the way (all stops + the biggest towns)
   const towns = route.places.filter((p) => !p.stop).sort((a, b) => b.pop - a.pop).slice(0, 18);
   for (const p of [...route.places.filter((x) => x.stop), ...towns]) {
@@ -144,7 +161,7 @@ export function buildGuide(route: RouteCtx, data: GameData, wiki: WikiCard[] = [
 
   // De-duplicate by id, order along the route (explore: by distance)
   // Same position: departure, then country, facts, towns, landmarks, Wikipedia, arrival.
-  const rank = (f: GuideFact) => ['start', 'country', 'fact', 'ev', 'place', 'legend', 'river', 'region', 'peak', 'lm', 'wiki', 'end'].indexOf(f.id.split('-')[0]);
+  const rank = (f: GuideFact) => ['start', 'country', 'drive', 'tz', 'fact', 'ev', 'place', 'legend', 'river', 'region', 'peak', 'lm', 'wiki', 'end'].indexOf(f.id.split('-')[0]);
   const seen = new Set<string>();
   return facts.filter((f) => (seen.has(f.id) ? false : (seen.add(f.id), true)))
     .sort((a, b) => a.at - b.at || rank(a) - rank(b));

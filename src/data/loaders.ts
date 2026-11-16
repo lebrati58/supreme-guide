@@ -64,3 +64,6 @@ export const loadWorld110 = () => world('world-110m.json');
 
 /** Rivers, ranges/deserts and peaks (Natural Earth + GeoNames names); loaded when a trip opens. */
 export const loadGeoFeatures = () => getJson<import('../game/nature').GeoFeatures>('geo-features.json');
+
+/** Driving side per country (OpenStreetMap country-coder); see scripts/build_travel_info.py. */
+export const loadTravelInfo = () => getJson<{ drive: Record<string, 'l' | 'r'> }>('travel-info.json');
