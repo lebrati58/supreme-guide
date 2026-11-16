@@ -1,7 +1,7 @@
 {
   "name": "supreme-guide",
   "private": true,
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "SUPREME GUIDE — Every Journey Is a Game! The global travel quiz game.",
   "type": "module",
   "scripts": {
@@ -28,6 +28,7 @@
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {
+    "@rapideditor/country-coder": "^6.0.0",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^22.20.5",
     "@types/qrcode": "^1.5.6",

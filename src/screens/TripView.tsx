@@ -1,11 +1,11 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { LngLat, Question, Trip, WikiCard } from '../types';
+import type { Airport, LngLat, Question, Trip, WikiCard } from '../types';
 import { useApp } from '../state';
 import { store, requestPersistence } from '../storage/db';
 import { geometryNote, MODE_META, stopFractions } from '../transport/trips';
 import { flightStatus } from '../transport/flight';
 import { formatDuration, formatLocal } from '../transport/time';
-import { loadAirports, loadCities, loadGeoFeatures } from '../data/loaders';
+import { loadAirports, loadCities, loadGeoFeatures, loadTravelInfo } from '../data/loaders';
 import type { GeoFeatures } from '../game/nature';
 import type { City } from '../types';
 import { buildRouteCtx } from '../game/route';
@@ -82,6 +82,10 @@ export default function TripView({ id }: { id: string }) {
   useEffect(() => { loadCities().then(setCities).catch(() => {}); }, []);
   const [geoData, setGeoData] = useState<GeoFeatures | undefined>(undefined);
   useEffect(() => { loadGeoFeatures().then(setGeoData).catch(() => {}); }, []);
+  const [extras, setExtras] = useState<{ airports?: Airport[]; drive?: Record<string, 'l' | 'r'> }>({});
+  useEffect(() => {
+    Promise.all([loadAirports().catch(() => undefined), loadTravelInfo().catch(() => undefined)]).then(([airports, info]) => setExtras({ airports, drive: info?.drive }));
+  }, []);
   const [view, setView] = useState<'quiz' | 'guide'>(() => { try { return localStorage.getItem('sg.tripView') === 'guide' ? 'guide' : 'quiz'; } catch { return 'quiz'; } });
   const chooseView = (v: 'quiz' | 'guide') => { setView(v); try { localStorage.setItem('sg.tripView', v); } catch { /* private mode */ } };
   useEffect(() => {
@@ -101,7 +105,7 @@ export default function TripView({ id }: { id: string }) {
   const explore = !!trip && trip.distanceKm < 0.2; // walking “explore around” mode
   const fractions = useMemo(() => (trip ? stopFractions(trip) : []), [trip]);
   const ccMap = useMemo(() => new Map([...byIso3.values()].map((c) => [c.iso3, c.iso2])), [byIso3]);
-  const route = useMemo(() => (trip && cities.length ? buildRouteCtx(trip, cities, ccMap, geoData) : null), [trip?.id, trip?.geometry, trip?.wiki, cities, ccMap, geoData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const route = useMemo(() => (trip && cities.length ? buildRouteCtx(trip, cities, ccMap, geoData, extras) : null), [trip?.id, trip?.geometry, trip?.wiki, cities, ccMap, geoData, extras]); // eslint-disable-line react-hooks/exhaustive-deps
   const lang = locale();
   const guide = useMemo(() => (route && trip ? buildGuide(route, game, trip.wiki ?? [], MODE_META[trip.mode].emoji) : []), [route, game, trip?.wiki, lang]); // eslint-disable-line react-hooks/exhaustive-deps
 

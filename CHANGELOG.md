@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.0 — 2026-11-16
+### Added
+- **🕐 Time changes along the way**: the guide (and the trip radio) tells you when you enter a new time zone — “put your watch forward (+1 h); local time is now UTC+3” — for the trip's date, daylight saving time included. Local zones come from the nearest airport in the country being crossed.
+- **🚗 Driving side at the border**: on road trips, the guide warns when you enter a country that drives on the other side (and at the start if it is on the left). Data: OpenStreetMap country-coder (ISC).
+
 ## 1.9.0 — 2026-11-15
 ### Added
 - **📥 Restore a backup**: the “Export my data” file can now be restored (Profile). A preview shows the players and trips first; **merge** keeps the best of both (XP, stamps, badges, records, trip progress) — nothing is lost — or **replace** after confirmation. Backup files are strictly checked (types, sizes, http(s)-only links).
