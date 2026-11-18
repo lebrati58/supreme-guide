@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.0 — 2026-11-18
+### Added
+- **📷 Landmark photos, even in airplane mode**: “Recognise this landmark!” now shows a real photo for 72 of the 73 landmarks, stored in the app (≈20 KB each, 1.4 MB in all) so it works offline. Photos from Wikimedia Commons under clearly free licences only (public domain, CC0, CC BY, CC BY-SA, Free Art License, KOGL Type 1); the author and licence are shown under each photo, and the full list is in Profile → Credits. The one landmark without a free photo (Sheikh Zayed Grand Mosque) keeps its text clue.
+- **📷 Photo only** (Play): a harder quiz — name the landmark from its photo alone, the clue appears only after you answer.
+- Rebuild with `scripts/build_landmark_photos.py`.
+
 ## 1.10.0 — 2026-11-16
 ### Added
 - **🕐 Time changes along the way**: the guide (and the trip radio) tells you when you enter a new time zone — “put your watch forward (+1 h); local time is now UTC+3” — for the trip's date, daylight saving time included. Local zones come from the nearest airport in the country being crossed.

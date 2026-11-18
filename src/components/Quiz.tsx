@@ -8,6 +8,7 @@ import { SvgWorldMap } from './SvgWorldMap';
 import { shuffle } from '../game/rng';
 import type { Mood } from '../game/mascot';
 import { wikiSummary } from '../transport/wiki';
+import { photoUrl, useLandmarkPhotos } from '../data/photos';
 import { fwd, t } from '../i18n';
 import { capitalName, countryName, formatYearL, subregionLabel } from '../i18n/content';
 import { play } from '../game/sfx';
@@ -124,7 +125,7 @@ function Choices({ q, picked, done, tried = [], onPick }: { q: Question; picked:
   const ratio = () => (q.timeLimit ? Math.max(0, 1 - (Date.now() - start.current) / (q.timeLimit * 1000)) : undefined);
   return (
     <>
-      {q.kind === 'monument' && q.clue !== undefined && <MonumentVisual q={q} />}
+      {q.kind === 'monument' && q.clue !== undefined && <MonumentVisual q={q} done={done} />}
       <div className={`answers ${opts.length === 2 ? 'two' : ''}`}>
         {opts.map((o, k) => {
           const cls = k === q.answer && done ? 'right' : (done && k === picked) || tried.includes(k) ? 'wrong' : '';
@@ -139,20 +140,32 @@ function Choices({ q, picked, done, tried = [], onPick }: { q: Question; picked:
   );
 }
 
-/** Photo from Wikipedia when available (online or cached in an offline pack); the text clue otherwise. */
-function MonumentVisual({ q }: { q: Question }) {
+/**
+ * The landmark's offline photo (precached, with its author and licence) first; otherwise a photo from
+ * Wikipedia when online or cached in an offline pack; the text clue otherwise. The link to the file
+ * page appears only once answered (its name would give the answer away).
+ */
+function MonumentVisual({ q, done }: { q: Question; done: boolean }) {
+  const photos = useLandmarkPhotos();
+  const local = q.landmark ? photos?.[q.landmark] : undefined;
   const [img, setImg] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  useEffect(() => { setFailed(false); setImg(null); }, [q.id]);
   useEffect(() => {
     let alive = true;
-    if (q.imageTitle) wikiSummary(q.imageTitle, 'en', false).then((s) => { if (alive && s?.thumb) setImg(s.thumb); });
+    if (photos && !local && q.imageTitle) wikiSummary(q.imageTitle, 'en', false).then((s) => { if (alive && s?.thumb) setImg(s.thumb); });
     return () => { alive = false; };
-  }, [q.imageTitle]);
+  }, [q.imageTitle, photos, local]);
+  const src = local ? photoUrl(local) : img;
+  const shown = !!src && !failed;
+  const showClue = !q.photoOnly || !shown || done;
   return (
     <div style={{ marginBottom: 12 }}>
-      {img && !failed && <img className="monument-photo" src={img} alt={t('quiz.photoAlt')} onError={() => setFailed(true)} />}
-      <p className="clue" style={{ marginTop: img && !failed ? 8 : 0 }}>🔎 {q.clue}</p>
-      {img && !failed && <p className="small" style={{ color: 'var(--ink-2)', margin: 0 }}>{t('quiz.photoCredit')}</p>}
+      {shown && <img className="monument-photo" src={src!} alt={t('quiz.photoAlt')} onError={() => setFailed(true)} />}
+      {showClue && <p className="clue" style={{ marginTop: shown ? 8 : 0 }}>🔎 {q.clue}</p>}
+      {shown && (local
+        ? <p className="small photo-credit"><bdi>{t('quiz.photoBy', { author: local.a, licence: local.l })}</bdi>{done && <> · <a href={local.u} target="_blank" rel="noopener noreferrer">Wikimedia Commons</a></>}</p>
+        : <p className="small photo-credit">{t('quiz.photoCredit')}</p>)}
     </div>
   );
 }

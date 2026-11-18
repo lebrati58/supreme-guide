@@ -210,7 +210,7 @@ const genMonument: Gen = (_data, rnd, focus, route) => {
   const pool = [...others, ...shuffle(LANDMARKS.filter((x) => x.id !== l.id && x.kind !== l.kind), rnd)].slice(0, 8).map(lmName);
   const { options, answer } = optionsFor(lmName(l), pool, rnd);
   return { id: `mon-${l.id}`, kind: 'monument', category: 'landmarks', difficulty: 2,
-    prompt: tc('gen.mon.q', 'Recognise this landmark!'), clue: lmClue(l), imageTitle: l.wiki, options, answer,
+    prompt: tc('gen.mon.q', 'Recognise this landmark!'), clue: lmClue(l), imageTitle: l.wiki, landmark: l.id, options, answer,
     explanation: tc('gen.mon.e', '{emoji} {landmark} — {city}. {fact}', { emoji: l.emoji, landmark: lmName(l), city: lmCity(l), fact: lmFact(l) }),
     source: W(decodeURIComponent(l.wiki)), countries: [l.iso3, ...(l.shared ?? [])] };
 };

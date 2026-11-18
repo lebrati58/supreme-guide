@@ -20,7 +20,7 @@ Everything is translated — menus, questions, explanations, landmarks, timeline
   - Train / Bus / Cruise: stations, ports and stops from 9,126 cities (GeoNames) + online search; curated real journeys (Tōkaidō Shinkansen, Glacier Express, Trans-Siberian…).
   - Road trip: road routing on OSM (OSRM) when online, **passenger/driver mode with a GPS safety lock**.
   - Walking: explore around you (GPS, opt-in) with proximity discoveries, or explore a city.
-- **Game engine** with 10 challenge types: multiple choice, true/false, find-the-country on a map, landmark recognition (photo online / text clue offline), timelines, capitals, timed blitz, history & culture, observation (flags, areas), surprise double-XP challenges. Every question has a verified answer, explanation, difficulty, category and source.
+- **Game engine** with 10 challenge types: multiple choice, true/false, find-the-country on a map, landmark recognition (offline photo with credits, plus a harder “photo only” quiz), timelines, capitals, timed blitz, history & culture, observation (flags, areas), surprise double-XP challenges. Every question has a verified answer, explanation, difficulty, category and source.
 - **Progression**: XP, levels & titles, 15 badges, virtual passport with stamps, World Tour with region unlocks, daily challenge & streak, family profiles (kid mode), family leaderboard, friend challenges by link (no account, no server).
 - **Offline-first PWA**: versioned precache of the whole game & data, IndexedDB storage, offline trip packs (Wikipedia place cards & photos), update prompt, sync-ready outbox.
 
@@ -45,6 +45,7 @@ GitHub Actions (`.github/workflows/ci-deploy.yml`) type-checks, tests, builds, r
 Logo & mascot © Supreme Guide. Code: see repository owner.
 Data: [mledoze/countries](https://github.com/mledoze/countries) (ODbL) · [Natural Earth](https://www.naturalearthdata.com/) (public domain) ·
 [OurAirports](https://ourairports.com/data/) via airport-data-js (CC BY 4.0) · [GeoNames](https://www.geonames.org/) via all-the-cities, and GeoNames alternate names for city and river names in the 10 languages (CC BY 4.0) · [Natural Earth](https://www.naturalearthdata.com/) rivers, geographic regions and elevation points (public domain) · driving side from [country-coder](https://github.com/rapideditor/country-coder) (OpenStreetMap / RapiD, ISC) ·
+landmark photos (offline, resized): [Wikimedia Commons](https://commons.wikimedia.org/), each under its own free licence (public domain, CC0, CC BY, CC BY-SA, FAL, KOGL Type 1) — author, licence and file page listed in [`public/data/landmark-photos.json`](public/data/landmark-photos.json), under each photo and in Profile → Credits ·
 online: [OpenFreeMap](https://openfreemap.org) / © OpenMapTiles / © OpenStreetMap contributors, OSRM, Nominatim, Wikipedia (CC BY-SA).
 Map engine: MapLibre GL JS (BSD-3). Fonts: Baloo 2, Nunito (OFL).
 
