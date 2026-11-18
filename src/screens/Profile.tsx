@@ -1,3 +1,5 @@
+import { LANDMARKS } from '../content/landmarks';
+import { useLandmarkPhotos } from '../data/photos';
 import { InterestPicker } from '../components/Interests';
 import { RestorePreview } from '../components/RestorePreview';
 import { makeBackup, parseBackup, type Backup } from '../storage/backup';
@@ -144,11 +146,33 @@ export default function Profile({ install }: { install: { canInstall: boolean; p
             <li>Detailed map: <a href="https://openfreemap.org">OpenFreeMap</a>, © <a href="https://www.openmaptiles.org/">OpenMapTiles</a>, data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> (ODbL).</li>
             <li>Routing: <a href="https://project-osrm.org/">OSRM</a> & <a href="https://routing.openstreetmap.de/">FOSSGIS routing</a>, OSM data. Search: <a href="https://nominatim.org/">Nominatim</a>.</li>
             <li>Place cards & photos: <a href="https://www.wikipedia.org/">Wikipedia</a> / Wikimedia Commons — CC BY-SA.</li>
+            <li>Landmark photos (kept offline, resized to 360 px): <a href="https://commons.wikimedia.org/">Wikimedia Commons</a>, each under its own free licence:
+              <PhotoCredits />
+            </li>
             <li>Map engine: <a href="https://maplibre.org/">MapLibre GL JS</a> — BSD-3-Clause. Plane icon: Material Icons — Apache-2.0. Fonts: Baloo 2 & Nunito — SIL OFL.</li>
           </ul>
           <button className="btn block" onClick={() => setCredits(false)}>{t('common.close')}</button>
         </Modal>
       )}
     </div>
+  );
+}
+
+/** Every offline landmark photo with its author, licence and file page (as the licences require). */
+function PhotoCredits() {
+  const photos = useLandmarkPhotos();
+  if (!photos) return null;
+  const byId = new Map(LANDMARKS.map((l) => [l.id, l]));
+  return (
+    <details>
+      <summary>{Object.keys(photos).length} photos</summary>
+      <ul>
+        {Object.entries(photos).map(([id, p]) => (
+          <li key={id}>
+            <a href={p.u} target="_blank" rel="noopener noreferrer">{byId.get(id)?.name ?? id}</a> — {p.a} — {p.lu ? <a href={p.lu} target="_blank" rel="noopener noreferrer">{p.l}</a> : p.l}
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }

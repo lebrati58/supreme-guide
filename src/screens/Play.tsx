@@ -37,6 +37,7 @@ export default function Play() {
         {tile('/quiz/map', '📍', t('play.map'), t('play.mapSub'))}
         {tile('/quiz/timeline', '⏳', t('play.timeline'), t('play.timelineSub'))}
         {tile('/quiz/landmarks', '🏛️', t('play.landmarks'), t('play.landmarksSub'))}
+        {tile('/quiz/photos', '📷', t('play.photos'), t('play.photosSub'))}
         {tile('/quiz/topics', '🧠', t('play.topics'), t('play.topicsSub'))}
         {tile('/quiz/survival', '🔥', t('play.survival'), t('play.survivalSub', { n: profile.records?.survival ?? 0 }))}
         {tile('/quiz/review', '🔁', t('play.review'), (profile.mistakes?.length ?? 0) ? tn('play.reviewSub', profile.mistakes!.length) : t('play.reviewEmpty'))}

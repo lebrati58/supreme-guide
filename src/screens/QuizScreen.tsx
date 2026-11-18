@@ -13,6 +13,7 @@ import { fmtDate, t, tn } from '../i18n';
 import { countryName, curatedQuestions, regionLabel } from '../i18n/content';
 import { shuffle } from '../game/rng';
 import type { Question } from '../types';
+import { useLandmarkPhotos } from '../data/photos';
 
 /** Saved mistakes, re-translated when they come from the hand-written banks (ids are stable). */
 function reviewQuestions(saved: Question[], rnd: () => number): Question[] {
@@ -29,6 +30,7 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
   const region = query.get('region') as Region | null;
   const kid = profile.kidMode ? 2 : undefined;
   const day = todayKey();
+  const photos = useLandmarkPhotos();
 
   const setup = useMemo(() => {
     const seedRandom = mulberry32(hashString(`${type}-${Date.now()}-${round}`));
@@ -43,6 +45,14 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
       case 'survival': return { title: t('play.survival'), qs: buildSession(game, { count: 80, rnd: seedRandom, maxDifficulty: kid }) };
       case 'learn': return { title: t('play.learn'), qs: buildSession(game, { count: 16, rnd: seedRandom, maxDifficulty: kid ?? 2 }).filter((q) => q.options && q.answer !== undefined).slice(0, 8) };
       case 'review': return { title: t('play.review'), qs: reviewQuestions(profile.mistakes ?? [], seedRandom) };
+      case 'photos': {
+        // Harder: only landmarks with an offline photo, and the text clue stays hidden until answered.
+        if (!photos) return { title: t('qs.photos'), qs: [] };
+        const qs = buildSession(game, { count: 40, rnd: seedRandom, weights: { monument: 1 } })
+          .filter((q) => q.landmark && photos[q.landmark]).slice(0, 8)
+          .map((q) => ({ ...q, id: `photo-${q.landmark}`, photoOnly: true, difficulty: 3 as const }));
+        return { title: t('qs.photos'), qs };
+      }
       case 'landmarks': return { title: t('qs.landmarks'), qs: buildSession(game, { count: 8, rnd: seedRandom, weights: { monument: 2, landmarkCountry: 1 } }) };
       case 'friend': {
         const seed = query.get('seed') ?? 'x';
@@ -58,7 +68,7 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
       }
       default: return { title: t('qs.quick'), qs: buildSession(game, { count: 8, rnd: seedRandom, surpriseRate: 0.12, maxDifficulty: kid }) };
     }
-  }, [type, round, game, region, day, query, profile.settings.interests]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [type, round, game, region, day, query, profile.settings.interests, photos]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const alreadyDaily = type === 'daily' && profile.daily.scores[day] !== undefined && !result;
 
@@ -96,6 +106,7 @@ export default function QuizScreen({ type, query }: { type: string; query: URLSe
       <a className="btn" href={href('/play')}>{t('qs.more')}</a>
     </div>
   );
+  if (type === 'photos' && !photos) return <div className="page"><Mascot mood="idle" text={t('app.loading')} /></div>;
   if (!setup.qs.length && type === 'review') return <div className="page stack"><h1>✅ {t('play.review')}</h1><p>{t('play.reviewEmpty')}</p><a className="btn" href={href('/play')}>{t('common.back')}</a></div>;
   if (!setup.qs.length) return <div className="page"><h1>{t('qs.locked')}</h1><p>{t('qs.lockedHelp')}</p><a className="btn" href={href('/play')}>{t('common.back')}</a></div>;
 

@@ -56,6 +56,10 @@ export interface Question {
   countries?: string[];
   /** Wikipedia title for an optional photo (monument recognition). */
   imageTitle?: string;
+  /** Landmark id, for its offline photo (public/data/landmark-photos.json). */
+  landmark?: string;
+  /** “Photo only” variant: the text clue is hidden. */
+  photoOnly?: boolean;
   clue?: string;
   timeLimit?: number;
   bonus?: boolean;
