@@ -455,6 +455,8 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 .live-code { font-family: var(--font-display); font-size: 26px; letter-spacing: .2em; text-transform: uppercase; text-align: center; }
 .live-code-big { font-family: var(--font-display); font-size: 44px; letter-spacing: .18em; color: var(--gold-1); }
 .live-qr { border-radius: 12px; background: #fff; padding: 6px; }
+.pass-avatar { font-size: 64px; line-height: 1; }
+.duel-picks { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; overflow-wrap: anywhere; }
 .live-board { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .live-board li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: color-mix(in srgb, currentColor 7%, transparent); }
 .live-board li.me { outline: 2px solid var(--gold-1); }
