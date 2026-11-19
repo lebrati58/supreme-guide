@@ -42,6 +42,7 @@ export default function Play() {
         {tile('/quiz/survival', '🔥', t('play.survival'), t('play.survivalSub', { n: profile.records?.survival ?? 0 }))}
         {tile('/quiz/review', '🔁', t('play.review'), (profile.mistakes?.length ?? 0) ? tn('play.reviewSub', profile.mistakes!.length) : t('play.reviewEmpty'))}
         {tile('/quiz/learn', '🌱', t('play.learn'), t('play.learnSub'))}
+        {tile('/duel', '🛋️', t('duel.title'), t('duel.tileSub'))}
         {tile('/live', '📡', t('live.title'), t('live.tileSub'))}
       </div>
 

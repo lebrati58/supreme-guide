@@ -30,7 +30,8 @@ interface Ctx {
   /** Apply a restore plan (from a backup file or another phone). */
   restore: (plan: RestorePlan, mode: 'merge' | 'replace') => Promise<void>;
   update: (fn: (p: Profile) => void) => void;
-  recordAnswer: (q: Question, correct: boolean, streak: number, timeRatio?: number) => AnswerResult;
+  /** XP & stats for an answer — to the active profile, or to `profileId` (one-phone duels). */
+  recordAnswer: (q: Question, correct: boolean, streak: number, timeRatio?: number, profileId?: string) => AnswerResult;
   stamp: (iso3s: string[], mode: Profile['stamps'][string]['mode']) => string[];
   useMode: (m: Mode) => void;
   online: boolean;
@@ -60,7 +61,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   profilesRef.current = profiles;
   const activeRef = useRef<string | null>(null);
   activeRef.current = activeId;
-  const saveTimer = useRef<number | undefined>(undefined);
+  const saveTimers = useRef(new Map<string, number>());
 
   useEffect(() => {
     const on = () => setOnline(true), off = () => setOnline(false);
@@ -100,8 +101,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (lang) void setLocale(lang).then(() => setLocaleReady(lang)); }, [lang]);
 
   const persist = useCallback((p: Profile) => {
-    window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => { void store.putProfile(p); }, 150);
+    // One timer per profile: a duel updates several profiles at once, none must be dropped.
+    window.clearTimeout(saveTimers.current.get(p.id));
+    saveTimers.current.set(p.id, window.setTimeout(() => { saveTimers.current.delete(p.id); void store.putProfile(p); }, 150));
   }, []);
 
   const toast = useCallback((t: Omit<Toast, 'id'>) => {
@@ -110,15 +112,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.setTimeout(() => setToasts((x) => x.filter((y) => y.id !== id)), 4200);
   }, []);
 
-  /** Mutate a copy of the active profile, persist it, and announce new badges. */
-  const mutate = useCallback((fn: (p: Profile) => void): { next: Profile; earned: BadgeDef[] } => {
+  /** Mutate a copy of the active profile (or of `id`), persist it, and announce new badges. */
+  const mutate = useCallback((fn: (p: Profile) => void, id?: string): { next: Profile; earned: BadgeDef[] } => {
     const list = profilesRef.current;
-    const cur = list.find((p) => p.id === activeRef.current) ?? list[0];
+    const cur = (id && list.find((p) => p.id === id)) || list.find((p) => p.id === activeRef.current) || list[0];
     const next = structuredClone(cur);
     fn(next);
     const earned = awardBadges(next, badges);
     if (earned.length) setTimeout(() => play('badge'), 450); // after the answer sound
-    earned.forEach((b) => toast({ icon: b.emoji, title: t('toast.badge', { name: tc(`badge.${b.id}.name`, b.name) }), body: tc(`badge.${b.id}.desc`, b.desc) }));
+    const who = next.id !== activeRef.current ? `${next.avatar} ${next.name} · ` : '';
+    earned.forEach((b) => toast({ icon: b.emoji, title: who + t('toast.badge', { name: tc(`badge.${b.id}.name`, b.name) }), body: tc(`badge.${b.id}.desc`, b.desc) }));
     profilesRef.current = list.map((p) => (p.id === next.id ? next : p));
     setProfiles(profilesRef.current);
     persist(next);
@@ -127,7 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const update = useCallback((fn: (p: Profile) => void) => { mutate(fn); }, [mutate]);
 
-  const recordAnswer = useCallback((q: Question, correct: boolean, streak: number, timeRatio?: number): AnswerResult => {
+  const recordAnswer = useCallback((q: Question, correct: boolean, streak: number, timeRatio?: number, profileId?: string): AnswerResult => {
     const xp = xpForAnswer(q, correct, streak, timeRatio);
     let before = 0, after = 0;
     const { next, earned } = mutate((p) => {
@@ -143,10 +146,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       p.stats.bestStreak = Math.max(p.stats.bestStreak, streak);
       trackMistake(p, q, correct);
-    });
+    }, profileId);
     void store.enqueue('answer', { q: q.id, correct, xp, at: Date.now() });
     const levelUp = after > before ? after : null;
-    if (levelUp) toast({ icon: '⭐', title: t('toast.level', { level: levelUp }), body: t('toast.levelBody', { title: levelFromXp(next.xp).title }) });
+    if (levelUp) toast({ icon: '⭐', title: profileId && profileId !== activeRef.current ? `${next.avatar} ${next.name} · ${t('toast.level', { level: levelUp })}` : t('toast.level', { level: levelUp }), body: t('toast.levelBody', { title: levelFromXp(next.xp).title }) });
     return { xp, levelUp, badges: earned };
   }, [mutate, toast]);
 

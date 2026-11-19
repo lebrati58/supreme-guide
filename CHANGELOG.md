@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.12.0 — 2026-11-19
+### Added
+- **🛋️ Duel on one phone** (Play, and on every trip): 2 to 6 players take turns on the same phone with the same questions — family profiles and added first names — fully offline (airplane, train without signal, one phone for the family). A “pass the phone to…” screen hides everyone's answers until all have played; the right answer, who picked what, and the scores are then shown. Classic, Elimination and Teams modes (parents vs kids), 20 s per turn, the first player rotates each question, podium at the end. On a trip the questions are about the route; when this phone's player is the driver, that profile can't play. XP goes to each family profile.
+### Fixed
+- Saving several profiles at once could drop all but the last one (one save timer per profile now).
+
 ## 1.11.0 — 2026-11-18
 ### Added
 - **📷 Landmark photos, even in airplane mode**: “Recognise this landmark!” now shows a real photo for 72 of the 73 landmarks, stored in the app (≈20 KB each, 1.4 MB in all) so it works offline. Photos from Wikimedia Commons under clearly free licences only (public domain, CC0, CC BY, CC BY-SA, Free Art License, KOGL Type 1); the author and licence are shown under each photo, and the full list is in Profile → Credits. The one landmark without a free photo (Sheikh Zayed Grand Mosque) keeps its text clue.

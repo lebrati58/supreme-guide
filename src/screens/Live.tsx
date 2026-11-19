@@ -8,6 +8,7 @@ import { fmtNum, t, type Key } from '../i18n';
 import { play } from '../game/sfx';
 import { HostGame, normCode, PROTOCOL, QUESTION_SECONDS, roomCode, ranking, teamScores, type LiveMode, type LivePlayer, type ToGuest, type ToHost } from '../live/logic';
 import { liveQuestions } from '../live/questions';
+import { Board as SharedBoard, TeamBanner as SharedTeamBanner } from '../components/LiveBoard';
 import { hostRoom, joinRoom, type GuestLink, type HostLink } from '../live/net';
 
 type Phase = 'menu' | 'connecting' | 'lobby' | 'question' | 'reveal' | 'end' | 'error';
@@ -162,29 +163,8 @@ export default function Live({ query }: { query: URLSearchParams }) {
   // ---------------------------------------------------------------- views
   const q = qs[i];
   const secondsLeft = Math.max(0, Math.ceil((deadline - now) / 1000));
-  const Board = ({ list, compact }: { list: LivePlayer[]; compact?: boolean }) => (
-    <ol className="live-board">
-      {ranking(list).map((p, k) => (
-        <li key={p.id} className={`${p.id === me ? 'me' : ''} ${p.out ? 'out' : ''}`}>
-          <span className="rank">{p.out ? '💀' : k + 1}</span><span aria-hidden="true">{p.avatar}</span>
-          {mode === 'teams' && <span aria-label={t(p.team === 1 ? 'live.teamRed' : 'live.teamBlue')}>{p.team === 1 ? '🔴' : '🔵'}</span>}
-          <span className="grow">{p.name}{!compact && p.last ? <small className="dim"> {p.last.points ? `+${fmtNum(p.last.points)}` : '✗'}</small> : null}</span>
-          <b>{fmtNum(p.score)}</b>
-        </li>
-      ))}
-    </ol>
-  );
-
-  const TeamBanner = () => {
-    if (mode !== 'teams') return null;
-    const [b, r] = teamScores(players);
-    return (
-      <div className="team-banner" role="status">
-        <span className={b >= r ? 'lead' : ''}>🔵 {t('live.teamBlue')} <b>{fmtNum(b)}</b></span>
-        <span className={r > b ? 'lead' : ''}>🔴 {t('live.teamRed')} <b>{fmtNum(r)}</b></span>
-      </div>
-    );
-  };
+  const Board = ({ list, compact }: { list: LivePlayer[]; compact?: boolean }) => <SharedBoard list={list} compact={compact} me={me} mode={mode} />;
+  const TeamBanner = () => <SharedTeamBanner players={players} mode={mode} />;
   const meP = players.find((p) => p.id === me);
   const amOut = !!meP?.out;
   const aliveN = players.filter((p) => !p.out).length;
@@ -193,7 +173,7 @@ export default function Live({ query }: { query: URLSearchParams }) {
     <div className="page stack">
       <h1>📡 {t('live.title')}</h1>
       <Mascot mood="idle" text={t('live.mascot')} />
-      {!online && <p className="notice warn">{t('live.needOnline')}</p>}
+      {!online && <p className="notice warn">{t('live.needOnline')} <a href={href('/duel')}>🛋️ {t('duel.offlineLink')}</a></p>}
       <section className="card stack">
         <h2 style={{ margin: 0 }}>{t('live.create')}</h2>
         <p className="small dim" style={{ margin: 0 }}>{t('live.createHelp')}</p>

@@ -84,6 +84,25 @@ async function run(name, ctxOpts) {
     await page.click('.feedback .btn');
   }
   ok('stage quiz played offline');
+  // Duel on one phone, still offline, with the route's questions: the profile + one added player.
+  await page.click('text=Duel on this phone');
+  await page.fill('input[aria-label="Another player’s first name"]', 'Ana');
+  await page.click('button:has-text("Add")');
+  await page.click('button:has-text("5 questions")');
+  await page.click('button:has-text("Start!")');
+  let turns = 0, reveals = 0;
+  while (!(await page.$('.podium'))) {
+    if (await page.$('.pass-card')) {
+      await page.click('.pass-card .btn');
+      if (await page.$('.answer.right')) fail('previous answer visible to the next player');
+      await page.click('.answer >> nth=0'); turns++;
+    } else if (await page.$('text=Next question')) { reveals++; await page.click('text=Next question'); }
+    else await page.waitForTimeout(100);
+    if (turns > 40) break;
+  }
+  turns === 10 && reveals === 5 ? ok('duel on one phone played offline (2 players × 5 route questions, podium)') : fail(`duel: ${turns} turns, ${reveals} reveals`);
+  await shot('duel');
+  await page.click('text=Leave the game');
   // Guide mode (statements instead of questions), still offline.
   await page.click('.seg button >> nth=1');
   await page.waitForSelector('.guide-now', { timeout: 10000 }).then(() => ok('guide mode shows facts offline'), () => fail('guide mode did not render'));

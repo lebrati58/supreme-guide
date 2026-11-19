@@ -1,3 +1,4 @@
+import Duel from './Duel';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Airport, LngLat, Question, Trip, WikiCard } from '../types';
 import { useApp } from '../state';
@@ -65,6 +66,7 @@ export default function TripView({ id }: { id: string }) {
   const [gpsOn, setGpsOn] = useState(false);
   const [askInterests, setAskInterests] = useState(false);
   const [quiz, setQuiz] = useState<Question[] | null>(null);
+  const [duel, setDuel] = useState(false);
   const [done, setDone] = useState<QuizResult | null>(null);
   const [mood, setMood] = useState<Mood>('takeoff');
   const [packing, setPacking] = useState<string | null>(null);
@@ -218,6 +220,16 @@ export default function TripView({ id }: { id: string }) {
     setTimeout(() => document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
+  /** Duel on one phone: the same route questions for every player (one-tap questions only). */
+  const duelQuestions = (n: number) => {
+    const focus = trip.countries.slice(Math.max(0, currentIdx), currentIdx + 3).map((c) => c.iso3);
+    return buildSession(game, {
+      count: n + 6, rnd: mulberry32(hashString(trip.id + 'duel' + Date.now())), focus: focus.length ? focus : undefined,
+      route: route ? { ...route, progress: progress.fraction } : undefined, surpriseRate: 0, focusRate: 1,
+      domains: profile.settings.interests,
+    }).filter((q) => q.options && q.answer !== undefined).slice(0, n);
+  };
+
   const finishQuiz = (r: QuizResult) => {
     setQuiz(null); setDone(r);
     save((t) => { t.answeredIds = [...(t.answeredIds ?? []), ...r.answers.map((a) => a.id)]; });
@@ -353,6 +365,8 @@ export default function TripView({ id }: { id: string }) {
       <section id="stage" className="card gold stack" style={{ color: 'var(--ink)', scrollMarginTop: 70 }}>
         {view === 'guide' ? (
           route ? <GuidePanel facts={guide} progress={progress.fraction} pathKm={route.pathKm} explore={route.explore} /> : <p>{t('trip.loading')}</p>
+        ) : duel ? (
+          <Duel build={duelQuestions} driverProfileId={driver ? profile.id : undefined} onExit={() => setDuel(false)} />
         ) : quiz ? (
           <Quiz questions={quiz} title={current ? t('trip.stageQuizOf', { flag: current.flag, country: countryName(current) }) : t('trip.stageQuiz')} onFinish={finishQuiz} finishLabel={t('trip.collectStamps')} />
         ) : (
@@ -360,6 +374,7 @@ export default function TripView({ id }: { id: string }) {
             <h2 style={{ margin: 0 }}>{current ? <>{current.flag} {progress.source === 'schedule' && trip.flight ? t('trip.probablyOver', { country: countryName(current) }) : t('trip.nowIn', { country: countryName(current) })}</> : t('trip.overWater')}</h2>
             {done && <p style={{ margin: 0 }}><b>{done.correct}/{done.total}</b> {t('trip.correctXp', { xp: done.xp })}</p>}
             <button className="btn big blue" disabled={locked} onClick={() => startQuiz()}>🎯 {done ? t('trip.nextStage') : t('trip.playStage')}</button>
+            <button className="btn" disabled={locked} onClick={() => { setDuel(true); setTimeout(() => document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }}>🛋️ {t('duel.tripBtn')}</button>
             {!trip.completedAt && progress.fraction > 0.9 && <button className="btn green" onClick={complete}>{t('trip.arrived')}</button>}
             {!trip.completedAt && progress.fraction <= 0.9 && <button className="link-btn" style={{ color: 'var(--ink)' }} onClick={complete}>{t('trip.markComplete')}</button>}
           </>
