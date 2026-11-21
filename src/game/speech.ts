@@ -19,7 +19,7 @@ export function speak(text: string, onEnd?: () => void, langOverride?: string) {
   const synth = window.speechSynthesis;
   synth.cancel();
   const u = new SpeechSynthesisUtterance(text.replace(/\p{Extended_Pictographic}/gu, ''));
-  const lang = langOverride ?? (locale() === 'zh' ? 'zh-CN' : intlLocale());
+  const lang = langOverride ?? speechLang();
   u.lang = lang;
   const v = voiceFor(lang);
   if (v) u.voice = v;
@@ -29,3 +29,21 @@ export function speak(text: string, onEnd?: () => void, langOverride?: string) {
 }
 
 export function stopSpeaking() { if (canSpeak()) window.speechSynthesis.cancel(); }
+
+/** The language code the guide speaks for the current locale. */
+export const speechLang = () => (locale() === 'zh' ? 'zh-CN' : intlLocale());
+
+/**
+ * Whether the device has a voice for the current language. Voices load asynchronously, so this waits
+ * for them (up to ~1.5 s). False when speech isn't supported at all.
+ */
+export function hasVoice(lang = speechLang()): Promise<boolean> {
+  if (!canSpeak()) return Promise.resolve(false);
+  const check = () => !!voiceFor(lang);
+  if (window.speechSynthesis.getVoices().length) return Promise.resolve(check());
+  return new Promise((res) => {
+    const done = () => { window.speechSynthesis.removeEventListener('voiceschanged', done); clearTimeout(timer); res(check()); };
+    const timer = setTimeout(done, 1500);
+    window.speechSynthesis.addEventListener('voiceschanged', done);
+  });
+}

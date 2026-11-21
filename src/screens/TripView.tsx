@@ -1,4 +1,7 @@
 import Duel from './Duel';
+import { KidsQuiz } from '../components/KidsQuiz';
+import { buildKidQuiz, type KidQuestion } from '../game/kids';
+import { useLandmarkPhotos } from '../data/photos';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Airport, LngLat, Question, Trip, WikiCard } from '../types';
 import { useApp } from '../state';
@@ -67,6 +70,8 @@ export default function TripView({ id }: { id: string }) {
   const [askInterests, setAskInterests] = useState(false);
   const [quiz, setQuiz] = useState<Question[] | null>(null);
   const [duel, setDuel] = useState(false);
+  const [kidQuiz, setKidQuiz] = useState<KidQuestion[] | null>(null);
+  const photos = useLandmarkPhotos();
   const [done, setDone] = useState<QuizResult | null>(null);
   const [mood, setMood] = useState<Mood>('takeoff');
   const [packing, setPacking] = useState<string | null>(null);
@@ -208,6 +213,13 @@ export default function TripView({ id }: { id: string }) {
   const startQuiz = (domainsArg?: Domain[]) => {
     const domains = domainsArg ?? profile.settings.interests;
     const focus = trip.countries.slice(Math.max(0, currentIdx), currentIdx + 3).map((c) => c.iso3);
+    // Little travellers: picture questions read aloud, about the trip's countries first.
+    if (profile.kidMode) {
+      setDone(null);
+      setKidQuiz(buildKidQuiz(game, photos ?? {}, { count: 5, rnd: mulberry32(hashString(trip.id + 'kids' + Date.now())), focus: trip.countries.map((c) => c.iso3) }));
+      setTimeout(() => document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+      return;
+    }
     // Questions come from the route itself (its places, landmarks and countries) — never from elsewhere.
     const qs = buildSession(game, {
       count: 6, rnd: mulberry32(hashString(trip.id + (trip.answeredIds?.length ?? 0) + Date.now())), focus: focus.length ? focus : undefined,
@@ -365,6 +377,11 @@ export default function TripView({ id }: { id: string }) {
       <section id="stage" className="card gold stack" style={{ color: 'var(--ink)', scrollMarginTop: 70 }}>
         {view === 'guide' ? (
           route ? <GuidePanel facts={guide} progress={progress.fraction} pathKm={route.pathKm} explore={route.explore} /> : <p>{t('trip.loading')}</p>
+        ) : kidQuiz ? (
+          <KidsQuiz questions={kidQuiz} title={t('kids.title')} onFinish={(r) => {
+            setKidQuiz(null);
+            finishQuiz({ correct: r.firstTry, total: r.total, xp: r.xp, answers: [] });
+          }} />
         ) : duel ? (
           <Duel build={duelQuestions} driverProfileId={driver ? profile.id : undefined} onExit={() => setDuel(false)} />
         ) : quiz ? (
