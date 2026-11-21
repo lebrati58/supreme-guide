@@ -31,6 +31,7 @@ export default function Play() {
       <h1>{t('play.title')}</h1>
       <Mascot mood="idle" text={t('play.mascot')} />
       <div className="grid grid-2">
+        {profile.kidMode && tile('/kids', '🧸', t('kids.title'), t('kids.tileSub'))}
         <a className="tile card gold" style={{ color: 'var(--ink)' }} href={href('/quiz/daily')}><span className="ti">📅</span><span className="grow"><b>{t('home.daily')}</b><span className="small dim">{profile.daily.scores[todayKey()] !== undefined ? t('play.dailyDone') : t('home.dailyPitch')}</span></span></a>
         {tile('/quiz/blitz', '⚡', t('play.blitz'), t('play.blitzSub'))}
         {tile('/quiz/quick', '🎲', t('play.quick'), t('play.quickSub'))}
@@ -42,6 +43,7 @@ export default function Play() {
         {tile('/quiz/survival', '🔥', t('play.survival'), t('play.survivalSub', { n: profile.records?.survival ?? 0 }))}
         {tile('/quiz/review', '🔁', t('play.review'), (profile.mistakes?.length ?? 0) ? tn('play.reviewSub', profile.mistakes!.length) : t('play.reviewEmpty'))}
         {tile('/quiz/learn', '🌱', t('play.learn'), t('play.learnSub'))}
+        {!profile.kidMode && tile('/kids', '🧸', t('kids.title'), t('kids.tileSub'))}
         {tile('/duel', '🛋️', t('duel.title'), t('duel.tileSub'))}
         {tile('/live', '📡', t('live.title'), t('live.tileSub'))}
       </div>

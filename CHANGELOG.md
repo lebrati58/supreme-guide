@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.13.0 — 2026-11-21
+### Added
+- **🧸 Little travellers** — a real mode for children who can't read yet (Play, first tile for kid profiles; also the stage quiz on trips for kid profiles):
+  - the question is **read aloud** with the phone's voice (offline), 🔊 to hear it again; a clear message when the phone has no voice for the language;
+  - **picture answers**: 2–3 big cards — animals, flags, offline landmark photos, seaside or not — with their name underneath;
+  - no timer and never “wrong!”: a soft sound, the mascot encourages, try again until found;
+  - questions from verified data only: 16 hand-checked “which animal lives in the wild in…” facts (with sources; the other choices have no wild population there), flags (only on devices that show flag emoji), landmark photos, coast or landlocked (Caspian countries left out); on a trip, mostly about the trip's countries;
+  - a **sticker** every 3 pictures found on the first try, in a new **sticker album** in the passport (kept in backups and transfers).
+### Fixed
+- Passport: rotated stamps could make the page scroll sideways on phones.
+
 ## 1.12.0 — 2026-11-19
 ### Added
 - **🛋️ Duel on one phone** (Play, and on every trip): 2 to 6 players take turns on the same phone with the same questions — family profiles and added first names — fully offline (airplane, train without signal, one phone for the family). A “pass the phone to…” screen hides everyone's answers until all have played; the right answer, who picked what, and the scores are then shown. Classic, Elimination and Teams modes (parents vs kids), 20 s per turn, the first player rotates each question, podium at the end. On a trip the questions are about the route; when this phone's player is the driver, that profile can't play. XP goes to each family profile.

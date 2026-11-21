@@ -24,6 +24,8 @@ export interface Profile {
   /** Questions answered wrongly (most recent last), removed once answered right. */
   mistakes?: Question[];
   records?: { survival?: number };
+  /** “Little travellers” sticker album (emoji from STICKERS, in the order won). */
+  stickers?: string[];
 }
 
 export const MAX_MISTAKES = 40;

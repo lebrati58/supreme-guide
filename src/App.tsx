@@ -23,6 +23,7 @@ const Share = lazy(() => import('./screens/Share'));
 const Live = lazy(() => import('./screens/Live'));
 const Transfer = lazy(() => import('./screens/Transfer'));
 const Duel = lazy(() => import('./screens/Duel'));
+const Kids = lazy(() => import('./screens/Kids'));
 
 interface BIPEvent extends Event { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
 
@@ -66,6 +67,7 @@ export default function App() {
     case 'country': screen = <CountryPage key={b} iso3={b} />; break;
     case 'live': screen = <Live key={route.query.get('join') ?? ''} query={route.query} />; break;
     case 'duel': screen = <Duel />; break;
+    case 'kids': screen = <Kids key={lang} />; break;
     case 'transfer': screen = <Transfer key={route.query.get('code') ?? ''} query={route.query} />; break;
     case 'share': screen = <Share key={route.query.toString()} query={route.query} />; break;
     case 'profile': screen = <Profile install={{ canInstall: !!bip, installed, prompt: () => { void bip?.prompt(); setBip(null); } }} />; break;

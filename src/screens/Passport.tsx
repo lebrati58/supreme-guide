@@ -1,3 +1,4 @@
+import { STICKERS } from '../content/kids';
 import { useMemo } from 'react';
 import { useApp } from '../state';
 import { SvgWorldMap } from '../components/SvgWorldMap';
@@ -42,6 +43,15 @@ export default function Passport() {
           })}
         </div>
       </div>
+      {(profile.kidMode || (profile.stickers?.length ?? 0) > 0) && (
+        <section className="card stack">
+          <h2 style={{ margin: 0 }}>🧸 {t('kids.album', { n: profile.stickers?.length ?? 0, total: STICKERS.length })}</h2>
+          <div className="sticker-album" role="list">
+            {STICKERS.map((s) => <span key={s} role="listitem" className={profile.stickers?.includes(s) ? '' : 'empty'} aria-label={profile.stickers?.includes(s) ? s : t('kids.stickerLocked')}>{s}</span>)}
+          </div>
+          <p className="small dim" style={{ margin: 0 }}>{t('kids.albumHelp')}</p>
+        </section>
+      )}
       <h2>{t('passport.badges', { n: Object.keys(profile.badges).length, total: badges.length })}</h2>
       <div className="badge-grid">
         {badges.map((b) => (

@@ -115,6 +115,24 @@ async function run(name, ctxOpts) {
   await page.waitForSelector('.topbar .pill.gold');
   (await page.textContent('.topbar .pill.gold')) === xp ? ok('progress persisted (IndexedDB)') : fail('progress lost after reload');
 
+  // Little travellers (kids who can't read): picture answers, retry until found — offline.
+  await page.goto(`${BASE}#/kids`);
+  await page.waitForSelector('.kids-opt', { timeout: 15000 });
+  let kq = 0;
+  while (!(await page.$('text=You found them all!')) && kq < 10) {
+    await page.waitForFunction(() => [...document.querySelectorAll('.kids-opt img')].every((i) => i.complete), null, { timeout: 10000 }).catch(() => {});
+    const imgs = await page.$$eval('.kids-opt img', (xs) => xs.map((i) => i.complete && i.naturalWidth > 0));
+    if (imgs.some((x) => !x)) fail('a landmark photo did not load offline');
+    for (const b of await page.$$('.kids-opt:not([disabled])')) {
+      await b.click();
+      if (await page.$('.kids-opt.right')) break;
+    }
+    await page.waitForSelector('.feedback.ok');
+    await page.click('.feedback.ok .btn'); kq++;
+  }
+  kq === 6 && (await page.isVisible('text=You found them all!')) ? ok('little travellers quiz played offline (6 picture questions)') : fail(`kids quiz: ${kq} questions`);
+  await shot('kids');
+
   // Passport & airports search offline
   await page.goto(`${BASE}#/passport`);
   await page.waitForSelector('.stamp');

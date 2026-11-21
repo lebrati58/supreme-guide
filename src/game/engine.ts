@@ -20,7 +20,7 @@ import { legendQuestion } from '../i18n/content';
 const CONTESTED = new Set(['ISR', 'PSE', 'TWN', 'UNK', 'ESH', 'CYP', 'XKX', 'SOM', 'ARM', 'AZE', 'IND', 'PAK', 'CHN', 'KOR', 'PRK', 'GEO', 'RUS', 'UKR', 'MAR', 'SRB']);
 /** Capital & map questions: a small explicit exclusion list of politically sensitive cases. */
 const CAPITAL_EXCLUDE = new Set(['ISR', 'PSE', 'TWN', 'UNK', 'ESH']);
-const FAMOUS = new Set(['USA', 'FRA', 'GBR', 'DEU', 'ITA', 'ESP', 'JPN', 'CHN', 'IND', 'BRA', 'CAN', 'AUS', 'RUS', 'MEX', 'EGY', 'ARG', 'ZAF', 'GRC', 'PRT', 'IRL', 'NLD', 'BEL', 'CHE', 'AUT', 'SWE', 'NOR', 'TUR', 'THA', 'KOR', 'NZL']);
+export const FAMOUS = new Set(['USA', 'FRA', 'GBR', 'DEU', 'ITA', 'ESP', 'JPN', 'CHN', 'IND', 'BRA', 'CAN', 'AUS', 'RUS', 'MEX', 'EGY', 'ARG', 'ZAF', 'GRC', 'PRT', 'IRL', 'NLD', 'BEL', 'CHE', 'AUT', 'SWE', 'NOR', 'TUR', 'THA', 'KOR', 'NZL']);
 
 const W = (t: string) => ({ label: 'Wikipedia', url: `https://en.wikipedia.org/wiki/${encodeURI(t.replace(/ /g, '_'))}` });
 const DATA_SRC = { label: 'mledoze/countries (ODbL)', url: 'https://github.com/mledoze/countries' };
