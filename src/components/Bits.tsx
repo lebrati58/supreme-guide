@@ -1,3 +1,4 @@
+import { nightNow } from '../game/theme';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { levelFromXp } from '../game/progression';
@@ -20,7 +21,8 @@ export function XPBar({ xp }: { xp: number }) {
 
 const COLORS = ['#ffd36b', '#ff7a1a', '#22c55e', '#5aa0ff', '#ff5a5f', '#9b5de5', '#ffffff'];
 export function Confetti({ n = 80 }: { n?: number }) {
-  const [pieces] = useState(() => Array.from({ length: n }, (_, i) => ({
+  // Night mode: a few soft pieces instead of a burst.
+  const [pieces] = useState(() => Array.from({ length: nightNow() ? Math.min(n, 14) : n }, (_, i) => ({
     left: Math.random() * 100, delay: Math.random() * 0.6, dur: 1.6 + Math.random() * 1.6, color: COLORS[i % COLORS.length], rot: Math.random() * 360,
   })));
   return (

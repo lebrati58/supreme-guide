@@ -24,6 +24,17 @@
   --paper: #ffffff;
   --paper-2: #f3f6ff;
   --line: #d7e1f7;
+  /* Light surfaces used inside cards (redefined by night mode). */
+  --ok-bg: #dcfce7;
+  --ko-bg: #ffe4e6;
+  --hover-bg: #e6eeff;
+  --field-bg: #fff;
+  --photo-bg: #dfe7f7;
+  --gold-card-1: #fff6d6;
+  --gold-card-2: #ffe08a;
+  --notice-bg: #fff8e1;
+  --notice-ink: #5c4510;
+  --glass: rgba(255,255,255,.6);
   --text: #f4f8ff;
   --text-dim: #b9c9ec;
   --radius: 22px;
@@ -145,7 +156,7 @@ p { line-height: 1.5; }
 }
 .card.paper { background: var(--paper); color: var(--ink); border-color: var(--line); }
 .card.paper .dim { color: var(--ink-2); }
-.card.gold { background: linear-gradient(160deg, #fff6d6, #ffe08a); color: var(--ink); border-color: #f2c14e; }
+.card.gold { background: linear-gradient(160deg, var(--gold-card-1), var(--gold-card-2)); color: var(--ink); border-color: #f2c14e; }
 .card.gold .dim { color: #6b5520; }
 .card h2, .card h3 { margin-top: 0; }
 
@@ -257,7 +268,7 @@ p { line-height: 1.5; }
 .quiz-progress i { display: block; height: 100%; background: var(--gold-1); transition: width .4s; }
 .question { font-family: var(--font-display); font-size: clamp(22px, 5.4vw, 30px); line-height: 1.15; margin: 0; }
 .question-card { background: var(--paper); color: var(--ink); border-radius: 24px; padding: 18px; box-shadow: var(--shadow); }
-.question-card.bonus { background: linear-gradient(160deg, #fff6d6, #ffd36b); box-shadow: 0 0 0 4px var(--orange), var(--shadow); animation: glow 1.4s ease-in-out infinite; }
+.question-card.bonus { background: linear-gradient(160deg, var(--gold-card-1), var(--gold-1)); box-shadow: 0 0 0 4px var(--orange), var(--shadow); animation: glow 1.4s ease-in-out infinite; }
 @keyframes glow { 50% { box-shadow: 0 0 0 4px var(--gold-1), 0 0 30px rgba(255, 211, 107, .8); } }
 .kind-tag { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: var(--sky-2); margin-bottom: 8px; }
 .answers { display: grid; gap: 10px; }
@@ -267,12 +278,12 @@ p { line-height: 1.5; }
   padding: 12px 16px; border-radius: 16px; border: 2px solid var(--line); background: var(--paper-2); color: var(--ink);
   font-weight: 800; font-size: 17px; cursor: pointer; box-shadow: 0 4px 0 var(--line); transition: transform .08s, background .2s;
 }
-.answer:hover:not(:disabled) { background: #e6eeff; }
+.answer:hover:not(:disabled) { background: var(--hover-bg); }
 .answer:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
 .answer .letter { flex: none; width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--sky-3); color: #fff; font-family: var(--font-display); }
-.answer.right { background: #dcfce7; border-color: var(--green); box-shadow: 0 4px 0 var(--green-d); animation: pop .3s; }
+.answer.right { background: var(--ok-bg); border-color: var(--green); box-shadow: 0 4px 0 var(--green-d); animation: pop .3s; }
 .answer.right .letter { background: var(--green); }
-.answer.wrong { background: #ffe4e6; border-color: var(--red); box-shadow: 0 4px 0 var(--red-d); animation: shake .35s; }
+.answer.wrong { background: var(--ko-bg); border-color: var(--red); box-shadow: 0 4px 0 var(--red-d); animation: shake .35s; }
 .answer.wrong .letter { background: var(--red); }
 .answer:disabled { cursor: default; }
 .feedback { border-radius: 18px; padding: 14px 16px; background: var(--paper); color: var(--ink); animation: pop .3s both; }
@@ -284,13 +295,13 @@ p { line-height: 1.5; }
 .clue { background: var(--paper-2); border-radius: 14px; padding: 12px; font-weight: 700; color: var(--ink-2); }
 .photo-credit { color: var(--ink-2); margin: 4px 0 0; overflow-wrap: anywhere; }
 .photo-credit a { color: var(--sky-2); }
-.monument-photo { width: 100%; max-height: 260px; object-fit: cover; border-radius: 16px; display: block; background: #dfe7f7; }
+.monument-photo { width: 100%; max-height: 260px; object-fit: cover; border-radius: 16px; display: block; background: var(--photo-bg); }
 .chrono-list { display: grid; gap: 8px; }
 .chrono-item { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 14px; border: 2px dashed var(--line); background: var(--paper-2); color: var(--ink); font-weight: 800; cursor: pointer; text-align: start; font-size: 15px; }
-.chrono-item.placed { border-style: solid; border-color: var(--sky-3); background: #e6eeff; }
+.chrono-item.placed { border-style: solid; border-color: var(--sky-3); background: var(--hover-bg); }
 .chrono-item .n { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--sky-3); color: #fff; font-family: var(--font-display); }
-.chrono-item.ok { border-color: var(--green); background: #dcfce7; }
-.chrono-item.ko { border-color: var(--red); background: #ffe4e6; }
+.chrono-item.ok { border-color: var(--green); background: var(--ok-bg); }
+.chrono-item.ko { border-color: var(--red); background: var(--ko-bg); }
 .svgmap { width: 100%; height: auto; display: block; border-radius: 16px; background: #9fd3ff; touch-action: manipulation; }
 .svgmap path { fill: #8fd18b; stroke: #ffffff; stroke-width: .35; cursor: pointer; transition: fill .2s; vector-effect: non-scaling-stroke; }
 .svgmap path:hover { fill: #6fc06a; }
@@ -321,10 +332,10 @@ p { line-height: 1.5; }
 .card.paper .field label { color: var(--ink-2); }
 .input, select.input {
   width: 100%; min-height: 50px; padding: 12px 14px; border-radius: 14px; border: 2px solid var(--line);
-  background: #fff; color: var(--ink); font: 700 16px var(--font-body);
+  background: var(--field-bg); color: var(--ink); font: 700 16px var(--font-body);
 }
 .input:focus { border-color: var(--sky-3); outline: none; box-shadow: 0 0 0 4px rgba(42, 99, 212, .2); }
-.suggest { position: absolute; top: 100%; left: 0; right: 0; z-index: 20; background: #fff; color: var(--ink); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; margin-top: 4px; max-height: 300px; overflow-y: auto; }
+.suggest { position: absolute; top: 100%; left: 0; right: 0; z-index: 20; background: var(--field-bg); color: var(--ink); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; margin-top: 4px; max-height: 300px; overflow-y: auto; }
 .suggest button { display: flex; width: 100%; gap: 10px; align-items: center; text-align: start; padding: 10px 14px; border: 0; background: none; cursor: pointer; border-bottom: 1px solid var(--line); color: var(--ink); }
 .suggest button:hover, .suggest button:focus { background: #eef3ff; }
 .suggest small { color: var(--ink-2); }
@@ -334,7 +345,7 @@ p { line-height: 1.5; }
 .card.paper .chip { color: var(--ink); border-color: var(--line); background: var(--paper-2); }
 .card.paper .chip.on { background: var(--gold-1); border-color: var(--gold-2); }
 .notice { border-radius: 14px; padding: 10px 12px; background: rgba(255, 211, 107, .14); border: 1px solid rgba(255, 211, 107, .4); font-size: 14px; }
-.card.paper .notice { background: #fff8e1; border-color: #f2c14e; color: #5c4510; }
+.card.paper .notice { background: var(--notice-bg); border-color: #f2c14e; color: var(--notice-ink); }
 .notice.warn { background: rgba(255, 90, 95, .14); border-color: rgba(255, 90, 95, .5); }
 
 /* ------------------------------------------------------------ map */
@@ -434,7 +445,7 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 .guide-now { display: flex; gap: 14px; align-items: flex-start; background: var(--paper); border-radius: 18px; padding: 14px; box-shadow: 0 6px 16px rgba(0,0,0,.12); animation: pop .35s both; }
 .guide-icon { flex: none; font-size: 40px; line-height: 1; }
 .guide-body { min-width: 0; }
-.guide-next { display: flex; gap: 10px; align-items: center; width: 100%; text-align: start; padding: 10px 12px; border-radius: 14px; border: 1px solid #f2c14e; background: rgba(255,255,255,.6); color: var(--ink); font: 700 15px var(--font-body); cursor: pointer; }
+.guide-next { display: flex; gap: 10px; align-items: center; width: 100%; text-align: start; padding: 10px 12px; border-radius: 14px; border: 1px solid #f2c14e; background: var(--glass); color: var(--ink); font: 700 15px var(--font-body); cursor: pointer; }
 .guide-next .grow { flex: 1; min-width: 0; }
 
 /* ------------------------------------------------------------ legendary journeys */
@@ -496,3 +507,47 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 .teams > p { grid-column: 1 / -1; }
 .say-btn { margin-inline-start: 8px; font-size: 14px; border: 0; border-radius: 999px; padding: 2px 10px; background: color-mix(in srgb, var(--sky-3) 25%, transparent); color: inherit; cursor: pointer; vertical-align: middle; }
 .pick-map .map { height: min(55vh, 420px); border-radius: 14px; }
+
+/* ===================================================================
+   NIGHT MODE (🌙) — night flights, night trains, night drives.
+   Darker sky, dim cards instead of white, softer gold; contrast kept ≥ 4.5:1 for text.
+   =================================================================== */
+:root[data-theme="night"] {
+  --sky-0: #050b1c;
+  --sky-1: #0a1734;
+  --sky-2: #5f8fe0;
+  --gold-1: #e9be5c;
+  --gold-2: #d9a33a;
+  --ink: #e4eaf7;
+  --ink-2: #a8b6d4;
+  --paper: #141d33;
+  --paper-2: #1b2742;
+  --line: #2c3b5f;
+  --text: #dfe6f5;
+  --text-dim: #93a3c4;
+  --ok-bg: #123824;
+  --ko-bg: #42171f;
+  --hover-bg: #22325a;
+  --field-bg: #1b2742;
+  --photo-bg: #1b2742;
+  --gold-card-1: #2a2412;
+  --gold-card-2: #3a2f10;
+  --notice-bg: #2f2710;
+  --notice-ink: #f3dc9e;
+  --glass: rgba(20, 29, 51, .7);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+:root[data-theme="night"] body {
+  background-image: radial-gradient(1000px 500px at 50% -10%, rgba(60, 100, 180, 0.18), transparent 60%), linear-gradient(180deg, var(--sky-1) 0%, var(--sky-0) 55%);
+}
+/* Photos, flags and maps: a little dimmer so nothing glares in the dark. */
+:root[data-theme="night"] .monument-photo,
+:root[data-theme="night"] .kids-opt img,
+:root[data-theme="night"] .wiki-card img,
+:root[data-theme="night"] .maplibregl-canvas,
+:root[data-theme="night"] .svgmap { filter: brightness(.72) saturate(.9); }
+:root[data-theme="night"] .hero-logo img,
+:root[data-theme="night"] .mascot-face img { filter: brightness(.85); }
+:root[data-theme="night"] .card.gold { border-color: #8a6a1f; }
+:root[data-theme="night"] .live-qr { filter: none; } /* QR codes must stay black on white to scan */
+

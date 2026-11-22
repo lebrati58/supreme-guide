@@ -10,6 +10,7 @@ import { MODES, type Mode } from './types';
 import { t, useLocale } from './i18n';
 import { LanguageButton } from './components/LanguagePicker';
 import { setSfxOptions } from './game/sfx';
+import { useNightMode } from './game/theme';
 
 const Trips = lazy(() => import('./screens/Trips'));
 const Planner = lazy(() => import('./screens/Planner'));
@@ -47,7 +48,10 @@ export default function App() {
     return () => { window.removeEventListener('beforeinstallprompt', onBip); window.removeEventListener('appinstalled', onInstalled); };
   }, []);
   useEffect(() => { document.documentElement.classList.toggle('reduce-motion', profile.settings.reducedMotion); }, [profile.settings.reducedMotion]);
-  useEffect(() => { setSfxOptions({ sound: profile.settings.sound !== false, haptics: profile.settings.haptics !== false }); }, [profile.settings.sound, profile.settings.haptics]);
+  const night = useNightMode(profile.settings.theme);
+  // Night: sounds and vibrations off by default so nobody is woken up (can be turned back on in Profile).
+  const quiet = night && profile.settings.nightQuiet !== false;
+  useEffect(() => { setSfxOptions({ sound: profile.settings.sound !== false && !quiet, haptics: profile.settings.haptics !== false && !quiet }); }, [profile.settings.sound, profile.settings.haptics, quiet]);
   useEffect(() => {
     if (!offlineReady) return;
     const id = setTimeout(() => setOfflineReady(false), 5000);

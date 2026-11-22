@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.0 — 2026-11-22
+### Added
+- **🌙 Night mode** for night flights, night trains and night drives: a dark theme with dim cards instead of white ones, softer gold, dimmed photos and maps (text contrast checked ≥ 4.5:1 by a unit test). **Auto** by default: on when the phone is in dark mode and every evening from 21:00 to 07:00 local time; or forced 🌙 / ☀️ in Profile. Works offline.
+- In night mode, sounds and vibrations are muted by default (Profile switch), confetti is lighter and the read-aloud voice is softer.
+- On a road trip at night (for passengers), a one-time tip: turn the brightness down so the screen doesn't dazzle the driver.
+
 ## 1.13.0 — 2026-11-21
 ### Added
 - **🧸 Little travellers** — a real mode for children who can't read yet (Play, first tile for kid profiles; also the stage quiz on trips for kid profiles):

@@ -1,4 +1,5 @@
 import { intlLocale, locale } from '../i18n';
+import { nightNow } from './theme';
 
 /**
  * Read-aloud for the guide mode with the device's own voices (Web Speech API). Most phones ship
@@ -23,7 +24,8 @@ export function speak(text: string, onEnd?: () => void, langOverride?: string) {
   u.lang = lang;
   const v = voiceFor(lang);
   if (v) u.voice = v;
-  u.rate = 1;
+  u.rate = nightNow() ? 0.92 : 1;
+  u.volume = nightNow() ? 0.6 : 1; // night: a softer voice
   if (onEnd) u.onend = onEnd;
   synth.speak(u);
 }

@@ -54,7 +54,9 @@ function cleanProfile(x: unknown): Profile | null {
     tourStars: record(x.tourStars, (v) => (typeof v === 'number' && v >= 0 && v <= 3 ? v : undefined)) as Profile['tourStars'],
     settings: {
       sound: st.sound !== false, haptics: st.haptics !== false, reducedMotion: st.reducedMotion === true, gpsConsent: st.gpsConsent === true,
-      lang: str(st.lang, 10, 'en'), interests: Array.isArray(st.interests) ? (st.interests.filter((i) => typeof i === 'string').slice(0, 10) as Profile['settings']['interests']) : undefined,
+      lang: str(st.lang, 10, 'en'),
+      theme: st.theme === 'night' || st.theme === 'day' ? st.theme : undefined, nightQuiet: st.nightQuiet === false ? false : undefined,
+      interests: Array.isArray(st.interests) ? (st.interests.filter((i) => typeof i === 'string').slice(0, 10) as Profile['settings']['interests']) : undefined,
     },
   };
   if (Array.isArray(x.mistakes)) p.mistakes = x.mistakes.slice(-MAX_MISTAKES).filter((q) => isObj(q) && typeof q.id === 'string' && typeof q.prompt === 'string' && Array.isArray(q.options)) as Profile['mistakes'];

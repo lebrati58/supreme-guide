@@ -297,6 +297,7 @@ export default function TripView({ id }: { id: string }) {
         </div>
       </div>
       <h1>{meta.emoji} {title}</h1>
+      {trip.mode === 'car' && !driver && !trip.completedAt && <NightCarTip />}
       <p className="dim small" style={{ marginTop: -6 }}>
         {trip.label && <>{trip.label} · </>}{fmtNum(trip.distanceKm)} km · {geometryNote(trip.geometrySource)}
       </p>
@@ -465,7 +466,7 @@ function nearestStopIndex(fr: number[], f: number) {
 function WikiTile({ w, onOpen }: { w: WikiCard; onOpen: () => void }) {
   return (
     <button className="wiki-card" onClick={onOpen} style={{ border: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit' }}>
-      {w.thumb ? <img src={w.thumb} alt="" loading="lazy" /> : <div style={{ width: 84, height: 84, borderRadius: 12, background: '#dfe7f7', display: 'grid', placeItems: 'center', fontSize: 34 }}>📖</div>}
+      {w.thumb ? <img src={w.thumb} alt="" loading="lazy" /> : <div style={{ width: 84, height: 84, borderRadius: 12, background: 'var(--photo-bg)', display: 'grid', placeItems: 'center', fontSize: 34 }}>📖</div>}
       <div><b>{w.title}</b><p>{w.extract}</p><span className="small" style={{ color: 'var(--ink-2)' }}>Wikipedia · CC BY-SA</span></div>
     </button>
   );
@@ -486,3 +487,18 @@ function DriverLock({ moving, gps, audioGuide, onEnableGps, onParked }: { moving
     </div>
   );
 }
+
+/** Night drive: a bright back-seat screen dazzles the driver — say it once (per night), kindly. */
+function NightCarTip() {
+  const night = document.documentElement.dataset.theme === 'night';
+  const key = `nightCarTip-${new Date().toDateString()}`;
+  const [hidden, setHidden] = useState(() => { try { return localStorage.getItem(key) === '1'; } catch { return false; } });
+  if (!night || hidden) return null;
+  return (
+    <p className="notice small row" role="note">
+      <span className="grow">🌙 {t('night.carTip')}</span>
+      <button className="btn small" onClick={() => { try { localStorage.setItem(key, '1'); } catch { /* private mode */ } setHidden(true); }}>{t('night.carTipOk')}</button>
+    </p>
+  );
+}
+
