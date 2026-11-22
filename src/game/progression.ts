@@ -1,3 +1,4 @@
+import type { ThemePref } from './theme';
 import type { Domain } from '../content/knowledge';
 import { tc } from '../i18n';
 import { TITLES } from '../content/ranks';
@@ -20,7 +21,7 @@ export interface Profile {
   daily: { last?: string; streak: number; best: number; scores: Record<string, number> };
   tourStars: Partial<Record<Region, number>>;
   /** `haptics` is optional: profiles created before v1.2 don't have it (treated as on). */
-  settings: { sound: boolean; haptics?: boolean; reducedMotion: boolean; gpsConsent: boolean; lang: string; interests?: Domain[] };
+  settings: { sound: boolean; haptics?: boolean; reducedMotion: boolean; gpsConsent: boolean; lang: string; interests?: Domain[]; theme?: ThemePref; nightQuiet?: boolean };
   /** Questions answered wrongly (most recent last), removed once answered right. */
   mistakes?: Question[];
   records?: { survival?: number };

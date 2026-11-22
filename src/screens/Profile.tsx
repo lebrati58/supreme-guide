@@ -77,6 +77,17 @@ export default function Profile({ install }: { install: { canInstall: boolean; p
         <label className="row"><input type="checkbox" checked={profile.kidMode} onChange={(e) => update((p) => { p.kidMode = e.target.checked; })} /> {t('profile.kidMode')}</label>
         <label className="row"><input type="checkbox" checked={profile.settings.sound !== false} onChange={(e) => { const on = e.target.checked; update((p) => { p.settings.sound = on; }); if (on) { setSfxOptions({ sound: true, haptics: profile.settings.haptics !== false }); play('correct'); } }} /> {t('profile.sound')}</label>
         <label className="row"><input type="checkbox" checked={profile.settings.haptics !== false} onChange={(e) => { const on = e.target.checked; update((p) => { p.settings.haptics = on; }); if (on) { setSfxOptions({ sound: profile.settings.sound !== false, haptics: true }); play('stamp'); } }} /> {t('profile.haptics')}</label>
+        <div className="field">
+          <label>🌙 {t('night.label')}</label>
+          <div className="chips" role="radiogroup" aria-label={t('night.label')}>
+            {(['auto', 'night', 'day'] as const).map((v) => (
+              <button key={v} className={`chip ${(profile.settings.theme ?? 'auto') === v ? 'on' : ''}`} aria-pressed={(profile.settings.theme ?? 'auto') === v}
+                onClick={() => update((p) => { p.settings.theme = v === 'auto' ? undefined : v; })}>{t(`night.${v}` as Key)}</button>
+            ))}
+          </div>
+          <span className="small dim">{t('night.help')}</span>
+        </div>
+        <label className="row"><input type="checkbox" checked={profile.settings.nightQuiet !== false} onChange={(e) => { const on = e.target.checked; update((p) => { p.settings.nightQuiet = on ? undefined : false; }); }} /> {t('night.quiet')}</label>
         <label className="row"><input type="checkbox" checked={profile.settings.reducedMotion} onChange={(e) => { update((p) => { p.settings.reducedMotion = e.target.checked; }); document.documentElement.classList.toggle('reduce-motion', e.target.checked); }} /> {t('profile.reduceMotion')}</label>
       </section>
 

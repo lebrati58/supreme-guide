@@ -115,6 +115,15 @@ async function run(name, ctxOpts) {
   await page.waitForSelector('.topbar .pill.gold');
   (await page.textContent('.topbar .pill.gold')) === xp ? ok('progress persisted (IndexedDB)') : fail('progress lost after reload');
 
+  // Night mode (offline): forced on, then forced off, from the Profile.
+  await page.goto(`${BASE}#/profile`);
+  const themeIs = (v) => page.waitForFunction((x) => document.documentElement.dataset.theme === x, v, { timeout: 5000 }).then(() => v, () => 'timeout');
+  await page.click('button:has-text("🌙 Night")');
+  const nightOn = await themeIs('night');
+  await page.click('button:has-text("☀️ Day")');
+  const nightOff = await themeIs('day');
+  nightOn === 'night' && nightOff === 'day' ? ok('night mode switches on and off offline') : fail(`night mode: ${nightOn} / ${nightOff}`);
+
   // Little travellers (kids who can't read): picture answers, retry until found — offline.
   await page.goto(`${BASE}#/kids`);
   await page.waitForSelector('.kids-opt', { timeout: 15000 });
