@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.0 — 2026-11-25
+### Added
+- **🧳 Memory quiz** at the end of a trip: up to 8 questions only about what the guide told along THIS route, in the order of the journey — rivers crossed, mountain ranges and deserts, which side a summit was on, how the clocks changed, the driving side, landmarks passed, countries entered, towns passed and which came first, and the legendary journeys' stories. Wrong options are certainly wrong (features near the route but not on it, landmarks and towns away from it, countries not crossed). Shown once the trip is complete, when the route gave at least 4 facts (14 of the 18 curated journeys); replayable, and playable as a one-phone duel (“who listened best?”). Works offline.
+- New badge 🐘 **Elephant Memory** for a perfect memory quiz.
+
 ## 1.14.0 — 2026-11-22
 ### Added
 - **🌙 Night mode** for night flights, night trains and night drives: a dark theme with dim cards instead of white ones, softer gold, dimmed photos and maps (text contrast checked ≥ 4.5:1 by a unit test). **Auto** by default: on when the phone is in dark mode and every evening from 21:00 to 07:00 local time; or forced 🌙 / ☀️ in Profile. Works offline.

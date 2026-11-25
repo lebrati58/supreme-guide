@@ -103,6 +103,19 @@ async function run(name, ctxOpts) {
   turns === 10 && reveals === 5 ? ok('duel on one phone played offline (2 players × 5 route questions, podium)') : fail(`duel: ${turns} turns, ${reveals} reveals`);
   await shot('duel');
   await page.click('text=Leave the game');
+  // Arrival: the memory quiz on what the guide told along this route, offline.
+  await page.click('text=Mark journey as complete');
+  await page.click('text=Play the memory quiz');
+  await page.waitForSelector('.question-card');
+  let mq = 0;
+  while (await page.$('.question-card')) {
+    await page.click('.answer >> nth=0');
+    await page.waitForSelector('.feedback');
+    await page.click('.feedback .btn'); mq++;
+    if (mq > 10) break;
+  }
+  const memScore = await page.textContent('.memory-box').catch(() => '');
+  mq >= 4 && /\d+\/\d+/.test(memScore ?? '') ? ok(`memory quiz played offline (${mq} questions about the trip)`) : fail(`memory quiz: ${mq} questions, box: ${memScore}`);
   // Guide mode (statements instead of questions), still offline.
   await page.click('.seg button >> nth=1');
   await page.waitForSelector('.guide-now', { timeout: 10000 }).then(() => ok('guide mode shows facts offline'), () => fail('guide mode did not render'));

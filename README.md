@@ -22,6 +22,7 @@ Everything is translated — menus, questions, explanations, landmarks, timeline
   - Walking: explore around you (GPS, opt-in) with proximity discoveries, or explore a city.
 - **Game engine** with 10 challenge types: multiple choice, true/false, find-the-country on a map, landmark recognition (offline photo with credits, plus a harder “photo only” quiz), timelines, capitals, timed blitz, history & culture, observation (flags, areas), surprise double-XP challenges. Every question has a verified answer, explanation, difficulty, category and source.
 - **Progression**: XP, levels & titles, 15 badges, virtual passport with stamps, World Tour with region unlocks, daily challenge & streak, family profiles (kid mode), family leaderboard, friend challenges by link (no account, no server).
+- **🧳 Memory quiz**: at the end of a trip, questions only about what the guide told along the route, in order — also as a one-phone duel.
 - **🌙 Night mode**: dark, softer theme (auto in dark mode and 21:00–07:00), quiet sounds, dimmed photos and maps, a brightness tip for night drives.
 - **🧸 Little travellers**: a picture quiz read aloud for children who can’t read yet — animals, flags, landmark photos, seaside — no timer, retry until found, stickers album; offline.
 - **🛋️ Duel on one phone**: pass-and-play for 2–6 players with the same questions, Classic / Elimination / Teams, fully offline — also on a trip, with route questions (the driver never plays).
