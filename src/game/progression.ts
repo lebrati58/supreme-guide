@@ -24,7 +24,7 @@ export interface Profile {
   settings: { sound: boolean; haptics?: boolean; reducedMotion: boolean; gpsConsent: boolean; lang: string; interests?: Domain[]; theme?: ThemePref; nightQuiet?: boolean };
   /** Questions answered wrongly (most recent last), removed once answered right. */
   mistakes?: Question[];
-  records?: { survival?: number };
+  records?: { survival?: number; memoryPerfect?: number };
   /** “Little travellers” sticker album (emoji from STICKERS, in the order won). */
   stickers?: string[];
 }
@@ -108,6 +108,7 @@ export function badgeDefs(regionOf: (iso3: string) => string | undefined): Badge
     'bonus-3': (p) => p.stats.bonusCorrect >= 3,
     'daily-7': (p) => p.daily.best >= 7,
     'level-10': (p) => levelFromXp(p.xp).level >= 10,
+    'elephant': (p) => (p.records?.memoryPerfect ?? 0) >= 1,
   };
   return BADGES.map((b) => ({ ...b, test: tests[b.id] }));
 }

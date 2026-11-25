@@ -43,7 +43,7 @@ export function localSay(country: Country | undefined, name: string, names?: str
 }
 const sideText = (side?: Side) => (side ? ` ${t(side === 'left' ? 'guide.side.left' : 'guide.side.right')}` : '');
 
-const placeName = (p: RoutePlace, route: RouteCtx) =>
+export const placeName = (p: RoutePlace, route: RouteCtx) =>
   (route.curatedId && p.stopIndex !== undefined ? journeyStop(route.curatedId, p.stopIndex, { name: p.name }) : p.stop ? p.name : cityName(p));
 
 function countrySummary(c: Country): string {

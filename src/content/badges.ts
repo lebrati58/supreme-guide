@@ -15,4 +15,5 @@ export const BADGES: { id: string; emoji: string; name: string; desc: string }[]
   { id: 'bonus-3', emoji: '🎁', name: 'Surprise Master', desc: 'Win 3 surprise challenges.' },
   { id: 'daily-7', emoji: '📅', name: 'Daily Habit', desc: 'Play the daily challenge 7 days in a row.' },
   { id: 'level-10', emoji: '👑', name: 'Royal Traveller', desc: 'Reach level 10.' },
+  { id: 'elephant', emoji: '🐘', name: 'Elephant Memory', desc: 'Get every answer right in a trip’s memory quiz.' },
 ];

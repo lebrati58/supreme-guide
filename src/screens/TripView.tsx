@@ -1,4 +1,5 @@
 import Duel from './Duel';
+import { buildMemoryQuiz } from '../game/memory';
 import { KidsQuiz } from '../components/KidsQuiz';
 import { buildKidQuiz, type KidQuestion } from '../game/kids';
 import { useLandmarkPhotos } from '../data/photos';
@@ -31,7 +32,7 @@ import { Confetti, Modal } from '../components/Bits';
 import { go, href } from '../router';
 import type { MapMarker } from '../map/WorldMap';
 import type { Mood } from '../game/mascot';
-import { fmtDate, fmtNum, locale, t } from '../i18n';
+import { fmtDate, fmtNum, locale, t, type Key } from '../i18n';
 import { countryName, journeyStop, journeyTitle, lmFact, lmName, stopNote } from '../i18n/content';
 import { play } from '../game/sfx';
 
@@ -70,6 +71,9 @@ export default function TripView({ id }: { id: string }) {
   const [askInterests, setAskInterests] = useState(false);
   const [quiz, setQuiz] = useState<Question[] | null>(null);
   const [duel, setDuel] = useState(false);
+  const [memQuiz, setMemQuiz] = useState<Question[] | null>(null);
+  const [memDuel, setMemDuel] = useState(false);
+  const [memDone, setMemDone] = useState<QuizResult | null>(null);
   const [kidQuiz, setKidQuiz] = useState<KidQuestion[] | null>(null);
   const photos = useLandmarkPhotos();
   const [done, setDone] = useState<QuizResult | null>(null);
@@ -242,6 +246,16 @@ export default function TripView({ id }: { id: string }) {
     }).filter((q) => q.options && q.answer !== undefined).slice(0, n);
   };
 
+  /** Memory quiz: only what the guide told on this route, in the order of the journey. */
+  // Computed only once the trip is complete (cheap: it reads the route data already built for the guide).
+  const memoryQuestions = trip.completedAt && route ? buildMemoryQuiz(route, game, mulberry32(hashString(trip.id + 'memory'))) : [];
+  const finishMemory = (r: QuizResult) => {
+    setMemQuiz(null); setMemDone(r);
+    if (r.correct === r.total) update((p) => { p.records = { ...p.records, memoryPerfect: (p.records?.memoryPerfect ?? 0) + 1 }; });
+    setMood(r.correct === r.total ? 'perfect' : 'idle');
+  };
+  const scrollStage = () => setTimeout(() => document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+
   const finishQuiz = (r: QuizResult) => {
     setQuiz(null); setDone(r);
     save((t) => { t.answeredIds = [...(t.answeredIds ?? []), ...r.answers.map((a) => a.id)]; });
@@ -383,6 +397,10 @@ export default function TripView({ id }: { id: string }) {
             setKidQuiz(null);
             finishQuiz({ correct: r.firstTry, total: r.total, xp: r.xp, answers: [] });
           }} />
+        ) : memQuiz ? (
+          <Quiz questions={memQuiz} title={`🧳 ${t('mem.title')}`} onFinish={finishMemory} />
+        ) : memDuel ? (
+          <Duel build={() => memoryQuestions} driverProfileId={driver ? profile.id : undefined} onExit={() => setMemDuel(false)} />
         ) : duel ? (
           <Duel build={duelQuestions} driverProfileId={driver ? profile.id : undefined} onExit={() => setDuel(false)} />
         ) : quiz ? (
@@ -393,6 +411,17 @@ export default function TripView({ id }: { id: string }) {
             {done && <p style={{ margin: 0 }}><b>{done.correct}/{done.total}</b> {t('trip.correctXp', { xp: done.xp })}</p>}
             <button className="btn big blue" disabled={locked} onClick={() => startQuiz()}>🎯 {done ? t('trip.nextStage') : t('trip.playStage')}</button>
             <button className="btn" disabled={locked} onClick={() => { setDuel(true); setTimeout(() => document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }}>🛋️ {t('duel.tripBtn')}</button>
+            {trip.completedAt && memoryQuestions.length > 0 && (
+              <div className="stack memory-box">
+                <b>🧳 {t('mem.title')}</b>
+                <span className="small">{t('mem.pitch', { n: memoryQuestions.length })}</span>
+                {memDone && <span className="small"><b>{memDone.correct}/{memDone.total}</b> · {t(memScoreKey(memDone.correct, memDone.total))}</span>}
+                <div className="row">
+                  <button className="btn green" onClick={() => { setMemDone(null); setMemQuiz(memoryQuestions); scrollStage(); }}>🧳 {memDone ? t('mem.again') : t('mem.play')}</button>
+                  <button className="btn" onClick={() => { setMemDuel(true); scrollStage(); }}>🛋️ {t('mem.duel')}</button>
+                </div>
+              </div>
+            )}
             {!trip.completedAt && progress.fraction > 0.9 && <button className="btn green" onClick={complete}>{t('trip.arrived')}</button>}
             {!trip.completedAt && progress.fraction <= 0.9 && <button className="link-btn" style={{ color: 'var(--ink)' }} onClick={complete}>{t('trip.markComplete')}</button>}
           </>
@@ -500,5 +529,11 @@ function NightCarTip() {
       <button className="btn small" onClick={() => { try { localStorage.setItem(key, '1'); } catch { /* private mode */ } setHidden(true); }}>{t('night.carTipOk')}</button>
     </p>
   );
+}
+
+/** “Elephant memory” for a perfect score, kind words otherwise. */
+function memScoreKey(correct: number, total: number) {
+  const r = correct / total;
+  return (r === 1 ? 'mem.score.perfect' : r >= 0.75 ? 'mem.score.great' : r >= 0.5 ? 'mem.score.good' : 'mem.score.again') as Key;
 }
 

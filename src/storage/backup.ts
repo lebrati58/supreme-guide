@@ -60,7 +60,7 @@ function cleanProfile(x: unknown): Profile | null {
     },
   };
   if (Array.isArray(x.mistakes)) p.mistakes = x.mistakes.slice(-MAX_MISTAKES).filter((q) => isObj(q) && typeof q.id === 'string' && typeof q.prompt === 'string' && Array.isArray(q.options)) as Profile['mistakes'];
-  if (isObj(x.records)) p.records = { survival: num(x.records.survival) };
+  if (isObj(x.records)) p.records = { survival: num(x.records.survival), memoryPerfect: num(x.records.memoryPerfect) };
   if (Array.isArray(x.stickers)) p.stickers = x.stickers.filter((s): s is string => typeof s === 'string' && STICKERS.includes(s)).filter((s, i, a) => a.indexOf(s) === i);
   return p;
 }
@@ -135,7 +135,7 @@ export function mergeProfile(local: Profile, incoming: Profile): Profile {
   for (const [k, at] of Object.entries(incoming.badges)) p.badges[k] = p.badges[k] ? Math.min(p.badges[k], at) : at;
   p.daily = { last: [local.daily.last, incoming.daily.last].filter(Boolean).sort().pop(), streak: Math.max(local.daily.streak, incoming.daily.streak), best: Math.max(local.daily.best, incoming.daily.best), scores: maxRec(local.daily.scores, incoming.daily.scores) };
   p.tourStars = maxRec(local.tourStars as Record<string, number>, incoming.tourStars as Record<string, number>) as Profile['tourStars'];
-  p.records = { survival: Math.max(local.records?.survival ?? 0, incoming.records?.survival ?? 0) };
+  p.records = { survival: Math.max(local.records?.survival ?? 0, incoming.records?.survival ?? 0), memoryPerfect: Math.max(local.records?.memoryPerfect ?? 0, incoming.records?.memoryPerfect ?? 0) };
   const stickers = [...new Set([...(local.stickers ?? []), ...(incoming.stickers ?? [])])];
   if (stickers.length) p.stickers = stickers;
   const seen = new Set<string>();
