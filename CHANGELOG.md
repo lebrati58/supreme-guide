@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.16.0 — 2026-11-26
+### Added
+- **🎯 Road bingo** (Play, and on every trip): a 3×3 or 4×4 card of things to spot through the window, by transport mode — cows and tunnels by car, another train and vineyards by train, clouds below and snowy mountains by plane, dolphins and harbours at sea, fountains and street musicians on foot (66 items, in the 10 languages). Tap a picture when you see it (its name is read aloud); a full row, column or diagonal = **Bingo!**, a full card too. On a trip, up to 3 gold cells are about the actual route (rivers, summits with their side, borders, landmarks) and unlock as you get close. Several players, each with their own card, on one phone; the driver never plays. Modest XP for profiles. Cards are kept if you leave the screen. Fully offline.
+### Fixed
+- Trip stage card: ghost buttons and chips (duel, memory quiz, bingo) were white on the light gold card; they now use the card's ink.
+
 ## 1.15.0 — 2026-11-25
 ### Added
 - **🧳 Memory quiz** at the end of a trip: up to 8 questions only about what the guide told along THIS route, in the order of the journey — rivers crossed, mountain ranges and deserts, which side a summit was on, how the clocks changed, the driving side, landmarks passed, countries entered, towns passed and which came first, and the legendary journeys' stories. Wrong options are certainly wrong (features near the route but not on it, landmarks and towns away from it, countries not crossed). Shown once the trip is complete, when the route gave at least 4 facts (14 of the 18 curated journeys); replayable, and playable as a one-phone duel (“who listened best?”). Works offline.

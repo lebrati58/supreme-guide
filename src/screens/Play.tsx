@@ -44,6 +44,7 @@ export default function Play() {
         {tile('/quiz/review', '🔁', t('play.review'), (profile.mistakes?.length ?? 0) ? tn('play.reviewSub', profile.mistakes!.length) : t('play.reviewEmpty'))}
         {tile('/quiz/learn', '🌱', t('play.learn'), t('play.learnSub'))}
         {!profile.kidMode && tile('/kids', '🧸', t('kids.title'), t('kids.tileSub'))}
+        {tile('/bingo', '🎯', t('bingo.title'), t('bingo.tileSub'))}
         {tile('/duel', '🛋️', t('duel.title'), t('duel.tileSub'))}
         {tile('/live', '📡', t('live.title'), t('live.tileSub'))}
       </div>

@@ -1,4 +1,6 @@
 import Duel from './Duel';
+import { Bingo } from '../components/Bingo';
+import { routeCells } from '../game/bingo';
 import { buildMemoryQuiz } from '../game/memory';
 import { KidsQuiz } from '../components/KidsQuiz';
 import { buildKidQuiz, type KidQuestion } from '../game/kids';
@@ -73,6 +75,7 @@ export default function TripView({ id }: { id: string }) {
   const [duel, setDuel] = useState(false);
   const [memQuiz, setMemQuiz] = useState<Question[] | null>(null);
   const [memDuel, setMemDuel] = useState(false);
+  const [bingo, setBingo] = useState(false);
   const [memDone, setMemDone] = useState<QuizResult | null>(null);
   const [kidQuiz, setKidQuiz] = useState<KidQuestion[] | null>(null);
   const photos = useLandmarkPhotos();
@@ -399,6 +402,9 @@ export default function TripView({ id }: { id: string }) {
           }} />
         ) : memQuiz ? (
           <Quiz questions={memQuiz} title={`🧳 ${t('mem.title')}`} onFinish={finishMemory} />
+        ) : bingo ? (
+          <Bingo mode={trip.mode} saveKey={`bingo-trip-${trip.id}`} routeCells={route ? routeCells(route, game) : []} progress={progress.fraction}
+            driverProfileId={driver ? profile.id : undefined} onExit={() => setBingo(false)} />
         ) : memDuel ? (
           <Duel build={() => memoryQuestions} driverProfileId={driver ? profile.id : undefined} onExit={() => setMemDuel(false)} />
         ) : duel ? (
@@ -410,6 +416,7 @@ export default function TripView({ id }: { id: string }) {
             <h2 style={{ margin: 0 }}>{current ? <>{current.flag} {progress.source === 'schedule' && trip.flight ? t('trip.probablyOver', { country: countryName(current) }) : t('trip.nowIn', { country: countryName(current) })}</> : t('trip.overWater')}</h2>
             {done && <p style={{ margin: 0 }}><b>{done.correct}/{done.total}</b> {t('trip.correctXp', { xp: done.xp })}</p>}
             <button className="btn big blue" disabled={locked} onClick={() => startQuiz()}>🎯 {done ? t('trip.nextStage') : t('trip.playStage')}</button>
+            {!trip.completedAt && <button className="btn" disabled={locked} onClick={() => { setBingo(true); scrollStage(); }}>🎯 {t('bingo.tripBtn')}</button>}
             <button className="btn" disabled={locked} onClick={() => { setDuel(true); setTimeout(() => document.getElementById('stage')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }}>🛋️ {t('duel.tripBtn')}</button>
             {trip.completedAt && memoryQuestions.length > 0 && (
               <div className="stack memory-box">
