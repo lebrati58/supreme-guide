@@ -33,6 +33,8 @@ interface Ctx {
   /** XP & stats for an answer — to the active profile, or to `profileId` (one-phone duels). */
   recordAnswer: (q: Question, correct: boolean, streak: number, timeRatio?: number, profileId?: string) => AnswerResult;
   stamp: (iso3s: string[], mode: Profile['stamps'][string]['mode']) => string[];
+  /** XP for a game outside quizzes (road bingo), to the active profile or `profileId`. */
+  addXp: (xp: number, profileId?: string) => void;
   useMode: (m: Mode) => void;
   online: boolean;
   toasts: Toast[];
@@ -160,6 +162,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return added;
   }, [mutate]);
 
+  const addXp = useCallback((xp: number, profileId?: string) => {
+    let before = 0, after = 0;
+    const { next } = mutate((p) => { before = levelFromXp(p.xp).level; p.xp += xp; after = levelFromXp(p.xp).level; }, profileId);
+    if (after > before) toast({ icon: '⭐', title: `${next.avatar} ${next.name} · ${t('toast.level', { level: after })}`, body: t('toast.levelBody', { title: levelFromXp(next.xp).title }) });
+  }, [mutate, toast]);
+
   const useMode = useCallback((m: Mode) => mutate((p) => { if (!p.modesUsed.includes(m)) p.modesUsed.push(m); }), [mutate]);
 
   const activeProfileLang = () => (profilesRef.current.find((p) => p.id === activeRef.current) ?? profilesRef.current[0])?.settings.lang;
@@ -200,7 +208,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: Ctx | null = profile ? {
     ready: countries.length > 0 && !!profile && localeReady !== null, error, countries, byIso3, game, world110, getIndex, getWorld50: loadWorld50,
-    profile, profiles, switchProfile, createProfile, removeProfile, restore, update, recordAnswer, stamp, useMode,
+    profile, profiles, switchProfile, createProfile, removeProfile, restore, update, recordAnswer, stamp, addXp, useMode,
     online, toasts, toast, badges,
   } : null;
 

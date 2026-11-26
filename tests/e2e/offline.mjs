@@ -128,6 +128,15 @@ async function run(name, ctxOpts) {
   await page.waitForSelector('.topbar .pill.gold');
   (await page.textContent('.topbar .pill.gold')) === xp ? ok('progress persisted (IndexedDB)') : fail('progress lost after reload');
 
+  // Road bingo (offline): a 3×3 train card, tick the first row → Bingo!
+  await page.goto(`${BASE}#/bingo`);
+  await page.click('.chip:has-text("Train")');
+  await page.click('text=Deal the cards');
+  await page.waitForSelector('.bingo-cell');
+  for (const k of [0, 1, 2]) await page.click(`.bingo-cell >> nth=${k}`);
+  (await page.isVisible('text=Bingo! Well spotted')) && (await page.$$('.bingo-cell.on')).length === 3 ? ok('road bingo: a full row gives Bingo! (offline)') : fail('road bingo did not detect the line');
+  await shot('bingo');
+
   // Night mode (offline): forced on, then forced off, from the Profile.
   await page.goto(`${BASE}#/profile`);
   const themeIs = (v) => page.waitForFunction((x) => document.documentElement.dataset.theme === x, v, { timeout: 5000 }).then(() => v, () => 'timeout');
